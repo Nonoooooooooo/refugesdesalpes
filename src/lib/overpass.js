@@ -1,47 +1,80 @@
-const OVERPASS_URL = 'https://overpass-api.de/api/interpreter'
+const OVERPASS_ENDPOINTS = [
+  'https://overpass-api.de/api/interpreter',
+  'https://lz4.overpass-api.de/api/interpreter',
+  'https://z.overpass-api.de/api/interpreter',
+]
 
 /**
- * Exécute une requête QL sur l'API Overpass
+ * Exécute une requête QL sur l'API Overpass avec basculement automatique en cas d'erreur
  */
 async function queryOverpass(qlQuery, signal) {
-  const body = new URLSearchParams({ data: qlQuery }).toString()
-  const res = await fetch(OVERPASS_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-    },
-    body,
-    signal,
-  })
+  let lastError = null
 
-  if (!res.ok) {
-    throw new Error(`Overpass API error (${res.status})`)
+  for (const endpoint of OVERPASS_ENDPOINTS) {
+    if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
+
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+          'Accept': 'application/json, text/plain, */*',
+        },
+        body: 'data=' + encodeURIComponent(qlQuery),
+        signal,
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        return data.elements || []
+      }
+      lastError = new Error(`Overpass ${endpoint} returned status ${res.status}`)
+    } catch (e) {
+      if (e.name === 'AbortError') throw e
+      lastError = e
+    }
   }
 
-  const data = await res.json()
-  return data.elements || []
+  throw lastError || new Error('All Overpass endpoints failed')
 }
 
 /**
  * Récupère les parkings dans la bounding box (zoom >= 13)
+ * Inclut les points (node) et les zones/surfaces de parking (way, relation)
  * @param {[number, number, number, number]} bounds [south, west, north, east]
  */
 export async function fetchOverpassParkings([south, west, north, east], signal) {
-  const ql = `[out:json][timeout:25];node["amenity"="parking"](${south.toFixed(5)},${west.toFixed(5)},${north.toFixed(5)},${east.toFixed(5)});out;`
+  const s = south.toFixed(5)
+  const w = west.toFixed(5)
+  const n = north.toFixed(5)
+  const e = east.toFixed(5)
+
+  const ql = `[out:json][timeout:25];(node["amenity"="parking"](${s},${w},${n},${e});way["amenity"="parking"](${s},${w},${n},${e}););out center;`
   const elements = await queryOverpass(ql, signal)
 
-  return elements.map((el) => {
-    const tags = el.tags || {}
-    return {
-      id: `parking-${el.id}`,
-      lat: el.lat,
-      lng: el.lon,
-      name: tags.name || tags.operator || 'Parking',
-      capacity: tags.capacity || null,
-      fee: tags.fee === 'yes' ? 'Payant' : tags.fee === 'no' ? 'Gratuit' : null,
-      surface: tags.surface || null,
-    }
-  })
+  return elements
+    .map((el) => {
+      const tags = el.tags || {}
+      const lat = el.lat ?? el.center?.lat
+      const lng = el.lon ?? el.center?.lon
+
+      if (lat == null || lng == null) return null
+
+      const name = tags.name || tags.operator || (tags.parking === 'underground' ? 'Parking souterrain' : 'Parking')
+      const fee = tags.fee === 'yes' ? 'Payant' : tags.fee === 'no' ? 'Gratuit' : null
+
+      return {
+        id: `parking-${el.type}-${el.id}`,
+        lat,
+        lng,
+        name,
+        capacity: tags.capacity || null,
+        fee,
+        surface: tags.surface || null,
+        access: tags.access || null,
+      }
+    })
+    .filter(Boolean)
 }
 
 /**
@@ -58,7 +91,7 @@ export async function fetchOverpassPeaksAndPasses([south, west, north, east], si
   const elements = await queryOverpass(ql, signal)
 
   return elements
-    .filter((el) => el.tags && (el.tags.name || el.tags.ele))
+    .filter((el) => el.tags && (el.tags.name || el.tags.ele) && el.lat != null && el.lon != null)
     .map((el) => {
       const tags = el.tags
       const name = tags.name || (tags.natural === 'peak' ? 'Sommet' : 'Col')

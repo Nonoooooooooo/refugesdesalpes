@@ -118,7 +118,7 @@ export default function App() {
   const [activeTypes, setActiveTypes] = useState(() => new Set(FILTERABLE.map((t) => t.key)))
   const [flyTarget, setFlyTarget] = useState(null)
   const [reloadKey, setReloadKey] = useState(0)
-  const [baseLayer, setBaseLayer] = useState('satellite')
+  const [baseLayer, setBaseLayer] = useState('cyclosm')
   const [showTrails, setShowTrails] = useState(false)
   const [showTransports, setShowTransports] = useState(false)
   const [showParkings, setShowParkings] = useState(false)

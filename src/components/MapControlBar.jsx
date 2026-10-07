@@ -123,20 +123,6 @@ export default function MapControlBar({
           <span className="hidden sm:inline">Transports</span>
         </button>
 
-        {/* Bouton Parkings (Overpass) */}
-        <button
-          onClick={onToggleParkings}
-          title="Afficher/masquer les parkings (zoom >= 13)"
-          className={`glass-btn flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-medium transition-all ${
-            showParkings
-              ? 'border border-blue-400/50 bg-blue-500/35 text-blue-200 shadow-[0_0_12px_rgba(59,130,246,0.35)]'
-              : 'bg-white/5 text-white/65 hover:text-white hover:bg-white/10'
-          }`}
-        >
-          <SquareParking size={14} className={showParkings ? 'text-blue-300' : ''} />
-          <span className="hidden sm:inline">Parkings</span>
-        </button>
-
         {/* Bouton Sommets & Cols (Overpass) */}
         <button
           onClick={onTogglePeaks}
@@ -156,7 +142,7 @@ export default function MapControlBar({
         {/* Bouton Filtres hébergements */}
         <button
           onClick={() => setShowFilters((prev) => !prev)}
-          title="Afficher/masquer les filtres des types d'hébergement"
+          title="Afficher/masquer les filtres"
           className={`glass-btn flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-medium transition-all ${
             showFilters
               ? 'bg-white/20 text-white font-semibold'
@@ -172,7 +158,7 @@ export default function MapControlBar({
         </button>
       </div>
 
-      {/* ─── LIGNE 2 : Filtres des hébergements ─── */}
+      {/* ─── LIGNE 2 : Filtres des hébergements & Parkings ─── */}
       {showFilters && (
         <div className="pointer-events-auto glass flex max-w-[calc(100vw-2rem)] sm:max-w-2xl flex-wrap items-center justify-end gap-1.5 rounded-2xl p-1.5 shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-top-1 duration-200">
           {FILTERABLE.map(({ key, label, color, Icon }) => {
@@ -210,6 +196,22 @@ export default function MapControlBar({
           >
             {allActive ? <RotateCcw size={11} /> : <CheckCheck size={11} />}
             <span>{allActive ? 'Filtrer' : 'Tous'}</span>
+          </button>
+
+          <div className="mx-0.5 h-4 w-px bg-white/15" />
+
+          {/* Bouton Parkings (Overpass) placé dans la section filtres */}
+          <button
+            onClick={onToggleParkings}
+            title="Afficher/masquer les parkings (zoom >= 13)"
+            className={`glass-btn flex items-center gap-1.5 rounded-xl px-2.5 py-1 text-xs font-medium transition-all ${
+              showParkings
+                ? 'border border-blue-400/60 bg-blue-500/40 text-blue-100 shadow-[0_0_12px_rgba(59,130,246,0.4)] ring-1 ring-blue-400/40 font-semibold'
+                : 'bg-white/5 opacity-50 text-white/70 hover:opacity-100 hover:text-white'
+            }`}
+          >
+            <SquareParking size={13} className={showParkings ? 'text-blue-300' : 'text-blue-400'} />
+            <span className="text-[11px] whitespace-nowrap">Parkings</span>
           </button>
         </div>
       )}
