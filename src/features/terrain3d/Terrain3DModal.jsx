@@ -66,6 +66,29 @@ export default function Terrain3DModal({ point, onClose }) {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [onClose])
 
+  // Mise à jour explicite du terrain lors du changement d'exagération
+  useEffect(() => {
+    if (mapRef.current) {
+      const map = mapRef.current.getMap()
+      if (map && map.loaded()) {
+        try {
+          map.setTerrain({ source: 'aws-terrarium-dem', exaggeration })
+        } catch (e) {
+          console.warn('MapLibre setTerrain error:', e)
+        }
+      }
+    }
+  }, [exaggeration])
+
+  const handleMapLoad = useCallback((evt) => {
+    const map = evt.target
+    try {
+      map.setTerrain({ source: 'aws-terrarium-dem', exaggeration })
+    } catch (e) {
+      console.warn('Error applying 3D terrain on load:', e)
+    }
+  }, [exaggeration])
+
   // Animation de rotation automatique fluide autour du sommet/refuge
   useEffect(() => {
     let animFrame
@@ -173,6 +196,8 @@ export default function Terrain3DModal({ point, onClose }) {
             }}
             maxPitch={85}
             mapStyle={mapStyle}
+            terrain={{ source: 'aws-terrarium-dem', exaggeration }}
+            onLoad={handleMapLoad}
             style={{ width: '100%', height: '100%' }}
             attributionControl={false}
           >
