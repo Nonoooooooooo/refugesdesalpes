@@ -143,6 +143,41 @@ export default function TransportSidebar({ transport, onClose }) {
           </Section>
         )}
 
+        {/* Section Grille Horaires Officiels */}
+        {transport.timetable && (
+          <Section title="Horaires et départs réguliers">
+            <div className="rounded-2xl bg-white/[0.05] p-3 ring-1 ring-white/10">
+              <div className="overflow-x-auto scroll-thin">
+                <table className="w-full min-w-[340px] text-left text-xs">
+                  <thead>
+                    <tr className="border-b border-white/15 text-[10px] uppercase tracking-wider text-white/60">
+                      <th className="pb-2 pr-2 font-semibold">Arrêt</th>
+                      {transport.timetable.headers.map((h, i) => (
+                        <th key={i} className="pb-2 px-1 text-center font-semibold text-white/90">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {transport.timetable.rows.map((row, i) => (
+                      <tr key={i} className="hover:bg-white/5 transition-colors">
+                        <td className="py-1.5 pr-2 font-medium text-white/90 whitespace-nowrap">{row.stop}</td>
+                        {row.times.map((t, j) => (
+                          <td key={j} className="py-1.5 px-1 text-center font-mono text-[11px] text-white/80 whitespace-nowrap">{t}</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {transport.timetable.note && (
+                <div className="mt-2.5 border-t border-white/10 pt-2 text-[11px] leading-relaxed italic text-white/70">
+                  {transport.timetable.note}
+                </div>
+              )}
+            </div>
+          </Section>
+        )}
+
         {/* Section Arrêts & Gares desservis */}
         {Array.isArray(transport.stops) && transport.stops.length > 0 && (
           <Section

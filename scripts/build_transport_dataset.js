@@ -516,7 +516,7 @@ const BUS_ROUTES = [
     mode: 'navette',
     operator: 'Val Thorens Mobilité / SOGEVAB',
     network: 'Navettes Val Thorens',
-    route: 'Gare Routière (P1) ↔ Les Montagnettes ↔ Montana ↔ Les Temples du Soleil ↔ Cairn ↔ Maison de Val Thorens ↔ Église ↔ Place Péclet ↔ Les Névés ↔ P0 ↔ Les Balcons ↔ Gare Routière',
+    route: 'Gare Routière (P1) ↔ Les Montagnettes ↔ Montana ↔ Les Temples du Soleil ↔ P2 ↔ Cairn ↔ Arolles ↔ Gare Routière ↔ Maison de Val Thorens ↔ Église ↔ Place Péclet ↔ Les Névés ↔ P0 ↔ Les Balcons ↔ Gare Routière',
     frequency: 'Un bus toutes les 20 min de 6h15 à 22h00 (renfort toutes les 10 min en journée)',
     period: 'Circule du 22 novembre 2025 au 3 mai 2026 (Service gratuit pour tous)',
     stops: [
@@ -527,15 +527,38 @@ const BUS_ROUTES = [
       'Parking P2',
       'Cairn',
       'Arolles',
+      'Gare Routière (P1 - Central)',
       'Maison de Val Thorens (Office de Tourisme)',
       'Église de Val Thorens',
       'Place Péclet (2350 m)',
       'Les Névés',
       'Parking P0',
-      'Les Balcons (2380 m)'
+      'Les Balcons (2380 m)',
+      'Gare Routière (P1 - Terminus)'
     ],
     color: '#ea580c',
     url: 'https://www.valthorens.com',
+    timetable: {
+      headers: ['06:15', '07:35', '08:00*', '10:20', '15:20', '18:20', '19:40', '20:00*', '21:40'],
+      rows: [
+        { stop: 'Gare Routière (P1)', times: ['06:15', '07:35', '08:00', '10:20', '15:20', '18:20', '19:40', '20:00', '21:40'] },
+        { stop: 'Les Montagnettes', times: ['06:16', '07:36', '08:01', '10:21', '15:21', '18:21', '19:41', '20:01', '21:41'] },
+        { stop: 'Montana', times: ['06:16', '07:36', '08:01', '10:21', '15:21', '18:21', '19:41', '20:01', '21:41'] },
+        { stop: 'Les Temples du Soleil', times: ['06:17', '07:37', '08:02', '10:22', '15:22', '18:22', '19:42', '20:02', '21:42'] },
+        { stop: 'Parking P2', times: ['06:20', '07:40', '08:05', '10:25', '15:25', '18:25', '19:45', '20:05', '21:45'] },
+        { stop: 'Cairn', times: ['06:21', '07:41', '08:06', '10:26', '15:26', '18:26', '19:46', '20:06', '21:46'] },
+        { stop: 'Les Arolles', times: ['06:21', '07:41', '08:06', '10:26', '15:26', '18:26', '19:46', '20:06', '21:46'] },
+        { stop: 'Gare Routière (P1)', times: ['06:25', '07:45', '08:10', '10:30', '15:30', '18:30', '19:50', '20:10', '21:50'] },
+        { stop: 'Maison de Val Thorens', times: ['06:25', '07:45', '08:10', '10:30', '15:30', '18:30', '19:50', '20:10', '21:50'] },
+        { stop: 'Église', times: ['06:26', '07:46', '08:11', '10:31', '15:31', '18:31', '19:51', '20:11', '21:51'] },
+        { stop: 'Place Péclet (2350 m)', times: ['06:27', '07:47', '08:12', '10:32', '15:32', '18:32', '19:52', '20:12', '21:52'] },
+        { stop: 'Les Névés', times: ['06:30', '07:50', '08:15', '10:35', '15:35', '18:35', '19:55', '20:15', '21:55'] },
+        { stop: 'Parking P0', times: ['06:30', '07:50', '08:15', '10:35', '15:35', '18:35', '19:55', '20:15', '21:55'] },
+        { stop: 'Les Balcons (2380 m)', times: ['06:32', '07:52', '08:17', '10:37', '15:37', '18:37', '19:57', '20:17', '21:57'] },
+        { stop: 'Gare Routière (P1)', times: ['06:35', '07:55', '08:20', '10:40', '15:40', '18:40', '20:00', '20:20', '22:00'] }
+      ],
+      note: '* Horaires 08:00 et 20:00 : circulent uniquement le samedi. Cadencement général : un bus toutes les 20 min de 6h15 à 22h00, et renfort toutes les 10 min du dimanche au vendredi du 17 décembre 2025 au 17 avril 2026.'
+    },
     coords: '6.57997,45.29768;6.58044,45.29656;6.57910,45.29678;6.57750,45.29697;6.57611,45.29799;6.57792,45.29869;6.57885,45.29800;6.57997,45.29768;6.58200,45.29859;6.58343,45.29808;6.58426,45.29663;6.58474,45.29777;6.58310,45.29919;6.57917,45.29992;6.57997,45.29768'
   },
   {
@@ -559,6 +582,18 @@ const BUS_ROUTES = [
     ],
     color: '#dc2626',
     url: 'https://www.valthorens.com',
+    timetable: {
+      headers: ['Service'],
+      rows: [
+        { stop: 'Gare Routière (P1)', times: ['Départ continu'] },
+        { stop: 'Arolles / Cairn', times: ['Passage régulier'] },
+        { stop: 'Parking P2', times: ['Passage régulier'] },
+        { stop: 'Parking P3', times: ['Passage régulier'] },
+        { stop: 'Parking P4 (UCPA)', times: ['Passage régulier'] },
+        { stop: 'Parking P5 (Entrée)', times: ['Terminus / Rotation'] }
+      ],
+      note: 'Liaison continue régulière et gratuite reliant les grands parkings extérieurs P3, P4 et P5 au centre de la station.'
+    },
     coords: '6.57997,45.29768;6.57885,45.29800;6.57792,45.29869;6.57611,45.29799;6.57171,45.29736;6.56876,45.29979;6.56620,45.30150'
   },
 
@@ -2671,7 +2706,23 @@ const STATIONS = [
   { id: 'hub-berarde', name: 'Pôle Navettes La Bérarde (Écrins)', mode: 'station', alt: 1727, lat: 44.9330, lng: 6.2940, lines: ['Navette Oisans Saint-Christophe / Bourg-d\'Oisans', 'Départ refuges Promontoire, Châtelleret, Carrelet'] },
   { id: 'hub-gioberney', name: 'Pôle Navettes Gioberney (Valgaudemar)', mode: 'station', alt: 1640, lat: 44.7680, lng: 6.2750, lines: ['Navette Valgaudemar', 'Départ refuges Xavier Blanc & Vallonpierre'] },
   { id: 'hub-notre-dame-gorge', name: 'Pôle Navettes Notre-Dame de la Gorge', mode: 'station', alt: 1210, lat: 45.7870, lng: 6.7130, lines: ['Navette Les Contamines', 'Départ Tour du Mont-Blanc & refuge Nant Borrant'] },
-  { id: 'hub-val-thorens', name: 'Gare Routière de Val Thorens (2300 m)', mode: 'station', alt: 2300, lat: 45.2977, lng: 6.5800, lines: ['Cars Région S12 (Moûtiers)', 'Navette Intervillage Val Thorens', 'Navette Parkings P3/P4/P5', 'Départ 3 Vallées & Cime Caron'] }
+  // Pôles et Arrêts Navettes de Val Thorens (Saison 2025-2026)
+  { id: 'hub-val-thorens', name: 'Gare Routière de Val Thorens (P1, 2300 m)', mode: 'station', alt: 2300, lat: 45.2977, lng: 6.5800, lines: ['Circuit Intervillage (Boucle Station)', 'Navette Parkings P3/P4/P5', 'Cars Région S12 (Moûtiers)', 'Départ 3 Vallées & Cime Caron'], color: '#ea580c' },
+  { id: 'stop-vt-montagnettes', name: 'Val Thorens - Les Montagnettes', mode: 'navette', alt: 2300, lat: 45.2966, lng: 6.5804, lines: ['Circuit Intervillage (Boucle Station)'], color: '#ea580c' },
+  { id: 'stop-vt-montana', name: 'Val Thorens - Le Montana', mode: 'navette', alt: 2310, lat: 45.2968, lng: 6.5791, lines: ['Circuit Intervillage (Boucle Station)'], color: '#ea580c' },
+  { id: 'stop-vt-temples', name: 'Val Thorens - Les Temples du Soleil', mode: 'navette', alt: 2315, lat: 45.2970, lng: 6.5775, lines: ['Circuit Intervillage (Boucle Station)'], color: '#ea580c' },
+  { id: 'stop-vt-p2', name: 'Val Thorens - Parking P2', mode: 'navette', alt: 2320, lat: 45.2980, lng: 6.5761, lines: ['Circuit Intervillage (Boucle Station)', 'Navette Parkings P3/P4/P5'], color: '#ea580c' },
+  { id: 'stop-vt-cairn', name: 'Val Thorens - Le Cairn', mode: 'navette', alt: 2320, lat: 45.2987, lng: 6.5779, lines: ['Circuit Intervillage (Boucle Station)', 'Navette Parkings P3/P4/P5'], color: '#ea580c' },
+  { id: 'stop-vt-arolles', name: 'Val Thorens - Les Arolles', mode: 'navette', alt: 2310, lat: 45.2980, lng: 6.5789, lines: ['Circuit Intervillage (Boucle Station)', 'Navette Parkings P3/P4/P5'], color: '#ea580c' },
+  { id: 'stop-vt-maison', name: 'Val Thorens - Maison de Val Thorens (Office de Tourisme)', mode: 'navette', alt: 2320, lat: 45.2986, lng: 6.5820, lines: ['Circuit Intervillage (Boucle Station)'], color: '#ea580c' },
+  { id: 'stop-vt-eglise', name: 'Val Thorens - Église', mode: 'navette', alt: 2330, lat: 45.2981, lng: 6.5834, lines: ['Circuit Intervillage (Boucle Station)'], color: '#ea580c' },
+  { id: 'stop-vt-peclet', name: 'Val Thorens - Place Péclet (2350 m)', mode: 'navette', alt: 2350, lat: 45.2966, lng: 6.5843, lines: ['Circuit Intervillage (Boucle Station)'], color: '#ea580c' },
+  { id: 'stop-vt-neves', name: 'Val Thorens - Les Névés', mode: 'navette', alt: 2360, lat: 45.2978, lng: 6.5847, lines: ['Circuit Intervillage (Boucle Station)'], color: '#ea580c' },
+  { id: 'stop-vt-p0', name: 'Val Thorens - Parking P0 (2370 m)', mode: 'navette', alt: 2370, lat: 45.2992, lng: 6.5831, lines: ['Circuit Intervillage (Boucle Station)'], color: '#ea580c' },
+  { id: 'stop-vt-balcons', name: 'Val Thorens - Les Balcons (2380 m)', mode: 'navette', alt: 2380, lat: 45.2999, lng: 6.5792, lines: ['Circuit Intervillage (Boucle Station)'], color: '#ea580c' },
+  { id: 'stop-vt-p3', name: 'Val Thorens - Parking P3', mode: 'navette', alt: 2280, lat: 45.2974, lng: 6.5717, lines: ['Navette Parkings P3/P4/P5'], color: '#dc2626' },
+  { id: 'stop-vt-p4', name: 'Val Thorens - Parking P4 (UCPA)', mode: 'navette', alt: 2260, lat: 45.2998, lng: 6.5688, lines: ['Navette Parkings P3/P4/P5'], color: '#dc2626' },
+  { id: 'stop-vt-p5', name: 'Val Thorens - Parking P5 (Entrée Station 2250 m)', mode: 'navette', alt: 2250, lat: 45.3015, lng: 6.5662, lines: ['Navette Parkings P3/P4/P5'], color: '#dc2626' }
 ];
 
 async function main() {
@@ -3123,7 +3174,8 @@ async function main() {
           period: routeDef.period,
           stops: routeDef.stops,
           color: routeDef.color,
-          url: routeDef.url
+          url: routeDef.url,
+          timetable: routeDef.timetable || null
         },
         geometry: {
           type: 'LineString',
@@ -3149,7 +3201,8 @@ async function main() {
           period: routeDef.period,
           stops: routeDef.stops,
           color: routeDef.color,
-          url: routeDef.url
+          url: routeDef.url,
+          timetable: routeDef.timetable || null
         },
         geometry: {
           type: 'LineString',
@@ -3172,17 +3225,17 @@ async function main() {
       properties: {
         id: st.id,
         name: st.name,
-        ref: 'Gare / Pôle',
+        ref: st.ref || (st.mode === 'station' ? 'Gare / Pôle' : 'Arrêt Navette'),
         mode: st.mode,
-        operator: 'SNCF Gares & Connexions / Pôle Alpin',
-        network: 'Réseau Alpin',
+        operator: st.operator || (st.mode === 'navette' ? 'Val Thorens Mobilité' : 'SNCF Gares & Connexions / Pôle Alpin'),
+        network: st.network || (st.mode === 'navette' ? 'Navettes Val Thorens' : 'Réseau Alpin'),
         route: `Altitude : ${st.alt} m`,
-        frequency: 'Correspondances régionales et vallées',
-        period: 'Toute l\'année',
+        frequency: st.frequency || 'Correspondances régionales et vallées',
+        period: st.period || 'Toute l\'année',
         alt: st.alt,
         stops: st.lines || [],
-        color: '#3b82f6',
-        url: 'https://www.garesetconnexions.sncf'
+        color: st.color || (st.mode === 'navette' ? '#ea580c' : '#3b82f6'),
+        url: st.url || 'https://www.valthorens.com'
       },
       geometry: {
         type: 'Point',
