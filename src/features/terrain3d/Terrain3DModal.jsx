@@ -1,22 +1,27 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react'
-import Map, { NavigationControl, Marker } from 'react-map-gl/maplibre'
+import React, { useState, useRef, useEffect } from 'react'
 import * as maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
-import { X, RotateCw, Mountain, Compass, Maximize2, Minimize2, Eye } from 'lucide-react'
+import { X, RotateCw, Mountain, Compass, Maximize2, Minimize2, Loader2 } from 'lucide-react'
 import { typeInfo } from '../../lib/types.jsx'
 
 export default function Terrain3DModal({ point, onClose }) {
-  const mapRef = useRef(null)
+  const containerRef = useRef(null)
+  const mapInstanceRef = useRef(null)
+  const [loading, setLoading] = useState(true)
   const [isRotating, setIsRotating] = useState(false)
   const [exaggeration, setExaggeration] = useState(1.5)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const modalRef = useRef(null)
+  const animFrameRef = useRef(null)
 
   const { color, Icon, label } = typeInfo(point?.type)
 
-  // Style JSON MapLibre configuré avec Esri Satellite + MNT Terrarium AWS
-  const mapStyle = useMemo(
-    () => ({
+  // Initialisation unique de la carte MapLibre 3D
+  useEffect(() => {
+    if (!containerRef.current || !point) return
+
+    // Style MapLibre avec Imagerie Esri + Relief DEM Terrarium
+    const style = {
       version: 8,
       sources: {
         'esri-satellite': {
@@ -49,78 +54,105 @@ export default function Terrain3DModal({ point, onClose }) {
       ],
       terrain: {
         source: 'aws-terrarium-dem',
-        exaggeration: exaggeration,
+        exaggeration: 1.5,
       },
-    }),
-    [exaggeration]
-  )
+    }
+
+    const map = new maplibregl.Map({
+      container: containerRef.current,
+      style,
+      center: [point.lng, point.lat],
+      zoom: 14,
+      pitch: 70,
+      bearing: 45,
+      maxPitch: 85,
+      attributionControl: false,
+    })
+
+    mapInstanceRef.current = map
+
+    // Contrôles de navigation (inclinaison, boussole, zoom)
+    map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'bottom-right')
+
+    map.on('load', () => {
+      setLoading(false)
+      // Forcer l'application du relief au chargement
+      try {
+        map.setTerrain({ source: 'aws-terrarium-dem', exaggeration: 1.5 })
+      } catch (err) {
+        console.warn('setTerrain load error:', err)
+      }
+
+      // Création du marqueur HTML 3D personnalisé
+      const el = document.createElement('div')
+      el.className = 'group relative flex flex-col items-center cursor-pointer pointer-events-auto'
+      el.innerHTML = `
+        <div style="background: ${color}" class="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold text-white shadow-2xl border border-white/50 backdrop-blur-md">
+          <span>${point.nom || 'Point'}</span>
+          ${point.alt ? `<span class="opacity-80">(${point.alt}m)</span>` : ''}
+        </div>
+        <div style="background: ${color}" class="h-2 w-2 rotate-45 transform -mt-1 shadow-md border-r border-b border-white/40"></div>
+      `
+
+      new maplibregl.Marker({ element: el, anchor: 'bottom' })
+        .setLngLat([point.lng, point.lat])
+        .addTo(map)
+    })
+
+    return () => {
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current)
+      map.remove()
+      mapInstanceRef.current = null
+    }
+  }, [point, color])
+
+  // Ajustement dynamique de l'exagération du relief sans recharger la carte
+  const handleExaggerationChange = (val) => {
+    setExaggeration(val)
+    const map = mapInstanceRef.current
+    if (map) {
+      try {
+        map.setTerrain({ source: 'aws-terrarium-dem', exaggeration: val })
+      } catch (err) {
+        console.warn('setTerrain change error:', err)
+      }
+    }
+  }
+
+  // Animation de rotation 360° fluide
+  useEffect(() => {
+    const rotate = () => {
+      const map = mapInstanceRef.current
+      if (!isRotating || !map) return
+      const currentBearing = map.getBearing()
+      map.setBearing((currentBearing + 0.3) % 360)
+      animFrameRef.current = requestAnimationFrame(rotate)
+    }
+
+    if (isRotating) {
+      animFrameRef.current = requestAnimationFrame(rotate)
+    } else if (animFrameRef.current) {
+      cancelAnimationFrame(animFrameRef.current)
+    }
+
+    return () => {
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current)
+    }
+  }, [isRotating])
 
   // Gestion de la touche Échap
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape') {
-        onClose()
-      }
+      if (e.key === 'Escape') onClose()
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [onClose])
 
-  // Mise à jour explicite du terrain lors du changement d'exagération
-  useEffect(() => {
-    if (mapRef.current) {
-      const map = mapRef.current.getMap()
-      if (map && map.loaded()) {
-        try {
-          map.setTerrain({ source: 'aws-terrarium-dem', exaggeration })
-        } catch (e) {
-          console.warn('MapLibre setTerrain error:', e)
-        }
-      }
-    }
-  }, [exaggeration])
-
-  const handleMapLoad = useCallback((evt) => {
-    const map = evt.target
-    try {
-      map.setTerrain({ source: 'aws-terrarium-dem', exaggeration })
-    } catch (e) {
-      console.warn('Error applying 3D terrain on load:', e)
-    }
-  }, [exaggeration])
-
-  // Animation de rotation automatique fluide autour du sommet/refuge
-  useEffect(() => {
-    let animFrame
-    const rotateCamera = () => {
-      if (!isRotating || !mapRef.current) return
-      const map = mapRef.current.getMap()
-      const currentBearing = map.getBearing()
-      map.setBearing((currentBearing + 0.35) % 360)
-      animFrame = requestAnimationFrame(rotateCamera)
-    }
-
-    if (isRotating) {
-      animFrame = requestAnimationFrame(rotateCamera)
-    }
-    return () => cancelAnimationFrame(animFrame)
-  }, [isRotating])
-
-  // Bascule Plein écran
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      modalRef.current?.requestFullscreen?.().catch(() => {})
-      setIsFullscreen(true)
-    } else {
-      document.exitFullscreen?.().catch(() => {})
-      setIsFullscreen(false)
-    }
-  }
-
-  // Réinitialiser la vue
+  // Recentrer la vue
   const resetCamera = () => {
-    if (!mapRef.current) return
-    const map = mapRef.current.getMap()
+    const map = mapInstanceRef.current
+    if (!map) return
     map.flyTo({
       center: [point.lng, point.lat],
       zoom: 14,
@@ -131,17 +163,28 @@ export default function Terrain3DModal({ point, onClose }) {
     })
   }
 
+  // Bascule plein écran
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      modalRef.current?.requestFullscreen?.().catch(() => {})
+      setIsFullscreen(true)
+    } else {
+      document.exitFullscreen?.().catch(() => {})
+      setIsFullscreen(false)
+    }
+  }
+
   if (!point) return null
 
   return (
     <div
       ref={modalRef}
-      className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/80 backdrop-blur-md p-2 sm:p-4 animate-in fade-in duration-200"
+      className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/85 backdrop-blur-md p-2 sm:p-4 animate-in fade-in duration-200"
     >
-      <div className="relative flex h-full w-full max-w-6xl flex-col overflow-hidden rounded-3xl border border-white/15 bg-neutral-900/90 shadow-2xl backdrop-blur-2xl">
+      <div className="relative flex h-full w-full max-w-6xl flex-col overflow-hidden rounded-3xl border border-white/15 bg-neutral-950 shadow-2xl backdrop-blur-2xl">
         {/* ─── Header de la modale ─── */}
         <header className="absolute left-4 right-4 top-4 z-20 flex items-center justify-between pointer-events-none">
-          <div className="pointer-events-auto glass flex items-center gap-3 rounded-2xl px-4 py-2.5 shadow-2xl backdrop-blur-xl">
+          <div className="pointer-events-auto glass flex items-center gap-3 rounded-2xl px-4 py-2.5 shadow-2xl backdrop-blur-xl bg-black/50 border border-white/10">
             <span
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl shadow-md"
               style={{ background: color }}
@@ -154,7 +197,7 @@ export default function Terrain3DModal({ point, onClose }) {
                   {point.nom || 'Point 3D'}
                 </h2>
                 <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-semibold text-emerald-300 border border-emerald-500/30">
-                  Vue 3D
+                  Vue 3D Relief
                 </span>
               </div>
               <p className="text-xs text-white/70">
@@ -163,87 +206,48 @@ export default function Terrain3DModal({ point, onClose }) {
             </div>
           </div>
 
-          {/* Boutons d'actions en haut à droite */}
+          {/* Actions : Plein écran & Fermer */}
           <div className="pointer-events-auto flex items-center gap-2">
             <button
               onClick={toggleFullscreen}
               title="Plein écran"
-              className="glass-btn rounded-xl p-2.5 text-white/80 hover:text-white bg-black/40 backdrop-blur-xl border border-white/10"
+              className="glass-btn rounded-xl p-2.5 text-white/80 hover:text-white bg-black/50 backdrop-blur-xl border border-white/10"
             >
               {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
             </button>
             <button
               onClick={onClose}
               title="Fermer (Échap)"
-              className="glass-btn rounded-xl p-2.5 text-white hover:bg-red-500/30 hover:border-red-400/40 bg-black/40 backdrop-blur-xl border border-white/10 transition-colors"
+              className="glass-btn rounded-xl p-2.5 text-white hover:bg-red-500/30 hover:border-red-400/40 bg-black/50 backdrop-blur-xl border border-white/10 transition-colors"
             >
               <X size={18} />
             </button>
           </div>
         </header>
 
-        {/* ─── Carte 3D MapLibre ─── */}
-        <div className="relative h-full w-full">
-          <Map
-            ref={mapRef}
-            mapLib={maplibregl}
-            initialViewState={{
-              longitude: point.lng,
-              latitude: point.lat,
-              zoom: 14,
-              pitch: 70,
-              bearing: 45,
-            }}
-            maxPitch={85}
-            mapStyle={mapStyle}
-            terrain={{ source: 'aws-terrarium-dem', exaggeration }}
-            onLoad={handleMapLoad}
-            style={{ width: '100%', height: '100%' }}
-            attributionControl={false}
-          >
-            <NavigationControl position="bottom-right" visualizePitch />
+        {/* ─── Conteneur MapLibre WebGL ─── */}
+        <div className="relative h-full w-full bg-neutral-950">
+          <div ref={containerRef} className="h-full w-full" />
 
-            {/* Marqueur 3D épinglé sur le relief */}
-            <Marker
-              longitude={point.lng}
-              latitude={point.lat}
-              anchor="bottom"
-            >
-              <div className="group relative flex flex-col items-center cursor-pointer">
-                {/* Badge étiquette */}
-                <div
-                  className="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold text-white shadow-xl backdrop-blur-md border border-white/40 transform transition hover:scale-105"
-                  style={{ background: color }}
-                >
-                  <Icon size={12} />
-                  <span>{point.nom}</span>
-                  {point.alt && <span className="opacity-80">({point.alt}m)</span>}
-                </div>
-                {/* Flèche d'ancrage */}
-                <div
-                  className="h-2 w-2 rotate-45 transform -mt-1 shadow-md border-r border-b border-white/30"
-                  style={{ background: color }}
-                />
-                {/* Impulsion visuelle */}
-                <span
-                  className="absolute -bottom-1 h-3 w-3 animate-ping rounded-full opacity-60"
-                  style={{ background: color }}
-                />
-              </div>
-            </Marker>
-          </Map>
+          {loading && (
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-neutral-950/80 backdrop-blur-sm">
+              <Loader2 size={32} className="animate-spin text-emerald-400" />
+              <div className="text-sm font-semibold text-white/90">Génération du relief 3D…</div>
+              <div className="text-xs text-white/50">Chargement des données d'élévation MNT Terrarium</div>
+            </div>
+          )}
         </div>
 
         {/* ─── Barre de commandes 3D en bas ─── */}
         <footer className="absolute bottom-4 left-4 z-20 flex flex-wrap items-center gap-2 pointer-events-none">
-          <div className="pointer-events-auto glass flex items-center gap-1.5 rounded-2xl p-1.5 shadow-2xl backdrop-blur-xl bg-black/50 border border-white/10">
+          <div className="pointer-events-auto glass flex items-center gap-1.5 rounded-2xl p-1.5 shadow-2xl backdrop-blur-xl bg-black/60 border border-white/10">
             {/* Bouton Orbite / Rotation */}
             <button
               onClick={() => setIsRotating((r) => !r)}
               title={isRotating ? 'Arrêter la rotation 360°' : 'Démarrer la rotation panoramique 360°'}
               className={`glass-btn flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-medium transition-all ${
                 isRotating
-                  ? 'border border-amber-400/60 bg-amber-500/35 text-amber-200 ring-1 ring-amber-400/30'
+                  ? 'border border-amber-400/60 bg-amber-500/35 text-amber-200 ring-1 ring-amber-400/30 font-semibold'
                   : 'bg-white/10 text-white/80 hover:text-white'
               }`}
             >
@@ -251,7 +255,7 @@ export default function Terrain3DModal({ point, onClose }) {
               <span>{isRotating ? 'Pause rotation' : 'Rotation 360°'}</span>
             </button>
 
-            {/* Bouton Réinitialiser la vue */}
+            {/* Bouton Recentrer */}
             <button
               onClick={resetCamera}
               title="Recentrer et réinitialiser l'angle de vue"
@@ -267,13 +271,13 @@ export default function Terrain3DModal({ point, onClose }) {
             <div className="flex items-center gap-1 text-[11px] text-white/70 px-1">
               <Mountain size={12} className="text-white/60" />
               <span className="hidden md:inline">Relief :</span>
-              {[1.0, 1.5, 2.0].map((val) => (
+              {[1.0, 1.5, 2.0, 2.5].map((val) => (
                 <button
                   key={val}
-                  onClick={() => setExaggeration(val)}
+                  onClick={() => handleExaggerationChange(val)}
                   className={`rounded-lg px-2 py-0.5 text-xs font-medium transition-colors ${
                     exaggeration === val
-                      ? 'bg-white/25 text-white font-bold'
+                      ? 'bg-white/25 text-white font-bold ring-1 ring-white/20'
                       : 'text-white/50 hover:text-white hover:bg-white/10'
                   }`}
                 >
