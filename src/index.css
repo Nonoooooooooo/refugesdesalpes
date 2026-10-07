@@ -27,15 +27,40 @@ html, body, #root {
 .glass-panel header { background: rgba(15, 23, 20, 0.95) !important; backdrop-filter: none !important; }
 
 .leaflet-control-layers {
-  background: rgba(15, 23, 20, 0.55) !important;
+  background: rgba(15, 23, 20, 0.75) !important;
   backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
   border-radius: 16px !important;
-  color: #fff;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35) !important;
-  font-size: 13px;
+  color: #fff !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45) !important;
+  font-size: 13px !important;
+  font-family: inherit !important;
 }
-.leaflet-control-layers-expanded { padding: 8px 12px !important; }
+.leaflet-control-layers-toggle {
+  background-size: 20px 20px !important;
+}
+.leaflet-control-layers-expanded {
+  padding: 10px 14px !important;
+  background: rgba(15, 23, 20, 0.88) !important;
+}
+.leaflet-control-layers-separator {
+  border-top-color: rgba(255, 255, 255, 0.15) !important;
+  margin: 6px 0 !important;
+}
+.leaflet-control-layers label {
+  color: #fff !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  cursor: pointer;
+  margin-bottom: 3px !important;
+}
+.leaflet-control-layers input[type="radio"],
+.leaflet-control-layers input[type="checkbox"] {
+  accent-color: #10b981;
+  cursor: pointer;
+}
 
 .glass-btn {
   transition: background 0.2s, transform 0.15s;
