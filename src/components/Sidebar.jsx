@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { X, Loader2, TriangleAlert, Mountain, BedDouble, ExternalLink, RefreshCw, MessageSquare } from 'lucide-react'
 import { fetchPoint } from '../lib/api'
 import { fetchCommonsPhotos } from '../lib/wikimedia'
+import { fetchGooglePlacesPhotos } from '../lib/google-places'
 import { dedupePhotos } from '../lib/dedupe'
 import { typeInfo } from '../lib/types.jsx'
 import { cleanText } from '../lib/text'
@@ -17,9 +18,13 @@ export default function Sidebar({ point, onClose }) {
 
     async function loadData() {
       try {
-        const [pointDetails, wikiPhotos] = await Promise.all([
+        const [pointDetails, wikiPhotos, googlePhotos] = await Promise.all([
           fetchPoint(point.id, ctrl.signal),
           fetchCommonsPhotos(point.lat, point.lng, ctrl.signal, 300).catch((e) => {
+            if (ctrl.signal.aborted) throw e
+            return []
+          }),
+          fetchGooglePlacesPhotos(point.nom, point.lat, point.lng, ctrl.signal).catch((e) => {
             if (ctrl.signal.aborted) throw e
             return []
           }),
@@ -27,8 +32,12 @@ export default function Sidebar({ point, onClose }) {
 
         if (ctrl.signal.aborted) return
 
-        // Dédoublonnage exact + perceptuel (dHash)
-        const mergedPhotos = await dedupePhotos([...pointDetails.photos, ...wikiPhotos])
+        // Dédoublonnage exact + perceptuel (dHash) entre Refuges, Wikimedia et Google Maps
+        const mergedPhotos = await dedupePhotos([
+          ...pointDetails.photos,
+          ...wikiPhotos,
+          ...googlePhotos,
+        ])
         pointDetails.photos = mergedPhotos
 
         setState({ loading: false, error: null, data: pointDetails })

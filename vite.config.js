@@ -1,19 +1,52 @@
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
+import placesHandler from './api/places-photos.js'
 
 // https://vite.dev/config/
-export default defineConfig({
-  plugins: [react(), tailwindcss()],
-  server: {
-    // Proxy same-origin des images Refuges.info (pas de CORS côté source) pour le hash perceptuel.
-    // En production, voir vercel.json.
-    proxy: {
-      '/rimg': {
-        target: 'https://www.refuges.info',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/rimg/, ''),
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '')
+  process.env.GOOGLE_PLACES_API_KEY = env.GOOGLE_PLACES_API_KEY || process.env.GOOGLE_PLACES_API_KEY
+
+  return {
+    plugins: [
+      react(),
+      tailwindcss(),
+      {
+        name: 'dev-api-middleware',
+        configureServer(server) {
+          server.middlewares.use('/api/places-photos', async (req, res) => {
+            const parsedUrl = new URL(req.url, 'http://localhost')
+            const query = Object.fromEntries(parsedUrl.searchParams)
+            const fakeReq = { query }
+            const fakeRes = {
+              status(code) {
+                res.statusCode = code
+                return this
+              },
+              json(data) {
+                res.setHeader('Content-Type', 'application/json')
+                res.end(JSON.stringify(data))
+              },
+            }
+            try {
+              await placesHandler(fakeReq, fakeRes)
+            } catch (err) {
+              res.statusCode = 500
+              res.end(JSON.stringify({ error: err.message }))
+            }
+          })
+        },
+      },
+    ],
+    server: {
+      proxy: {
+        '/rimg': {
+          target: 'https://www.refuges.info',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/rimg/, ''),
+        },
       },
     },
-  },
+  }
 })
