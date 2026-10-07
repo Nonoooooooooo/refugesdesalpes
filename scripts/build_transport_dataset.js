@@ -509,6 +509,58 @@ const BUS_ROUTES = [
     url: 'https://www.vanoise-parcnational.fr',
     coords: '6.7210,45.3800;6.7180,45.3520;6.7120,45.3340'
   },
+  {
+    id: 'navette-val-thorens-intervillage',
+    ref: 'Val Thorens Intervillage',
+    name: 'Navette Val Thorens : Circuit Intervillage (Boucle Station)',
+    mode: 'navette',
+    operator: 'Val Thorens Mobilité / SOGEVAB',
+    network: 'Navettes Val Thorens',
+    route: 'Gare Routière (P1) ↔ Les Montagnettes ↔ Montana ↔ Les Temples du Soleil ↔ Cairn ↔ Maison de Val Thorens ↔ Église ↔ Place Péclet ↔ Les Névés ↔ P0 ↔ Les Balcons ↔ Gare Routière',
+    frequency: 'Un bus toutes les 20 min de 6h15 à 22h00 (renfort toutes les 10 min en journée)',
+    period: 'Circule du 22 novembre 2025 au 3 mai 2026 (Service gratuit pour tous)',
+    stops: [
+      'Gare Routière (P1)',
+      'Les Montagnettes',
+      'Montana',
+      'Les Temples du Soleil',
+      'Parking P2',
+      'Cairn',
+      'Arolles',
+      'Maison de Val Thorens (Office de Tourisme)',
+      'Église de Val Thorens',
+      'Place Péclet (2350 m)',
+      'Les Névés',
+      'Parking P0',
+      'Les Balcons (2380 m)'
+    ],
+    color: '#ea580c',
+    url: 'https://www.valthorens.com',
+    coords: '6.57997,45.29768;6.58044,45.29656;6.57910,45.29678;6.57750,45.29697;6.57611,45.29799;6.57792,45.29869;6.57885,45.29800;6.57997,45.29768;6.58200,45.29859;6.58343,45.29808;6.58426,45.29663;6.58474,45.29777;6.58310,45.29919;6.57917,45.29992;6.57997,45.29768'
+  },
+  {
+    id: 'navette-val-thorens-p3-p4-p5',
+    ref: 'Navette P3 / P4 / P5',
+    name: 'Navette Val Thorens : Parkings P3 / P4 / P5 ↔ Gare Routière',
+    mode: 'navette',
+    operator: 'Val Thorens Mobilité / SOGEVAB',
+    network: 'Navettes Val Thorens',
+    route: 'Gare Routière (P1) ↔ Arolles ↔ Cairn ↔ Parking P2 ↔ Parking P3 ↔ Parking P4 (UCPA) ↔ Parking P5',
+    frequency: 'Liaison continue régulière toute la journée en boucle',
+    period: 'Circule du 22 novembre 2025 au 3 mai 2026 (Service gratuit d\'accès parkings)',
+    stops: [
+      'Gare Routière (P1, 2300 m)',
+      'Arolles',
+      'Cairn',
+      'Parking P2',
+      'Parking P3',
+      'Parking P4 (UCPA)',
+      'Parking P5 (Entrée station 2250 m)'
+    ],
+    color: '#dc2626',
+    url: 'https://www.valthorens.com',
+    coords: '6.57997,45.29768;6.57885,45.29800;6.57792,45.29869;6.57611,45.29799;6.57171,45.29736;6.56876,45.29979;6.56620,45.30150'
+  },
 
   // ═══════════════════════════════════════════════════════
   // ISÈRE : OISANS & GRÉSIVAUDAN (CARS RÉGION 2025-2026)
@@ -2618,7 +2670,8 @@ const STATIONS = [
   { id: 'hub-pralognan', name: 'Pôle Navettes Pralognan-la-Vanoise', mode: 'station', alt: 1410, lat: 45.3800, lng: 6.7210, lines: ['Navette Parc Vanoise Les Prioux', 'Départ refuges Félix Faure, Péclet-Polset, Roc de la Pêche'] },
   { id: 'hub-berarde', name: 'Pôle Navettes La Bérarde (Écrins)', mode: 'station', alt: 1727, lat: 44.9330, lng: 6.2940, lines: ['Navette Oisans Saint-Christophe / Bourg-d\'Oisans', 'Départ refuges Promontoire, Châtelleret, Carrelet'] },
   { id: 'hub-gioberney', name: 'Pôle Navettes Gioberney (Valgaudemar)', mode: 'station', alt: 1640, lat: 44.7680, lng: 6.2750, lines: ['Navette Valgaudemar', 'Départ refuges Xavier Blanc & Vallonpierre'] },
-  { id: 'hub-notre-dame-gorge', name: 'Pôle Navettes Notre-Dame de la Gorge', mode: 'station', alt: 1210, lat: 45.7870, lng: 6.7130, lines: ['Navette Les Contamines', 'Départ Tour du Mont-Blanc & refuge Nant Borrant'] }
+  { id: 'hub-notre-dame-gorge', name: 'Pôle Navettes Notre-Dame de la Gorge', mode: 'station', alt: 1210, lat: 45.7870, lng: 6.7130, lines: ['Navette Les Contamines', 'Départ Tour du Mont-Blanc & refuge Nant Borrant'] },
+  { id: 'hub-val-thorens', name: 'Gare Routière de Val Thorens (2300 m)', mode: 'station', alt: 2300, lat: 45.2977, lng: 6.5800, lines: ['Cars Région S12 (Moûtiers)', 'Navette Intervillage Val Thorens', 'Navette Parkings P3/P4/P5', 'Départ 3 Vallées & Cime Caron'] }
 ];
 
 async function main() {
