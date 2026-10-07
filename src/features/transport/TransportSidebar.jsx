@@ -59,15 +59,18 @@ function getModeInfo(mode) {
 export default function TransportSidebar({ transport, onClose }) {
   if (!transport) return null;
 
-  const { label, Icon, color } = getModeInfo(transport.mode);
+  const modeInfo = getModeInfo(transport.mode);
+  const { label, Icon } = modeInfo;
+  // Utiliser la couleur exacte du trait de la ligne en priorité pour une parfaite harmonie visuelle
+  const displayColor = transport.color || modeInfo.color;
 
   return (
     <aside className="sidebar-enter glass glass-panel scroll-thin absolute bottom-0 left-0 top-0 z-[1100] flex w-full flex-col overflow-y-auto sm:bottom-4 sm:left-4 sm:top-4 sm:w-[420px] sm:rounded-3xl">
       {/* Header */}
       <header className="sticky top-0 z-10 flex items-start gap-3 border-b border-white/10 bg-black/40 p-5 backdrop-blur-xl">
         <span
-          className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl shadow-lg ring-1 ring-white/20"
-          style={{ background: color }}
+          className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl shadow-lg ring-1 ring-white/20 transition-colors"
+          style={{ background: displayColor }}
         >
           <Icon size={22} className="text-white drop-shadow" />
         </span>
@@ -154,13 +157,13 @@ export default function TransportSidebar({ transport, onClose }) {
                 {/* Ligne verticale de la timeline */}
                 <div
                   className="absolute bottom-2 left-[17px] top-2 w-[2px] rounded-full opacity-30"
-                  style={{ background: color }}
+                  style={{ background: displayColor }}
                 />
                 {transport.stops.map((stop, idx) => (
                   <li key={idx} className="relative flex items-center gap-3">
                     <span
                       className="relative z-10 flex h-2.5 w-2.5 shrink-0 rounded-full ring-2 ring-black/40"
-                      style={{ background: color }}
+                      style={{ background: displayColor }}
                     />
                     <span className="text-xs font-medium text-white/90">{stop}</span>
                   </li>

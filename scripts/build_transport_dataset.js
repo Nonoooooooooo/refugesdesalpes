@@ -229,35 +229,292 @@ const BUS_ROUTES = [
     url: 'https://www.laregionvoustransporte.fr',
     coords: '6.7700,45.6180;6.8040,45.5780;6.8280,45.5640;6.8520,45.5730'
   },
+  // ═════════════════════════════════════════════════════════════════════════
+  // RÉSEAU OFFICIEL HAUTE MAURIENNE VANOISE (HMV - ÉTÉ 2026 & HIVER 2025-2026)
+  // ═════════════════════════════════════════════════════════════════════════
   {
-    id: 'bus-s52',
-    ref: 'S52',
-    name: 'Ligne S52 : Modane ↔ Aussois ↔ La Norma',
+    id: 'hmv-s52-s53',
+    ref: 'S52 / S53',
+    name: 'Lignes S52-S53 : Modane ↔ Aussois ↔ Val Cenis ↔ Bessans ↔ Bonneval-sur-Arc',
     mode: 'bus',
-    operator: 'Cars Région Savoie',
-    network: 'Cars Région',
-    route: 'Modane ↔ Fourneaux ↔ Villarodin-Bourget ↔ Aussois / La Norma',
-    frequency: 'Quotidien',
-    period: 'Toute l\'année',
-    stops: ['Modane Gare TGV', 'Fourneaux', 'Villarodin', 'Aussois Village (Accès Portes de Vanoise)', 'La Norma'],
-    color: '#10b981',
-    url: 'https://www.laregionvoustransporte.fr',
-    coords: '6.6710,45.2020;6.6970,45.2150;6.7410,45.2310'
+    operator: 'Cars Région Savoie / Haute Maurienne Vanoise',
+    network: 'Haute Maurienne Vanoise',
+    route: 'Modane Gare Routière / SNCF ↔ Villarodin ↔ Aussois ↔ Bramans ↔ Sardières ↔ Sollières ↔ Termignon ↔ Lanslebourg ↔ Lanslevillard ↔ Bessans ↔ Bonneval-sur-Arc',
+    frequency: 'Tous les jours en été & hiver (nombreux allers-retours, transport vélo sur porte-vélo 6 places)',
+    period: 'Toute l\'année (Été 2026 : du 20 juin au 5 sept. / Hiver : du 13 déc. au 25 avril)',
+    stops: [
+      'Modane Gare routière (SNCF / TGV)',
+      'Modane Ville',
+      'Villarodin RD1006',
+      'Le Bourget Rocher des Amoureux',
+      'Aussois (La Buidonnière, Longecôte, Centre, Maison d\'Aussois OT)',
+      'Bramans (Les Glières, Petit Paris, Lenfrey)',
+      'Sardières Église',
+      'Sollières Mairie / Les Favières',
+      'Termignon Maison Vanoise (Porte du Parc)',
+      'Val Cenis Lanslebourg (Églises, Auditorium, Pont du Folgoët, Les Champs)',
+      'Val Cenis Lanslevillard (TC Vieux Moulin, Pont abribus OT, Val Cenis Le Haut)',
+      'Bessans (Camping de l\'Illaz, Placette, Mairie, Hameau de la Neige, La Bessannaise, Le Villaron)',
+      'Bonneval-sur-Arc Village',
+      'Bonneval-sur-Arc Patinoire (1800 m)'
+    ],
+    color: '#f59e0b',
+    url: 'https://www.haute-maurienne-vanoise.com',
+    coords: '6.6710,45.2020;6.6970,45.2150;6.7410,45.2310;6.7820,45.2280;6.8150,45.2790;6.8830,45.2850;6.9100,45.2950;6.9940,45.3210;7.0470,45.3710'
   },
   {
-    id: 'bus-s53',
-    ref: 'S53',
-    name: 'Ligne S53 : Modane ↔ Val Cenis ↔ Bonneval-sur-Arc',
-    mode: 'bus',
-    operator: 'Cars Région Savoie',
-    network: 'Cars Région',
-    route: 'Modane ↔ Bramans ↔ Termignon ↔ Lanslebourg ↔ Val Cenis ↔ Bessans ↔ Bonneval-sur-Arc',
-    frequency: 'Plusieurs liaisons par jour (Accès Parc National de la Vanoise)',
-    period: 'Toute l\'année',
-    stops: ['Modane Gare', 'Bramans', 'Termignon', 'Lanslebourg', 'Bessans', 'Bonneval-sur-Arc (Départ refuges Carro, Évettes)'],
+    id: 'hmv-ligne-1',
+    ref: 'Ligne 1 HMV',
+    name: 'Ligne 1 HMV : Orgère (Porte du Parc) ↔ Modane ↔ Valfréjus / La Norma',
+    mode: 'navette',
+    operator: 'Communauté de Communes Haute Maurienne Vanoise',
+    network: 'Haute Maurienne Vanoise',
+    route: 'Refuge-Porte de l\'Orgère (1935 m) ↔ Polset ↔ Saint-André ↔ Fourneaux ↔ Modane Gare Routière ↔ Valfréjus Office de Tourisme / La Norma',
+    frequency: 'Tous les jours en été (1er juillet au 31 août, 4 à 5 départs/jour)',
+    period: 'Été (1er juillet au 31 août 2026 - Accès cœur Parc national de la Vanoise & Refuge de l\'Orgère)',
+    stops: [
+      'Refuge-Porte de l\'Orgère (1935 m, Cœur de Parc, départ sentier nature & Tour des Glaciers)',
+      'Polset (Hameau d\'alpage)',
+      'Saint-André (Hameau du Col, Église / Parking aval)',
+      'Fourneaux (Pont du Charmaix)',
+      'Modane Gare Routière (Correspondance SNCF & Lignes S52/S53)',
+      'Modane (Hôtel de Ville, Collège, Loutraz)',
+      'Le Bourget (Rocher des Amoureux, Lot. St-Bernard, Mairie)',
+      'Avrieux Centre (Sentier de l\'Eau, cascade Saint-Benoît)',
+      'Villarodin Abribus',
+      'La Norma Rond-point (Station de ski piétonne)',
+      'Valfréjus Office de Tourisme (1550 m, départ Refuge du Thabor & Col de la Vallée Étroite)'
+    ],
+    color: '#db2777',
+    url: 'https://www.haute-maurienne-vanoise.com',
+    coords: '6.6780,45.2280;6.6850,45.2180;6.6870,45.2080;6.6710,45.2020;6.6430,45.1740;6.6970,45.2150'
+  },
+  {
+    id: 'hmv-ligne-2',
+    ref: 'Ligne 2 HMV',
+    name: 'Ligne 2 HMV : Val Cenis Bramans ↔ Termignon ↔ Bellecombe ↔ Entre-Deux-Eaux',
+    mode: 'navette',
+    operator: 'Parc National de la Vanoise / Haute Maurienne Vanoise',
+    network: 'Haute Maurienne Vanoise',
+    route: 'Bramans ↔ Sollières ↔ Termignon ↔ Le Coëtet ↔ Bellecombe (Parking) ↔ Plan du Lac (Refuge) ↔ Plume Fine ↔ Entre-Deux-Eaux (Refuge)',
+    frequency: 'Tous les jours en été du 28 juin au 4 sept. (Jusqu\'à 11 rotations/jour, navette gratuite de Termignon à Bellecombe)',
+    period: 'Été (Du 28 juin au 4 septembre 2026 - Accès Porte du Parc de Bellecombe 2307 m & Refuges)',
+    stops: [
+      'Bramans (Les Glières, Petit Paris, Lenfrey)',
+      'Sollières (Les Favières)',
+      'Termignon (Sherpa, Parking / Pied de pistes, Porte d\'entrée du Parc)',
+      'Le Coëtet (1900 m)',
+      'Bellecombe Parking (2307 m, Porte d\'entrée du Parc national de la Vanoise)',
+      'Refuge du Plan du Lac (2385 m, vue panoramique Dent Parrachée & Grande Casse)',
+      'Plume Fine (Vallon de la Leisse)',
+      'Refuge d\'Entre-Deux-Eaux (2120 m, carrefour GR5, Tour des Glaciers de la Vanoise)'
+    ],
+    color: '#84cc16',
+    url: 'https://www.haute-maurienne-vanoise.com',
+    coords: '6.7820,45.2280;6.8150,45.2790;6.8350,45.3010;6.8470,45.3220;6.8720,45.3340;6.8920,45.3480'
+  },
+  {
+    id: 'hmv-ligne-3',
+    ref: 'Ligne 3 HMV',
+    name: 'Ligne 3 HMV : Oulietta ↔ Bonneval-sur-Arc ↔ Bessans ↔ Avérole',
+    mode: 'navette',
+    operator: 'Communauté de Communes Haute Maurienne Vanoise',
+    network: 'Haute Maurienne Vanoise',
+    route: 'Parking Pont de l\'Oulietta (2476 m) ↔ Bonneval-sur-Arc ↔ Bessans ↔ La Goulaz ↔ Parking des Vincendières ↔ Hameau d\'Avérole (Refuge)',
+    frequency: 'Tous les jours sauf samedis du 1er juillet au 31 août (6 à 8 rotations/jour, correspondance S52/S53)',
+    period: 'Été (Du 1er juillet au 31 août 2026 - Accès Sentier Balcon de l\'Iseran & Vallée d\'Avérole)',
+    stops: [
+      'Parking Pont de l\'Oulietta (2476 m, départ sentier Balcon de l\'Iseran vers le Carro)',
+      'Bonneval-sur-Arc (Patinoire, Village classé)',
+      'Bessans (Le Villaron, La Bessannaise biathlon, Hameau de la Neige, Mairie, Placette)',
+      'La Goulaz',
+      'Parking des Vincendières (1815 m, début de zone réglementée)',
+      'Hameau d\'Avérole (2040 m, départ Refuge d\'Avérole, Pointe de Charbonnel, frontière Italie)'
+    ],
+    color: '#ef4444',
+    url: 'https://www.haute-maurienne-vanoise.com',
+    coords: '7.0310,45.4170;7.0470,45.3710;6.9940,45.3210;7.0450,45.3090;7.0850,45.2950'
+  },
+  {
+    id: 'hmv-ligne-4',
+    ref: 'Ligne 4 HMV',
+    name: 'Ligne 4 HMV : Bonneval-sur-Arc ↔ Hameau de L’Écot',
+    mode: 'navette',
+    operator: 'Communauté de Communes Haute Maurienne Vanoise',
+    network: 'Haute Maurienne Vanoise',
+    route: 'Bonneval-sur-Arc Patinoire ↔ Parking Pierre Fendue ↔ Hameau préservé de L’Écot (2020 m)',
+    frequency: 'Tous les jours sauf samedis du 5 juillet au 28 août (9 allers-retours quotidiens)',
+    period: 'Été (Du 5 juillet au 28 août 2026 - Accès Refuges des Évettes & du Carro)',
+    stops: [
+      'Bonneval-sur-Arc Patinoire (1800 m)',
+      'Parking de la Pierre Fendue',
+      'Hameau de L’Écot (2020 m, chapelle Sainte-Marguerite, départ sentier Refuge des Évettes & Refuge du Carro)'
+    ],
     color: '#10b981',
-    url: 'https://www.laregionvoustransporte.fr',
-    coords: '6.6710,45.2020;6.7820,45.2280;6.8830,45.2850;6.9940,45.3210;7.0470,45.3710'
+    url: 'https://www.haute-maurienne-vanoise.com',
+    coords: '7.0470,45.3710;7.0780,45.3780;7.1080,45.3850'
+  },
+  {
+    id: 'hmv-ligne-5',
+    ref: 'Ligne 5 HMV',
+    name: 'Ligne 5 Transalpine HMV : Val Cenis Lanslebourg ↔ Mont-Cenis ↔ Suse (Italie)',
+    mode: 'bus',
+    operator: 'Haute Maurienne Vanoise / Interreg Alcotra',
+    network: 'Haute Maurienne Vanoise',
+    route: 'Val Cenis Lanslebourg (Auditorium) ↔ Col du Mont-Cenis (2083 m) ↔ Lac du Mont-Cenis / Plan des Fontainettes ↔ Grand Croix ↔ Bar Cenisio ↔ Giaglione ↔ Susa Gare Routière / Trenitalia (Italie)',
+    frequency: 'Samedis et dimanches jusqu\'au 27 septembre (3 allers-retours/jour, transport vélo gratuit sur réservation)',
+    period: 'Été (Jusqu\'au 27 septembre 2026 - Liaison transfrontalière France-Italie)',
+    stops: [
+      'Val Cenis Lanslebourg (Auditorium)',
+      'Col du Mont-Cenis (2083 m)',
+      'Plan des Fontainettes (Pyramide, Jardin Botanique, Lac du Mont-Cenis)',
+      'Parking Grand Croix / Hôtels',
+      'Bar Cenisio (Italie)',
+      'Giaglione (Italie)',
+      'Suse Gare Routière / Stazione di Susa (Italie, correspondances ferroviaires SFM vers Turin)'
+    ],
+    color: '#0284c7',
+    url: 'https://www.haute-maurienne-vanoise.com',
+    coords: '6.8830,45.2850;6.9010,45.2600;6.9380,45.2280;6.9630,45.2050;7.0090,45.1610;7.0510,45.1380'
+  },
+  {
+    id: 'hmv-ligne-902',
+    ref: 'Ligne 902',
+    name: 'Ligne 902 Transalpine : Modane ↔ Bardonecchia (Italie)',
+    mode: 'bus',
+    operator: 'Bellando Tours / Région Auvergne-Rhône-Alpes',
+    network: 'Liaison Transalpine HMV',
+    route: 'Modane Gare Routière / Ferroviaire (SNCF) ↔ Tunnel du Fréjus ↔ Bardonecchia Gare ferroviaire / FS (Italie)',
+    frequency: 'Lundi au samedi toute l\'année (7 allers-retours/jour, correspondance directe trains vers Turin Porta Nuova)',
+    period: 'Toute l\'année (Été & Hiver, 3.40 € - 3.70 € l\'aller)',
+    stops: [
+      'Modane Gare ferroviaire / Routière (France)',
+      'Tunnel du Fréjus',
+      'Bardonecchia Gare ferroviaire (Italie, 7 correspondances directes en train quotidien vers Turin)'
+    ],
+    color: '#16a34a',
+    url: 'https://www.haute-maurienne-vanoise.com',
+    coords: '6.6710,45.2020;6.6950,45.1680;6.7020,45.0760'
+  },
+  {
+    id: 'hmv-hiver-s50',
+    ref: 'S50 Hiver',
+    name: 'Ligne S50 : Modane Gare ↔ Valfréjus',
+    mode: 'bus',
+    operator: 'Cars Région Savoie / HMV',
+    network: 'Haute Maurienne Vanoise Hiver',
+    route: 'Modane Gare routière ↔ Valfréjus Office de Tourisme (1550 m)',
+    frequency: 'Circule tous les jours en hiver (renforcé le samedi, réservations Altibus)',
+    period: 'Hiver (Du 20 décembre au 11 avril)',
+    stops: [
+      'Modane Gare routière (SNCF / TGV)',
+      'Valfréjus Office de Tourisme (1550 m, pied des pistes & départ sentiers Thabor)'
+    ],
+    color: '#3b82f6',
+    url: 'https://vente.cars-region-savoie.fr',
+    coords: '6.6710,45.2020;6.6580,45.1850;6.6430,45.1740'
+  },
+  {
+    id: 'hmv-hiver-s51',
+    ref: 'S51 Hiver',
+    name: 'Ligne S51 : Modane Gare ↔ La Norma',
+    mode: 'bus',
+    operator: 'Cars Région Savoie / HMV',
+    network: 'Haute Maurienne Vanoise Hiver',
+    route: 'Modane Gare routière ↔ La Norma Rond-point (Station piétonne)',
+    frequency: 'Circule tous les jours en hiver (renforcé le samedi)',
+    period: 'Hiver (Du 20 décembre au 11 avril)',
+    stops: [
+      'Modane Gare routière (SNCF / TGV)',
+      'La Norma Rond-point (Station 1350 m)'
+    ],
+    color: '#ec4899',
+    url: 'https://vente.cars-region-savoie.fr',
+    coords: '6.6710,45.2020;6.6970,45.2080;6.6970,45.2150'
+  },
+  {
+    id: 'hmv-hiver-b1-ambin',
+    ref: 'Navette B1',
+    name: 'Ligne B1 HMV Hiver : Val Cenis Bramans ↔ Val d’Ambin (Nordique & Ambin)',
+    mode: 'navette',
+    operator: 'Haute Maurienne Vanoise',
+    network: 'Haute Maurienne Vanoise Hiver',
+    route: 'Bramans (Rond-point Grands Prés, Mairie) ↔ Vallée du Val d’Ambin (Domaine Nordique, accès Refuge d’Ambin)',
+    frequency: 'Gratuit, départs cadencés du dimanche au vendredi selon périodes',
+    period: 'Hiver (Du 21 décembre au 15 mars - Accès domaine nordique & Refuge d\'Ambin)',
+    stops: [
+      'Bramans (Rond-point Grands Prés)',
+      'Bramans (Parking Mairie / OT)',
+      'Val d’Ambin (Domaine nordique & départ rando refuge d’Ambin)'
+    ],
+    color: '#06b6d4',
+    url: 'https://www.haute-maurienne-vanoise.com',
+    coords: '6.7820,45.2280;6.8040,45.2030;6.8400,45.1820'
+  },
+  {
+    id: 'hmv-hiver-f-norma-aussois',
+    ref: 'Ligne F Hiver',
+    name: 'Ligne F HMV Hiver : Aussois ↔ Le Bourget ↔ Avrieux ↔ Villarodin ↔ La Norma',
+    mode: 'navette',
+    operator: 'Haute Maurienne Vanoise / Région AURA',
+    network: 'Haute Maurienne Vanoise Hiver',
+    route: 'Aussois (Maison du Tourisme, Centre, Longecôte) ↔ Le Bourget ↔ Avrieux Centre ↔ Villarodin ↔ La Norma (Rond-point, Avenières)',
+    frequency: 'Tous les jours en saison hivernale du 1er février au 10 avril (liaison inter-stations)',
+    period: 'Hiver (Du 1er février au 10 avril)',
+    stops: [
+      'Aussois (Maison du Tourisme, Centre, Longecôte)',
+      'Le Bourget (Lot. Saint-Bernard, Mairie)',
+      'Avrieux Centre',
+      'Villarodin Abribus',
+      'La Norma (Rond-point, Parking des Avenières)'
+    ],
+    color: '#db2777',
+    url: 'https://www.haute-maurienne-vanoise.com',
+    coords: '6.7410,45.2310;6.7110,45.2200;6.6970,45.2150;6.6970,45.2080'
+  },
+  {
+    id: 'hmv-hiver-c-val-cenis',
+    ref: 'Navettes C1/C2',
+    name: 'Navette Interne Val Cenis : Termignon ↔ Lanslebourg ↔ Lanslevillard',
+    mode: 'navette',
+    operator: 'Haute Maurienne Vanoise',
+    network: 'Haute Maurienne Vanoise Hiver',
+    route: 'Termignon (École, Girarde) ↔ Lanslebourg (Auditorium, Églises, Ramasse) ↔ Lanslevillard (Vieux Moulin, Val Cenis Le Haut, Terres Grasses)',
+    frequency: 'Gratuit, toutes les 20 à 30 minutes de 8h15 à 19h + soirées mardi/jeudi jusqu\'à 22h30',
+    period: 'Hiver (Du 14 décembre au 17 avril - Ski-bus inter-villages et remontées mécaniques)',
+    stops: [
+      'Termignon (Pied de pistes Télésiège La Girarde)',
+      'Lanslebourg (Office de Tourisme, Auditorium, Télésiège La Ramasse)',
+      'Lanslebourg (Pont du Folgoët, Plan des Champs)',
+      'Lanslevillard (Télécabine du Vieux Moulin, École de ski, Mairie)',
+      'Lanslevillard (Télécabine Val Cenis le Haut, Terres Grasses)'
+    ],
+    color: '#0284c7',
+    url: 'https://www.haute-maurienne-vanoise.com',
+    coords: '6.8150,45.2790;6.8830,45.2850;6.9100,45.2950;6.9320,45.3050'
+  },
+  {
+    id: 'hmv-hiver-e2-bessans-bonneval',
+    ref: 'Navette E2 Hiver',
+    name: 'Navette E2 Hiver : Bessans ↔ Bonneval-sur-Arc',
+    mode: 'navette',
+    operator: 'Haute Maurienne Vanoise',
+    network: 'Haute Maurienne Vanoise Hiver',
+    route: 'Bessans (La Placette, Mairie, Hameau de la Neige, La Bessannaise, Le Villaron) ↔ Bonneval-sur-Arc (Patinoire, Lavoir village)',
+    frequency: 'Gratuit, tous les jours sauf samedis du 21 déc. au 8 mars (4 rotations directes matin & soir)',
+    period: 'Hiver (Du 21 décembre au 8 mars - Liaison nordique et alpine Bessans / Bonneval)',
+    stops: [
+      'Bessans (La Placette)',
+      'Bessans (Mairie / La Poste)',
+      'Bessans (Hameaux de la Neige)',
+      'Bessans (La Bessannaise)',
+      'Bessans (Le Villaron)',
+      'Bonneval-sur-Arc (La Patinoire)',
+      'Bonneval-sur-Arc (Lavoir village)'
+    ],
+    color: '#f59e0b',
+    url: 'https://www.haute-maurienne-vanoise.com',
+    coords: '6.9940,45.3210;7.0150,45.3400;7.0470,45.3710'
   },
   {
     id: 'navette-pralognan-prioux',
@@ -712,21 +969,7 @@ const BUS_ROUTES = [
     url: 'https://www.champagny.com',
     coords: '6.7080,45.4280;6.7110,45.3970'
   },
-  {
-    id: 'navette-termignon-bellecombe',
-    ref: 'Navette Bellecombe',
-    name: 'Navette Termignon ↔ Bellecombe (Cœur de Vanoise)',
-    mode: 'navette',
-    operator: 'Parc National de la Vanoise',
-    network: 'Navettes Vanoise',
-    route: 'Termignon ↔ Parking de Bellecombe ↔ Porte de Bellecombe (2307 m)',
-    frequency: 'Navettes estivales en complément du parking',
-    period: 'Été (Accès direct Plan du Lac, refuge de l\'Arpont & refuge du Plan du Lac)',
-    stops: ['Termignon Village (1290 m)', 'Parking de Bellecombe', 'Porte de Bellecombe (2307 m, sentier du Plan du Lac)'],
-    color: '#f59e0b',
-    url: 'https://www.vanoise-parcnational.fr',
-    coords: '6.8150,45.2790;6.8350,45.3010;6.8470,45.3220'
-  },
+  // (Ancienne navette Termignon-Bellecombe remplacée par Ligne 2 HMV officielle)
   {
     id: 'bus-s50',
     ref: 'S50',
@@ -1146,21 +1389,7 @@ const BUS_ROUTES = [
     url: 'https://www.haute-maurienne-vanoise.com',
     coords: '7.0470,45.3710;7.0310,45.4170;6.9790,45.4500'
   },
-  {
-    id: 'navette-haute-maurienne-averole',
-    ref: 'Navette Avérole',
-    name: 'Navette Vallée d\'Avérole : Bessans ↔ La Bessanèse ↔ Avérole (Refuge d\'Avérole)',
-    mode: 'navette',
-    operator: 'Mairie de Bessans / Haute Maurienne Vanoise',
-    network: 'Navettes de Haute Maurienne',
-    route: 'Bessans Village (1750 m) ↔ Centre d\'entraînement La Bessanèse ↔ Hameau d\'Avérole (2040 m)',
-    frequency: 'Navettes estivales régulières',
-    period: 'Été (Accès cœur de la Haute Maurienne, refuge d\'Avérole & Charbonnel 3752 m)',
-    stops: ['Bessans Village', 'La Bessanèse (Biathlon & ski nordique)', 'Hameau d\'Avérole (2040 m, départ sentiers refuge d\'Avérole & frontière Italie)'],
-    color: '#f59e0b',
-    url: 'https://www.bessans.com',
-    coords: '6.9930,45.3210;7.0450,45.3090;7.0850,45.2950'
-  },
+  // (Ancienne navette Avérole remplacée par Ligne 3 HMV officielle)
   {
     id: 'navette-aussois-barrages',
     ref: 'Navette Aussois',
