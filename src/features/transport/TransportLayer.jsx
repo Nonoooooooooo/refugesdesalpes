@@ -46,7 +46,7 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
       if (isSelected) {
         return {
           color: baseColor,
-          weight: isCable ? 5 : 6,
+          weight: isCable ? 6 : 7,
           opacity: 1,
           dashArray: isCable ? '6, 6' : null,
           lineCap: 'round',
@@ -57,7 +57,7 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
         return {
           color: baseColor,
           weight: isCable ? 2 : 2.5,
-          opacity: 0.22,
+          opacity: 0.2,
           dashArray: isCable ? '6, 6' : null,
           lineCap: 'round',
           lineJoin: 'round',
@@ -195,7 +195,9 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
               mouseover: (e) => {
                 const target = e.target;
                 if (target.setStyle) {
-                  target.setStyle({ weight: 6, opacity: 1 });
+                  const isCable = props.mode === 'cable_car' || props.mode === 'funicular';
+                  target.setStyle({ weight: isCable ? 6 : 7, opacity: 1 });
+                  if (target.bringToFront) target.bringToFront();
                 }
               },
               mouseout: (e) => {
@@ -204,6 +206,11 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
                   const hasSelection = Boolean(selectedTransport);
                   const isSelected = selectedTransport && (selectedTransport.id === featId || selectedTransport.name === props.name);
                   target.setStyle(getFeatureStyle(feature, isSelected, hasSelection));
+                  // Si une autre ligne est sélectionnée, remettre la sélection au premier plan
+                  if (hasSelection && !isSelected) {
+                    const selObj = layersMapRef.current.get(selectedTransport.id);
+                    if (selObj?.layer?.bringToFront) selObj.layer.bringToFront();
+                  }
                 }
               },
             });
@@ -237,14 +244,17 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
     const selectedId = selectedTransport?.id;
     const selectedName = selectedTransport?.name;
 
+    let selectedLayersToFront = [];
+
     layersMapRef.current.forEach(({ type, layer, feature, props }) => {
       const isSelected = hasSelection && (props.id === selectedId || props.name === selectedName);
 
       if (type === 'line') {
         const newStyle = getFeatureStyle(feature, isSelected, hasSelection);
         layer.setStyle(newStyle);
-        if (isSelected && layer.bringToFront) {
-          layer.bringToFront();
+
+        if (isSelected) {
+          selectedLayersToFront.push(layer);
         }
       } else if (type === 'point') {
         if (hasSelection) {
@@ -253,8 +263,8 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
             opacity: isSelected ? 1 : 0.25,
             radius: isSelected ? 7 : 4.5,
           });
-          if (isSelected && layer.bringToFront) {
-            layer.bringToFront();
+          if (isSelected) {
+            selectedLayersToFront.push(layer);
           }
         } else {
           layer.setStyle({
@@ -265,6 +275,20 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
         }
       }
     });
+
+    // Passer la ligne sélectionnée impérativement AU-DESSUS de toutes les autres lignes
+    if (selectedLayersToFront.length > 0) {
+      selectedLayersToFront.forEach((l) => {
+        if (l.eachLayer) {
+          l.eachLayer((subLayer) => {
+            if (subLayer.bringToFront) subLayer.bringToFront();
+          });
+        }
+        if (l.bringToFront) {
+          l.bringToFront();
+        }
+      });
+    }
   }, [selectedTransport]);
 
   return null;
