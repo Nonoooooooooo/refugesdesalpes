@@ -443,21 +443,7 @@ const BUS_ROUTES = [
     url: 'https://zou.maregionsud.fr',
     coords: '6.0790,44.5630;6.0740,44.6810;6.2280,44.6710;6.3260,44.6940'
   },
-  {
-    id: 'navette-madame-carle',
-    ref: 'Navette Écrins',
-    name: 'Navette Écrins : L\'Argentière ↔ Vallouise ↔ Ailefroide ↔ Pré de Madame Carle',
-    mode: 'navette',
-    operator: 'Communauté de Communes du Pays des Écrins',
-    network: 'Navettes Pays des Écrins',
-    route: 'L\'Argentière Gare ↔ Vallouise ↔ Pelvoux ↔ Ailefroide ↔ Pré de Madame Carle (1874 m)',
-    frequency: 'Plusieurs navettes par jour en saison estivale',
-    period: 'Été (Accès direct cœur Massif des Écrins & Glaciers)',
-    stops: ['L\'Argentière-les-Écrins Gare SNCF', 'Vallouise Maison du Parc', 'Pelvoux', 'Ailefroide Camping & Maison de la Montagne', 'Pré de Madame Carle (Départ refuges Glacier Blanc & Cézanne)'],
-    color: '#f59e0b',
-    url: 'https://www.paysdesecrins.com',
-    coords: '6.5590,44.7930;6.4880,44.8460;6.4440,44.8870;6.4180,44.9180'
-  },
+
 
   // ALPES-MARITIMES & MERCANTOUR
   {
@@ -1438,19 +1424,102 @@ const BUS_ROUTES = [
     coords: '6.5880,44.7380;6.5810,44.7500;6.5780,44.7560;6.5710,44.7640;6.5650,44.7720;6.5510,44.7790;6.5590,44.7930;6.5650,44.8030;6.5780,44.8250;6.5840,44.8410;6.5770,44.8560;6.5710,44.8680'
   },
   {
-    id: 'bus-zou-543',
-    ref: 'ZOU! 543',
-    name: 'Ligne ZOU! 543 : L\'Argentière ↔ Vallouise ↔ Puy-Saint-Vincent ↔ Pré de Madame Carle',
+    id: 'estibus-a-madame-carle',
+    ref: 'ESTIBUS A',
+    name: 'ESTIBUS A : Vallouise-Pelvoux ↔ Ailefroide ↔ Pré de Madame Carle (1874 m)',
     mode: 'navette',
-    operator: 'Région Provence-Alpes-Côte d\'Azur / Pays des Écrins',
-    network: 'ZOU! / Navettes Écrins',
-    route: 'L\'Argentière Gare SNCF ↔ Les Vigneaux ↔ Vallouise ↔ Pelvoux ↔ Puy-Saint-Vincent ↔ Ailefroide ↔ Pré de Madame Carle (1874 m)',
-    frequency: 'Navettes estivales régulières cadencées',
-    period: 'Été (Accès Porte du Parc National des Écrins, Refuges Glacier Blanc & Cézanne)',
-    stops: ['L\'Argentière Gare SNCF', 'Les Vigneaux', 'Vallouise Maison du Parc', 'Pelvoux', 'Puy-Saint-Vincent 1600', 'Ailefroide', 'Pré de Madame Carle (1874 m)'],
-    color: '#0284c7',
-    url: 'https://zou.maregionsud.fr',
-    coords: '6.5590,44.7930;6.5410,44.8240;6.4880,44.8460;6.4710,44.8640;6.4790,44.8270;6.4440,44.8870;6.4180,44.9180'
+    operator: 'Communauté de Communes du Pays des Écrins',
+    network: 'Les ESTIBUS du Pays des Écrins',
+    route: 'Station Pelvoux ↔ École St-Antoine ↔ Route du Domaine ↔ La Chapelle ↔ Tunnel des Claux ↔ Ailefroide Camping ↔ Ailefroide Village ↔ Pré de Madame Carle (1874 m)',
+    frequency: 'Du lundi au dimanche y compris jours fériés (8 rotations/jour, 1 € le trajet, gratuit -12 ans)',
+    period: 'Été (Du 4 juillet au 30 août 2026, correspondance Ligne 1)',
+    stops: [
+      'Station Pelvoux (1250 m)',
+      'École Saint-Antoine (Correspondance Ligne 1 L\'Argentière)',
+      'Route du Domaine',
+      'La Chapelle (Pelvoux)',
+      'Tunnel des Claux',
+      'Ailefroide Camping (1500 m)',
+      'Ailefroide Village (Maison de la Montagne & Bureau des Guides)',
+      'Pré de Madame Carle (1874 m, terminus route, départ direct refuges Cézanne, Glacier Blanc, Pelvoux)'
+    ],
+    color: '#06b6d4',
+    url: 'https://www.cc-paysdesecrins.fr',
+    coords: '6.4880,44.8640;6.4710,44.8640;6.4620,44.8710;6.4550,44.8780;6.4500,44.8820;6.4460,44.8860;6.4440,44.8870;6.4180,44.9180'
+  },
+  {
+    id: 'estibus-b-dormillouse',
+    ref: 'ESTIBUS B',
+    name: 'ESTIBUS B : L\'Argentière ↔ Freissinières ↔ Parking Dormillouse (Vallée Sauvage)',
+    mode: 'navette',
+    operator: 'Communauté de Communes du Pays des Écrins',
+    network: 'Les ESTIBUS du Pays des Écrins',
+    route: 'L\'Argentière Gare SNCF ↔ ZA Les Sablonnières ↔ Quartz Piscine ↔ Plan Léothaud ↔ La Roche-de-Rame ↔ Freissinières (Pallon, Les Allouviers, Le Plan, Les Ribes, Les Bellons, Les Viollins) ↔ Parking des Cascades de Dormillouse',
+    frequency: 'Du lundi au dimanche y compris jours fériés (6 rotations/jour, 1 € le trajet)',
+    period: 'Été (Du 4 juillet au 30 août 2026, accès unique hameau sans voiture de Dormillouse & Lac Faravel)',
+    stops: [
+      'L\'Argentière-La Bessée Gare SNCF',
+      'ZA Les Sablonnières',
+      'Le Quartz Piscine',
+      'Plan Léothaud',
+      'La Roche-de-Rame (Pont de l\'Ascension, La Ruine, Village, Lac)',
+      'Freissinières (Hameau de Pallon)',
+      'Freissinières (Pont de Pallon)',
+      'Freissinières (Les Allouviers)',
+      'Freissinières (Le Plan / Mairie)',
+      'Freissinières (Les Ribes)',
+      'Freissinières (Les Bellons)',
+      'Freissinières (Les Viollins)',
+      'Parking de Dormillouse (Départ sentier vers Dormillouse seul village habité au cœur du Parc, Lac Faravel, Lac Palluel, Refuge des Bans)'
+    ],
+    color: '#f97316',
+    url: 'https://www.cc-paysdesecrins.fr',
+    coords: '6.5590,44.7930;6.5550,44.7860;6.5510,44.7790;6.5780,44.7560;6.5810,44.7500;6.5410,44.7430;6.5340,44.7470;6.5180,44.7520;6.4860,44.7560;6.4620,44.7410;6.4420,44.7310'
+  },
+  {
+    id: 'estibus-c-beassac',
+    ref: 'ESTIBUS C',
+    name: 'ESTIBUS C : Vallouise Centre ↔ Chapelle de Béassac',
+    mode: 'navette',
+    operator: 'Communauté de Communes du Pays des Écrins',
+    network: 'Les ESTIBUS du Pays des Écrins',
+    route: 'Vallouise Centre (Maison du Parc) ↔ La Casse ↔ Puy-Aillaud / Chapelle de Béassac',
+    frequency: 'Du lundi au dimanche y compris jours fériés (7 rotations/jour, 1 € le trajet)',
+    period: 'Été (Du 4 juillet au 30 août 2026)',
+    stops: [
+      'Vallouise Centre (Office de Tourisme & Maison du Parc)',
+      'Chapelle de Béassac (Départ sentiers belvédère du Pelvoux & Puy-Aillaud)'
+    ],
+    color: '#84cc16',
+    url: 'https://www.cc-paysdesecrins.fr',
+    coords: '6.4880,44.8460;6.4820,44.8390;6.4760,44.8340'
+  },
+  {
+    id: 'navette-marche-puy-st-vincent',
+    ref: 'Navette Marché PSV',
+    name: 'Navette Marché Puy-Saint-Vincent ↔ Vallouise Centre',
+    mode: 'navette',
+    operator: 'Communauté de Communes du Pays des Écrins',
+    network: 'Les ESTIBUS du Pays des Écrins',
+    route: 'Puy-Saint-Vincent 1800 (Récoumère, Clot Léothaud, Tartarasse) ↔ Station 1600 (Panoramic, Maison du Miel) ↔ Station 1400 (Saint-Roch, Mairie, Place du Puy) ↔ Aiglière ↔ Vallouise Centre',
+    frequency: 'Tous les jeudis matin pour le marché traditionnel de Vallouise (Vacances d\'été)',
+    period: 'Été (Jeudis matins de juillet-août)',
+    stops: [
+      'Puy-Saint-Vincent 1800 (Récoumère)',
+      'Clot des Léothauds',
+      'Tartarasse',
+      'Puy-Saint-Vincent 1600 (Panoramic)',
+      'Maison Artisanale / Maison du Miel',
+      'Puy-Saint-Vincent 1400 (Place des Prés)',
+      'Saint-Roch',
+      'Puy-Saint-Vincent Mairie',
+      'Place du Puy',
+      'Aiglière',
+      'Vallouise Centre (Marché provençal de montagne)'
+    ],
+    color: '#a855f7',
+    url: 'https://www.cc-paysdesecrins.fr',
+    coords: '6.4790,44.8190;6.4820,44.8230;6.4860,44.8270;6.4880,44.8310;6.4880,44.8460'
   },
   {
     id: 'navette-serre-poncon-chanteloube',
