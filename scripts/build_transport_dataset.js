@@ -497,14 +497,22 @@ const BUS_ROUTES = [
   {
     id: 'navette-claree',
     ref: 'Navette Clarée',
-    name: 'Navette Vallée de la Clarée : Briançon ↔ Névache ↔ Laval ↔ Fontcouverte',
+    name: 'Navette Vallée de la Clarée : Briançon ↔ Val-des-Prés ↔ Névache ↔ Fontcouverte (Refuge de la Fruitière)',
     mode: 'navette',
     operator: 'Communauté de Communes du Briançonnais',
     network: 'Navettes Clarée',
-    route: 'Briançon Gare ↔ Val-des-Prés ↔ Plampinet ↔ Névache Village ↔ Ville Haute ↔ Laval ↔ Fontcouverte',
+    route: 'Briançon Gare ↔ Val-des-Prés ↔ Plampinet ↔ Névache Village ↔ Ville Haute ↔ Hameau de Fontcouverte (Refuge de la Fruitière)',
     frequency: 'Navettes régulières en saison (toutes les heures environ, parking obligatoire Névache)',
     period: 'Été (Juin-Septembre, accès réglementé vallée de la Clarée)',
-    stops: ['Briançon Gare SNCF', 'Val-des-Prés', 'Plampinet', 'Névache Village (1600 m)', 'Névache Ville Haute', 'Laval (Départ refuge de Laval & Lac de la Clarée)', 'Fontcouverte (Départ refuges Drayères & Ricou)'],
+    stops: [
+      'Briançon Gare SNCF',
+      'Val-des-Prés',
+      'Plampinet',
+      'Névache Village (1600 m)',
+      'Névache Ville Haute',
+      'Pont du Rately (Départ Refuge de Buffère)',
+      'Hameau de Fontcouverte (Auberge & Refuge de la Fruitière, Cascade de Fontcouverte)'
+    ],
     color: '#f59e0b',
     url: 'https://www.nevache-tourisme.fr',
     coords: '6.6340,44.8980;6.6060,44.9350;6.5790,44.9490;6.5370,44.9720;6.5110,44.9830'
@@ -512,17 +520,42 @@ const BUS_ROUTES = [
   {
     id: 'navette-claree-haute',
     ref: 'Navette Haute Clarée',
-    name: 'Navette Haute Clarée : Névache ↔ Pont de l\'Alpe ↔ Lac de la Clarée',
+    name: 'Navette Haute Clarée : Névache ↔ Fontcouverte (Refuge de la Fruitière) ↔ Laval ↔ Drayères',
     mode: 'navette',
     operator: 'Communauté de Communes du Briançonnais',
     network: 'Navettes Clarée',
-    route: 'Névache Ville Haute ↔ Laval ↔ Fontcouverte ↔ Pont de l\'Alpe (Terminus route, 1920 m)',
-    frequency: 'Navettes continues en été (Accès direct sentiers du GR57 & refuges)',
-    period: 'Été (Juillet-Août, accès véhicules interdit au-delà de Névache)',
-    stops: ['Névache Ville Haute (1600 m)', 'Laval', 'Fontcouverte (Refuge de Drayères, Refuge du Ricou)', 'Pont de l\'Alpe (1920 m, départ Col de Rochilles & Lac de la Clarée)'],
+    route: 'Névache Ville Haute ↔ Pont du Rately ↔ Fontcouverte (Auberge & Refuge de la Fruitière) ↔ Chalets de Laval ↔ Parking de Laval / Drayères',
+    frequency: 'Navettes continues en été toutes les 20 à 30 min (Circulation interdite aux voitures)',
+    period: 'Été (Juillet-Août, accès véhicules strictement interdit au-delà de Névache de 9h à 18h)',
+    stops: [
+      'Névache Ville Haute (1600 m, Parking obligatoire)',
+      'Pont du Rately (Départ sentier & Refuge de Buffère 2076 m)',
+      'Hameau de Fontcouverte (Auberge & Refuge de la Fruitière 1857 m, Cascade de Fontcouverte)',
+      'Pont du Moutet (Départ sentier & Refuge du Chardonnet 2223 m)',
+      'Chalets de Laval (Refuge de Laval 2010 m)',
+      'Parking de Laval / Pont de la Clarée (Départ Refuge des Drayères 2180 m & Refuge de Ricou 2115 m, GR57)'
+    ],
     color: '#f59e0b',
     url: 'https://www.nevache-tourisme.fr',
     coords: '6.5370,44.9720;6.5110,44.9830;6.4950,44.9920;6.4780,45.0050'
+  },
+  {
+    id: 'navette-claree-buffere',
+    ref: 'Navette Buffère',
+    name: 'Navette Clarée - Pont du Rately : Névache ↔ Pont du Rately (Accès Refuge de Buffère)',
+    mode: 'navette',
+    operator: 'Communauté de Communes du Briançonnais',
+    network: 'Navettes Clarée',
+    route: 'Névache Ville Haute ↔ Pont du Rately (Départ sentier vers Refuge de Buffère 2076 m & Col de Buffère)',
+    frequency: 'Navettes estivales régulières',
+    period: 'Été (Juillet-Août)',
+    stops: [
+      'Névache Ville Haute',
+      'Pont du Rately (1680 m, départ Refuge de Buffère, Lac Vert, GR57)'
+    ],
+    color: '#f59e0b',
+    url: 'https://www.nevache-tourisme.fr',
+    coords: '6.5370,44.9720;6.5210,44.9780'
   },
   {
     id: 'navette-vallee-etroite',
@@ -531,10 +564,10 @@ const BUS_ROUTES = [
     mode: 'navette',
     operator: 'Communauté de Communes du Briançonnais',
     network: 'Navettes Clarée',
-    route: 'Névache ↔ Col de l\'Échelle (1762 m) ↔ Vallée Étroite (versant italien)',
+    route: 'Névache ↔ Col de l\'Échelle (1762 m) ↔ Vallée Étroite (Granges de la Vallée Étroite, Refuges I Re Magi & Terzo Alpini)',
     frequency: 'Navettes estivales sur réservation',
-    period: 'Été (Accès sentier des Lacs de Terre Rouge & Refuge I Re Magi)',
-    stops: ['Névache Village', 'Col de l\'Échelle (1762 m)', 'Vallée Étroite (Granges de la Vallée Étroite, 1650 m)'],
+    period: 'Été (Accès sentier des Lacs de Terre Rouge & Refuges italiens)',
+    stops: ['Névache Village', 'Col de l\'Échelle (1762 m)', 'Vallée Étroite (Granges de la Vallée Étroite 1650 m, Refuges I Re Magi & Terzo Alpini)'],
     color: '#f59e0b',
     url: 'https://www.nevache-tourisme.fr',
     coords: '6.5370,44.9720;6.5660,45.0160;6.5920,45.0350'

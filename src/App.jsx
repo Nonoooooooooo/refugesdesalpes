@@ -8,12 +8,10 @@ import { Loader2, TriangleAlert, ZoomIn } from 'lucide-react'
 import { fetchBbox } from './lib/api'
 import { typeInfo, FILTERABLE } from './lib/types.jsx'
 import MapControls from './components/MapControls.jsx'
-import FilterPanel from './components/FilterPanel.jsx'
 import Sidebar from './components/Sidebar.jsx'
-import BaseLayerSwitcher from './components/BaseLayerSwitcher.jsx'
+import MapControlBar from './components/MapControlBar.jsx'
 import SearchBar from './components/SearchBar.jsx'
 import TransportLayer from './features/transport/TransportLayer.jsx'
-import TransportToggle from './features/transport/TransportToggle.jsx'
 import TransportSidebar from './features/transport/TransportSidebar.jsx'
 
 const MIN_ZOOM_FETCH = 9
@@ -266,14 +264,16 @@ export default function App() {
         hasSelected={Boolean(selected)}
       />
 
-      <BaseLayerSwitcher
+      <MapControlBar
         baseLayer={baseLayer}
         onBaseLayerChange={setBaseLayer}
         showTrails={showTrails}
         onToggleTrails={() => setShowTrails((v) => !v)}
+        showTransports={showTransports}
+        onToggleTransports={() => setShowTransports((v) => !v)}
+        activeTypes={activeTypes}
+        onToggleType={toggleType}
       />
-      <TransportToggle active={showTransports} onToggle={() => setShowTransports((v) => !v)} />
-      <FilterPanel active={activeTypes} onToggle={toggleType} />
 
       {/* Statut discret */}
       <div className="pointer-events-none absolute bottom-6 left-1/2 z-[1000] -translate-x-1/2">
