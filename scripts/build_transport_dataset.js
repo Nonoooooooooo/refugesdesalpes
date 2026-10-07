@@ -1,6 +1,10 @@
 import fs from 'node:fs';
 import https from 'node:https';
 
+const CHAMONIX_BUS_ROUTES = fs.existsSync('scripts/data/chamonix_bus.json')
+  ? JSON.parse(fs.readFileSync('scripts/data/chamonix_bus.json', 'utf8'))
+  : [];
+
 const OSRM_URL = 'https://router.project-osrm.org/route/v1/driving/';
 
 function fetchRoute(coords) {
@@ -107,36 +111,10 @@ const BUS_ROUTES = [
     url: 'https://www.laregionvoustransporte.fr',
     coords: '6.5790,46.0601;6.5910,46.1080;6.7275,46.0838;6.7770,46.0560'
   },
-  {
-    id: 'navette-chamonix-1',
-    ref: 'Ligne 1',
-    name: 'Chamonix Bus 1 : Les Houches ↔ Chamonix ↔ Les Praz',
-    mode: 'navette',
-    operator: 'Chamonix Mobilité',
-    network: 'Chamonix Bus',
-    route: 'Les Houches (Prarion) ↔ Chamonix Centre ↔ Les Praz (Téléphérique Flégère)',
-    frequency: 'Toutes les 15 à 30 min (Navette gratuite vallée)',
-    period: 'Toute l\'année',
-    stops: ['Les Houches Prarion', 'Le Grippaz', 'Chamonix Centre', 'Place Mont-Blanc', 'Les Praz Flégère'],
-    color: '#f59e0b',
-    url: 'https://chamonix-bus.com',
-    coords: '6.7745,45.8890;6.8694,45.9237;6.8860,45.9410'
-  },
-  {
-    id: 'navette-chamonix-2',
-    ref: 'Ligne 2',
-    name: 'Chamonix Bus 2 : Le Tour ↔ Argentière ↔ Chamonix ↔ Les Bossons',
-    mode: 'navette',
-    operator: 'Chamonix Mobilité',
-    network: 'Chamonix Bus',
-    route: 'Le Tour ↔ Montroc ↔ Argentière (Grands Montets) ↔ Chamonix ↔ Les Bossons',
-    frequency: 'Toutes les 20 à 30 min',
-    period: 'Toute l\'année',
-    stops: ['Le Tour', 'Montroc', 'Argentière Gare', 'Les Chosalets', 'Chamonix Sud', 'Glacier des Bossons'],
-    color: '#f59e0b',
-    url: 'https://chamonix-bus.com',
-    coords: '6.9460,46.0020;6.9290,45.9830;6.8694,45.9237;6.8420,45.8980'
-  },
+  // ═══════════════════════════════════════════════════════
+  // RÉSEAU OFFICIEL CHAMONIX MOBILITÉ / PYSAE (18 LIGNES DE BUS DE LA VALLÉE)
+  // ═══════════════════════════════════════════════════════
+  ...CHAMONIX_BUS_ROUTES,
   {
     id: 'navette-sixt-lignon',
     ref: 'Navette Giffre',
@@ -2599,7 +2577,14 @@ const BUS_ROUTES = [
 ];
 
 const STATIONS = [
-  { id: 'st-chamonix', name: 'Gare de Chamonix-Mont-Blanc', mode: 'station', alt: 1035, lat: 45.9237, lng: 6.8694, lines: ['Mont-Blanc Express', 'Chamonix Bus 1 & 2', 'Liaison Martigny (Suisse)'] },
+  { id: 'st-chamonix', name: 'Gare de Chamonix-Mont-Blanc', mode: 'station', alt: 1035, lat: 45.9237, lng: 6.8694, lines: ['Mont-Blanc Express', 'Chamonix Bus 01, 02, 04, 10, V1, V2', 'Liaison Martigny (Suisse)'] },
+  { id: 'hub-chamonix-sud', name: 'Pôle Bus Chamonix Sud (Gare Routière)', mode: 'station', alt: 1032, lat: 45.9185, lng: 6.8674, lines: ['Chamonix Bus 01, 02, 03, 04, 09, 10, 13, 21, V1, V2, N1', 'Liaisons Y82 Megève, Courmayeur, SAT'] },
+  { id: 'hub-place-mont-blanc', name: 'Pôle Chamonix Place Mont-Blanc', mode: 'station', alt: 1038, lat: 45.9255, lng: 6.8715, lines: ['Chamonix Bus 01, 02, 10, 21, V2', 'Centre-Ville de Chamonix'] },
+  { id: 'hub-flegere', name: 'Pôle Téléphérique de La Flégère (Les Praz)', mode: 'station', alt: 1060, lat: 45.9414, lng: 6.8864, lines: ['Chamonix Bus 01, 02, 11', 'Téléphérique de La Flégère'] },
+  { id: 'hub-grands-montets', name: 'Pôle Argentière - Téléphérique Grands Montets', mode: 'station', alt: 1235, lat: 45.9818, lng: 6.9287, lines: ['Chamonix Bus 02, 21, V2, N3', 'Téléphérique des Grands Montets'] },
+  { id: 'hub-le-tour', name: 'Pôle Le Tour - Domaine de Balme', mode: 'station', alt: 1462, lat: 46.0022, lng: 6.9458, lines: ['Chamonix Bus 02, V2, N3', 'Télécabine de Charamillon / Balme'] },
+  { id: 'hub-prarion', name: 'Pôle Les Houches - Téléphérique du Prarion', mode: 'station', alt: 1005, lat: 45.8893, lng: 6.7745, lines: ['Chamonix Bus 01, 06, 07, V1, N1', 'Télécabine du Prarion'] },
+  { id: 'hub-servoz', name: 'Pôle d\'échange Servoz Gare SNCF', mode: 'station', alt: 814, lat: 45.9320, lng: 6.7715, lines: ['Mont-Blanc Express', 'Chamonix Bus 03, 06', 'Gorges de la Diosaz'] },
   { id: 'st-le-fayet', name: 'Gare de Saint-Gervais-les-Bains-Le Fayet', mode: 'station', alt: 581, lat: 45.9080, lng: 6.7118, lines: ['TGV InOui', 'TER AURA', 'Mont-Blanc Express', 'Tramway du Mont-Blanc (TMB)'] },
   { id: 'st-grenoble', name: 'Gare de Grenoble', mode: 'station', alt: 212, lat: 45.1910, lng: 5.7140, lines: ['TGV InOui', 'TER Sillon Alpin', 'Ligne des Alpes', 'Cars Région T40/T60/T62/T64/T65/T73/T75/T83/T90/T91/T92/T95', 'Transaltitude'] },
   { id: 'st-gieres', name: 'Gare de Grenoble Universités - Gières', mode: 'station', alt: 216, lat: 45.1870, lng: 5.7830, lines: ['TER Sillon Alpin', 'Liaisons Belledonne Chamrousse', 'Réseau M Réso'] },
@@ -3053,12 +3038,22 @@ async function main() {
     }
   }
 
-  // 2. Générer les lignes de Bus & Navettes via OSRM
-  console.log(`Génération des tracés routiers précis pour ${BUS_ROUTES.length} lignes de bus et navettes...`);
+  // 2. Générer les lignes de Bus & Navettes via OSRM ou Tracé direct officiel
+  console.log(`Génération des tracés routiers pour ${BUS_ROUTES.length} lignes de bus et navettes...`);
   for (let i = 0; i < BUS_ROUTES.length; i++) {
     const routeDef = BUS_ROUTES[i];
     process.stdout.write(`[${i+1}/${BUS_ROUTES.length}] ${routeDef.ref} : ${routeDef.name.slice(0, 30)}... `);
-    const coords = await fetchRoute(routeDef.coords);
+    let coords = null;
+    if (routeDef.directCoordinates && routeDef.directCoordinates.length > 0) {
+      coords = routeDef.directCoordinates;
+      console.log(`OK (Tracé officiel GTFS ${coords.length} points)`);
+    } else if (routeDef.coords) {
+      coords = await fetchRoute(routeDef.coords);
+      if (coords && coords.length > 0) {
+        console.log(`OK (${coords.length} points)`);
+      }
+    }
+
     if (coords && coords.length > 0) {
       features.push({
         type: 'Feature',
@@ -3082,8 +3077,7 @@ async function main() {
           coordinates: coords
         }
       });
-      console.log(`OK (${coords.length} points)`);
-    } else {
+    } else if (routeDef.coords) {
       console.log('Fallback direct');
       // En cas de panne OSRM, fallback sur les waypoints directs
       const fallbackCoords = routeDef.coords.split(';').map(pt => pt.split(',').map(Number));
@@ -3110,8 +3104,10 @@ async function main() {
         }
       });
     }
-    // Petit délai pour ménager l'API
-    await new Promise(r => setTimeout(r, 120));
+    // Petit délai pour ménager l'API uniquement lors des appels OSRM
+    if (!routeDef.directCoordinates) {
+      await new Promise(r => setTimeout(r, 120));
+    }
   }
 
   // 3. Ajouter les gares et pôles d'échange alpins
