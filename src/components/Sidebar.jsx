@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { X, Loader2, TriangleAlert, Mountain, BedDouble, ExternalLink, RefreshCw, MessageSquare } from 'lucide-react'
+import { X, Loader2, TriangleAlert, Mountain, BedDouble, ExternalLink, RefreshCw, MessageSquare, Box } from 'lucide-react'
 import { fetchPoint } from '../lib/api'
 import { fetchCommonsPhotos } from '../lib/wikimedia'
 import { fetchGooglePlacesPhotos } from '../lib/google-places'
@@ -7,10 +7,12 @@ import { dedupePhotos } from '../lib/dedupe'
 import { typeInfo } from '../lib/types.jsx'
 import { cleanText } from '../lib/text'
 import Gallery from './Gallery.jsx'
+import Terrain3DModal from '../features/terrain3d/Terrain3DModal.jsx'
 
 export default function Sidebar({ point, onClose }) {
   const [state, setState] = useState({ loading: true, error: null, data: null })
   const [attempt, setAttempt] = useState(0)
+  const [show3D, setShow3D] = useState(false)
 
   useEffect(() => {
     const ctrl = new AbortController()
@@ -58,95 +60,120 @@ export default function Sidebar({ point, onClose }) {
   const description = d && cleanText(d.description)
 
   return (
-    <aside className="sidebar-enter glass glass-panel scroll-thin absolute bottom-0 left-0 top-0 z-[1100] flex w-full flex-col overflow-y-auto sm:bottom-4 sm:left-4 sm:top-4 sm:w-[420px] sm:rounded-3xl">
-      <header className="sticky top-0 z-10 flex items-start gap-3 border-b border-white/10 bg-black/30 p-5 backdrop-blur-xl">
-        <span
-          className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
-          style={{ background: color }}
-        >
-          <Icon size={20} />
-        </span>
-        <div className="min-w-0 flex-1">
-          <h1 className="text-lg font-semibold leading-tight">{d?.nom ?? point.nom}</h1>
-          <p className="text-sm text-white/70">{d?.type ?? point.type ?? label}</p>
-        </div>
-        <button aria-label="Fermer" onClick={onClose} className="glass-btn rounded-full p-2">
-          <X size={18} />
-        </button>
-      </header>
-
-      <div className="flex flex-col gap-5 p-5">
-        <div className="flex flex-wrap gap-2">
-          {(d?.alt ?? point.alt) != null && (
-            <Chip icon={<Mountain size={14} />}>{d?.alt ?? point.alt} m</Chip>
-          )}
-          {(d?.places ?? point.places) > 0 && (
-            <Chip icon={<BedDouble size={14} />}>{d?.places ?? point.places} places</Chip>
-          )}
-          {(d?.etat ?? point.etat) && <Chip>{d?.etat ?? point.etat}</Chip>}
-        </div>
-
-        {state.loading && (
-          <div className="flex items-center justify-center gap-2 py-10 text-sm text-white/70">
-            <Loader2 size={18} className="animate-spin" /> Chargement des détails…
+    <>
+      <aside className="sidebar-enter glass glass-panel scroll-thin absolute bottom-0 left-0 top-0 z-[1100] flex w-full flex-col overflow-y-auto sm:bottom-4 sm:left-4 sm:top-4 sm:w-[420px] sm:rounded-3xl">
+        <header className="sticky top-0 z-10 flex items-start gap-3 border-b border-white/10 bg-black/30 p-5 backdrop-blur-xl">
+          <span
+            className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+            style={{ background: color }}
+          >
+            <Icon size={20} />
+          </span>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-lg font-semibold leading-tight">{d?.nom ?? point.nom}</h1>
+            <p className="text-sm text-white/70">{d?.type ?? point.type ?? label}</p>
           </div>
-        )}
+          <button aria-label="Fermer" onClick={onClose} className="glass-btn rounded-full p-2">
+            <X size={18} />
+          </button>
+        </header>
 
-        {state.error && (
-          <div className="flex flex-col items-center gap-3 rounded-2xl bg-red-500/15 p-4 text-center text-sm">
-            <TriangleAlert className="text-red-300" />
-            {state.error}
-            <button onClick={retry} className="glass-btn flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5">
-              <RefreshCw size={14} /> Réessayer
-            </button>
+        <div className="flex flex-col gap-5 p-5">
+          <div className="flex flex-wrap gap-2">
+            {(d?.alt ?? point.alt) != null && (
+              <Chip icon={<Mountain size={14} />}>{d?.alt ?? point.alt} m</Chip>
+            )}
+            {(d?.places ?? point.places) > 0 && (
+              <Chip icon={<BedDouble size={14} />}>{d?.places ?? point.places} places</Chip>
+            )}
+            {(d?.etat ?? point.etat) && <Chip>{d?.etat ?? point.etat}</Chip>}
           </div>
-        )}
 
-        {d && (
-          <>
-            {d.photos.length > 0 && <Gallery photos={d.photos} />}
+          {/* Bouton Vue 3D immersive */}
+          <button
+            onClick={() => setShow3D(true)}
+            className="glass-btn flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-600/30 via-teal-600/30 to-sky-600/30 hover:from-emerald-600/45 hover:to-sky-600/45 border border-emerald-400/40 py-2.5 px-4 text-sm font-semibold text-emerald-100 shadow-[0_0_15px_rgba(16,185,129,0.25)] transition-all hover:scale-[1.02] active:scale-[0.98]"
+          >
+            <Box size={16} className="text-emerald-300" />
+            <span>Vue 3D immersive</span>
+          </button>
 
-            {description && (
-              <Section title="Description">
-                <p className="whitespace-pre-line text-sm leading-relaxed text-white/85">{description}</p>
-              </Section>
-            )}
+          {state.loading && (
+            <div className="flex items-center justify-center gap-2 py-10 text-sm text-white/70">
+              <Loader2 size={18} className="animate-spin" /> Chargement des détails…
+            </div>
+          )}
 
-            {d.acces && (
-              <Section title="Accès">
-                <p className="whitespace-pre-line text-sm leading-relaxed text-white/85">{cleanText(d.acces)}</p>
-              </Section>
-            )}
+          {state.error && (
+            <div className="flex flex-col items-center gap-3 rounded-2xl bg-red-500/15 p-4 text-center text-sm">
+              <TriangleAlert className="text-red-300" />
+              {state.error}
+              <button onClick={retry} className="glass-btn flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5">
+                <RefreshCw size={14} /> Réessayer
+              </button>
+            </div>
+          )}
 
-            {d.equipements.length > 0 && (
-              <Section title="Équipements">
-                <ul className="grid grid-cols-2 gap-2">
-                  {d.equipements.map((e) => (
-                    <li key={e.nom} className="rounded-xl bg-white/8 px-3 py-2 text-xs" style={{ background: 'rgba(255,255,255,0.08)' }}>
-                      <div className="text-white/60">{e.nom}</div>
-                      <div className="font-medium">{String(e.valeur)}</div>
-                    </li>
-                  ))}
-                </ul>
-              </Section>
-            )}
+          {d && (
+            <>
+              {d.photos.length > 0 && <Gallery photos={d.photos} />}
 
-            {d.comments.length > 0 && <Comments comments={d.comments} />}
+              {description && (
+                <Section title="Description">
+                  <p className="whitespace-pre-line text-sm leading-relaxed text-white/85">{description}</p>
+                </Section>
+              )}
 
-            {d.lien && (
-              <a
-                href={d.lien}
-                target="_blank"
-                rel="noreferrer"
-                className="glass-btn flex items-center justify-center gap-2 rounded-2xl bg-white/10 py-2.5 text-sm font-medium"
-              >
-                Voir sur Refuges.info <ExternalLink size={14} />
-              </a>
-            )}
-          </>
-        )}
-      </div>
-    </aside>
+              {d.acces && (
+                <Section title="Accès">
+                  <p className="whitespace-pre-line text-sm leading-relaxed text-white/85">{cleanText(d.acces)}</p>
+                </Section>
+              )}
+
+              {d.equipements.length > 0 && (
+                <Section title="Équipements">
+                  <ul className="grid grid-cols-2 gap-2">
+                    {d.equipements.map((e) => (
+                      <li key={e.nom} className="rounded-xl bg-white/8 px-3 py-2 text-xs" style={{ background: 'rgba(255,255,255,0.08)' }}>
+                        <div className="text-white/60">{e.nom}</div>
+                        <div className="font-medium">{String(e.valeur)}</div>
+                      </li>
+                    ))}
+                  </ul>
+                </Section>
+              )}
+
+              {d.comments.length > 0 && <Comments comments={d.comments} />}
+
+              {d.lien && (
+                <a
+                  href={d.lien}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="glass-btn flex items-center justify-center gap-2 rounded-2xl bg-white/10 py-2.5 text-sm font-medium"
+                >
+                  Voir sur Refuges.info <ExternalLink size={14} />
+                </a>
+              )}
+            </>
+          )}
+        </div>
+      </aside>
+
+      {show3D && (
+        <Terrain3DModal
+          point={{
+            ...point,
+            nom: d?.nom ?? point.nom,
+            alt: d?.alt ?? point.alt,
+            type: d?.type ?? point.type,
+            lat: point.lat,
+            lng: point.lng,
+          }}
+          onClose={() => setShow3D(false)}
+        />
+      )}
+    </>
   )
 }
 
