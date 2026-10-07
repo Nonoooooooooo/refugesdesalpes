@@ -11,6 +11,8 @@ import MapControls from './components/MapControls.jsx'
 import FilterPanel from './components/FilterPanel.jsx'
 import Sidebar from './components/Sidebar.jsx'
 import BaseLayerSwitcher from './components/BaseLayerSwitcher.jsx'
+import TransportLayer from './features/transport/TransportLayer.jsx'
+import TransportToggle from './features/transport/TransportToggle.jsx'
 
 const MIN_ZOOM_FETCH = 9
 const IMAGERY_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
@@ -113,6 +115,7 @@ export default function App() {
   const [reloadKey, setReloadKey] = useState(0)
   const [baseLayer, setBaseLayer] = useState('satellite')
   const [showTrails, setShowTrails] = useState(false)
+  const [showTransports, setShowTransports] = useState(false)
 
   // Cumule les points déjà vus pour éviter le scintillement, borne la taille.
   const handleData = useCallback((incoming) => {
@@ -190,6 +193,7 @@ export default function App() {
             maxZoom={18}
           />
         )}
+        <TransportLayer active={showTransports} />
         <BboxLoader onData={handleData} onStatus={setStatus} reloadKey={reloadKey} />
         <FlyToSelected target={flyTarget} />
         <MapControls />
@@ -233,6 +237,7 @@ export default function App() {
         showTrails={showTrails}
         onToggleTrails={() => setShowTrails((v) => !v)}
       />
+      <TransportToggle active={showTransports} onToggle={() => setShowTransports((v) => !v)} />
       <FilterPanel active={activeTypes} onToggle={toggleType} />
 
       {/* Statut discret */}
