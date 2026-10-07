@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { X, Loader2, TriangleAlert, Mountain, BedDouble, ExternalLink, RefreshCw } from 'lucide-react'
+import { X, Loader2, TriangleAlert, Mountain, BedDouble, ExternalLink, RefreshCw, MessageSquare } from 'lucide-react'
 import { fetchPoint } from '../lib/api'
 import { typeInfo } from '../lib/types.jsx'
 import { cleanText } from '../lib/text'
@@ -99,6 +99,8 @@ export default function Sidebar({ point, onClose }) {
               </Section>
             )}
 
+            {d.comments.length > 0 && <Comments comments={d.comments} />}
+
             {d.lien && (
               <a
                 href={d.lien}
@@ -130,6 +132,45 @@ function Section({ title, children }) {
     <section>
       <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-white/50">{title}</h2>
       {children}
+    </section>
+  )
+}
+
+const COMMENTS_PREVIEW = 4
+const fmtDate = (s) => {
+  const d = new Date(String(s).replace(' ', 'T').slice(0, 19))
+  return isNaN(d) ? '' : d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
+function Comments({ comments }) {
+  const [all, setAll] = useState(false)
+  const shown = all ? comments : comments.slice(0, COMMENTS_PREVIEW)
+  return (
+    <section>
+      <h2 className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-white/50">
+        <MessageSquare size={13} /> Commentaires ({comments.length})
+      </h2>
+      <ul className="flex flex-col gap-2.5">
+        {shown.map((c) => (
+          <li key={c.id} className="rounded-2xl p-3.5" style={{ background: 'rgba(255,255,255,0.07)' }}>
+            <div className="mb-1.5 flex items-center justify-between gap-2 text-xs">
+              <span className="font-semibold text-white/90">{c.auteur || 'Anonyme'}</span>
+              <span className="text-white/45">{fmtDate(c.date)}</span>
+            </div>
+            <p className="whitespace-pre-line break-words text-[13px] leading-relaxed text-white/80">
+              {cleanText(c.texte)}
+            </p>
+          </li>
+        ))}
+      </ul>
+      {comments.length > COMMENTS_PREVIEW && (
+        <button
+          onClick={() => setAll((v) => !v)}
+          className="glass-btn mt-3 w-full rounded-xl bg-white/10 py-2 text-xs font-medium"
+        >
+          {all ? 'Réduire' : `Voir les ${comments.length - COMMENTS_PREVIEW} autres commentaires`}
+        </button>
+      )}
     </section>
   )
 }

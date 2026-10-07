@@ -54,8 +54,9 @@ export async function fetchPoint(id, signal) {
   if (!feature) throw new Error('Point introuvable.')
   const p = feature.properties
 
-  const photos = Object.values(comments)
-    .filter((c) => c && c['photo-reduite'])
+  const all = Object.values(comments).filter((c) => c && typeof c === 'object')
+  const photos = all
+    .filter((c) => c['photo-reduite'])
     .map((c) => ({
       id: c.id_commentaire,
       thumb: fixPhoto(c['photo-vignette']),
@@ -84,5 +85,15 @@ export async function fetchPoint(id, signal) {
       valeur: i.valeur,
     })),
     photos,
+    comments: all
+      .filter((c) => c.texte_commentaire)
+      .map((c) => ({
+        id: c.id_commentaire,
+        texte: c.texte_commentaire,
+        auteur: c.auteur_commentaire,
+        date: c.date_commentaire,
+        photo: fixPhoto(c['photo-vignette']),
+      }))
+      .sort((a, b) => String(b.date).localeCompare(String(a.date))),
   }
 }

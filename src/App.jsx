@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { MapContainer, TileLayer, LayerGroup, Marker, Tooltip, LayersControl, Pane, useMap, useMapEvents } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Tooltip, Pane, useMap, useMapEvents } from 'react-leaflet'
+import MarkerClusterGroup from 'react-leaflet-cluster'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { renderToStaticMarkup } from 'react-dom/server'
@@ -9,6 +10,7 @@ import { typeInfo, FILTERABLE } from './lib/types.jsx'
 import MapControls from './components/MapControls.jsx'
 import FilterPanel from './components/FilterPanel.jsx'
 import Sidebar from './components/Sidebar.jsx'
+import BaseLayerSwitcher from './components/BaseLayerSwitcher.jsx'
 
 const MIN_ZOOM_FETCH = 9
 const IMAGERY_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
@@ -27,15 +29,25 @@ function pinIcon(type, selected) {
         className: 'refuge-marker',
         html: renderToStaticMarkup(
           <div className={`refuge-pin${selected ? ' selected' : ''}`} style={{ background: color }}>
-            <Icon size={18} strokeWidth={2.2} />
+            <Icon size={13} strokeWidth={2.4} />
           </div>,
         ),
-        iconSize: [34, 34],
-        iconAnchor: [17, 17],
+        iconSize: [24, 24],
+        iconAnchor: [12, 12],
       }),
     )
   }
   return iconCache.get(cacheKey)
+}
+
+function clusterIcon(cluster) {
+  const n = cluster.getChildCount()
+  const size = n < 10 ? 30 : n < 50 ? 36 : 42
+  return L.divIcon({
+    className: 'refuge-marker',
+    html: `<div class="refuge-cluster" style="width:${size}px;height:${size}px">${n}</div>`,
+    iconSize: [size, size],
+  })
 }
 
 /** Écoute `moveend` et ne charge que les points de l'étendue visible. */
@@ -98,6 +110,7 @@ export default function App() {
   const [activeTypes, setActiveTypes] = useState(() => new Set(FILTERABLE.map((t) => t.key)))
   const [flyTarget, setFlyTarget] = useState(null)
   const [reloadKey, setReloadKey] = useState(0)
+  const [baseLayer, setBaseLayer] = useState('satellite')
 
   // Cumule les points déjà vus pour éviter le scintillement, borne la taille.
   const handleData = useCallback((incoming) => {
@@ -147,53 +160,62 @@ export default function App() {
       >
         {/* Panes: tuiles (200) < toponymie (250) < overlay (400) < marqueurs (600) */}
         <Pane name="labels" style={{ zIndex: 250, pointerEvents: 'none' }} />
-        <LayersControl position="topright">
-          <LayersControl.BaseLayer checked name="Satellite">
-            <LayerGroup>
-              <TileLayer
-                attribution="Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics"
-                url={IMAGERY_URL}
-                maxZoom={18}
-              />
-              <TileLayer pane="labels" url={LABELS_URL} maxZoom={18} opacity={0.9} />
-            </LayerGroup>
-          </LayersControl.BaseLayer>
-          <LayersControl.BaseLayer name="Relief">
+        {baseLayer === 'satellite' ? (
+          <>
             <TileLayer
-              attribution="Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, USGS, NPS"
-              url={TOPO_URL}
+              key="sat"
+              attribution="Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics"
+              url={IMAGERY_URL}
               maxZoom={18}
             />
-          </LayersControl.BaseLayer>
-        </LayersControl>
+            <TileLayer key="labels" pane="labels" url={LABELS_URL} maxZoom={18} opacity={0.9} />
+          </>
+        ) : (
+          <TileLayer
+            key="topo"
+            attribution="Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, USGS, NPS"
+            url={TOPO_URL}
+            maxZoom={18}
+          />
+        )}
         <BboxLoader onData={handleData} onStatus={setStatus} reloadKey={reloadKey} />
         <FlyToSelected target={flyTarget} />
         <MapControls />
-        {visible.map((p) => (
-          <Marker
-            key={p.id}
-            position={[p.lat, p.lng]}
-            icon={pinIcon(p.type, selected?.id === p.id)}
-            eventHandlers={{
-              click: () => selectPoint(p),
-              mouseover: () => onHoverStart(p.id),
-              mouseout: onHoverEnd,
-            }}
-          >
-            {hoveredId === p.id && (
-              <Tooltip permanent direction="top" offset={[0, -20]} className="refuge-tooltip">
-                <div className="refuge-tooltip-name">{p.nom}</div>
-                <div className="refuge-tooltip-meta">
-                  <span style={{ background: typeInfo(p.type).color }} className="refuge-tooltip-dot" />
-                  {p.alt != null ? `${p.alt} m` : 'Altitude inconnue'}
-                  <span className="opacity-60"> · {typeInfo(p.type).label}</span>
-                </div>
-              </Tooltip>
-            )}
-          </Marker>
-        ))}
+        <MarkerClusterGroup
+          chunkedLoading
+          showCoverageOnHover={false}
+          maxClusterRadius={48}
+          disableClusteringAtZoom={15}
+          spiderfyOnMaxZoom
+          iconCreateFunction={clusterIcon}
+        >
+          {visible.map((p) => (
+            <Marker
+              key={p.id}
+              position={[p.lat, p.lng]}
+              icon={pinIcon(p.type, selected?.id === p.id)}
+              eventHandlers={{
+                click: () => selectPoint(p),
+                mouseover: () => onHoverStart(p.id),
+                mouseout: onHoverEnd,
+              }}
+            >
+              {hoveredId === p.id && (
+                <Tooltip permanent direction="top" offset={[0, -14]} className="refuge-tooltip">
+                  <div className="refuge-tooltip-name">{p.nom}</div>
+                  <div className="refuge-tooltip-meta">
+                    <span style={{ background: typeInfo(p.type).color }} className="refuge-tooltip-dot" />
+                    {p.alt != null ? `${p.alt} m` : 'Altitude inconnue'}
+                    <span className="opacity-60"> · {typeInfo(p.type).label}</span>
+                  </div>
+                </Tooltip>
+              )}
+            </Marker>
+          ))}
+        </MarkerClusterGroup>
       </MapContainer>
 
+      <BaseLayerSwitcher value={baseLayer} onChange={setBaseLayer} />
       <FilterPanel active={activeTypes} onToggle={toggleType} />
 
       {/* Statut discret */}
