@@ -51,20 +51,374 @@ const BUS_ROUTES = [
     url: 'https://www.laregionvoustransporte.fr',
     coords: '6.1296,45.8992;6.2215,45.7820;6.3150,45.7480;6.3927,45.6756'
   },
+  // ─────────────────────────────────────────────────────────
+  // MASSIF DES ARAVIS : LE GRAND-BORNAND, LA CLUSAZ, THÔNES
+  // ─────────────────────────────────────────────────────────
   {
     id: 'bus-y62',
     ref: 'Y62',
-    name: 'Ligne Y62 : Annecy ↔ La Clusaz / Le Grand-Bornand',
+    name: 'Ligne Y62 : Annecy ↔ Veyrier ↔ Alex ↔ Thônes ↔ La Clusaz / Le Grand-Bornand',
     mode: 'bus',
     operator: 'Cars Région Haute-Savoie',
-    network: 'Cars Région',
-    route: 'Annecy ↔ Thônes ↔ Saint-Jean-de-Sixt ↔ La Clusaz / Grand-Bornand',
-    frequency: 'Toutes les heures (Liaison Aravis)',
-    period: 'Toute l\'année',
-    stops: ['Annecy Gare', 'Alex', 'Thônes Gare Routière', 'Saint-Jean-de-Sixt', 'La Clusaz', 'Le Grand-Bornand'],
-    color: '#10b981',
+    network: 'Cars Région Aravis',
+    route: 'Annecy Gare Routière ↔ Veyrier-du-Lac ↔ Menthon (Col de Bluffy) ↔ Alex ↔ Thônes ↔ Les Villards-sur-Thônes ↔ Saint-Jean-de-Sixt ↔ La Clusaz / Le Grand-Bornand',
+    frequency: 'Toutes les heures toute l\'année, renforts été/hiver (équipée porte-vélos)',
+    period: 'Toute l\'année (Liaison structurante du Massif des Aravis)',
+    stops: [
+      'Annecy (Gare Routière SNCF)',
+      'Annecy (Parmelan bd de Menthon)',
+      'Annecy (Albigny / Petit Port Chavoires)',
+      'Veyrier-du-Lac (Chavoires / Téléphérique / Chef-Lieu / Charmettes / Buvette)',
+      'Menthon-Saint-Bernard (Col de Bluffy)',
+      'Alex (Rond-Point / Le Pont)',
+      'Thônes (Morette / Thuy / Les Perrasses / Gare Routière 625 m / La Vacherie)',
+      'Les Villards-sur-Thônes (Luidefour / Les Perrils / La Villaz / Le Bourgeal)',
+      'Saint-Jean-de-Sixt (Forgeassoud / Chef-Lieu 960 m)',
+      'La Clusaz (Gare Routière 1040 m)',
+      'Le Grand-Bornand (Gare Routière 930 m)'
+    ],
+    color: '#0284c7',
     url: 'https://www.laregionvoustransporte.fr',
-    coords: '6.1296,45.8992;6.3248,45.8820;6.4087,45.9228;6.4265,45.9048'
+    timetable: {
+      headers: ['08:00', '09:25', '12:25', '15:25', '17:25', '18:25'],
+      rows: [
+        { stop: 'Annecy Gare Routière', times: ['08:00', '09:25', '12:25', '15:25', '17:25', '18:25'] },
+        { stop: 'Veyrier Chef-Lieu', times: ['08:20', '09:45', '12:45', '15:45', '17:45', '18:45'] },
+        { stop: 'Col de Bluffy', times: ['08:25', '09:50', '12:50', '15:50', '17:50', '18:50'] },
+        { stop: 'Thônes Gare Routière', times: ['08:50', '10:05', '13:05', '16:05', '18:05', '19:05'] },
+        { stop: 'St-Jean-de-Sixt Chef-Lieu', times: ['09:15', '10:30', '13:30', '16:15', '18:15', '19:15'] },
+        { stop: 'La Clusaz Gare Routière', times: ['09:25', '10:25', '13:25', '16:25', '18:25', '19:25'] },
+        { stop: 'Gd-Bornand Gare Routière', times: ['09:45', '10:35', '13:35', '16:35', '18:45', '19:45'] }
+      ],
+      note: 'Ligne régulière cadencée reliant la gare TGV d\'Annecy aux stations des Aravis. Correspondance avec le réseau Aravis Bus à Thônes, St-Jean-de-Sixt, La Clusaz et Le Grand-Bornand.'
+    },
+    coords: '6.1296,45.8992;6.1770,45.8820;6.2200,45.8670;6.2380,45.8890;6.3250,45.8820;6.3820,45.9080;6.4110,45.9220;6.4250,45.9050;6.4280,45.9420'
+  },
+  {
+    id: 'bus-y63',
+    ref: 'Y63',
+    name: 'Ligne Y63 : Annecy ↔ Dingy-Saint-Clair ↔ Thônes ↔ La Clusaz / Le Grand-Bornand',
+    mode: 'bus',
+    operator: 'Cars Région Haute-Savoie',
+    network: 'Cars Région Aravis',
+    route: 'Annecy Gare Routière ↔ Annecy-le-Vieux ↔ Dingy-Saint-Clair ↔ La Balme-de-Thuy ↔ Thônes ↔ Les Villards-sur-Thônes ↔ Saint-Jean-de-Sixt ↔ La Clusaz / Le Grand-Bornand',
+    frequency: 'Plusieurs liaisons quotidiennes en semaine et week-end',
+    period: 'Toute l\'année (Desserte de la vallée du Fier et du pied du Parmelan)',
+    stops: [
+      'Annecy (Gare Routière SNCF)',
+      'Annecy (Parmelan av. du Parmelan)',
+      'Annecy-le-Vieux (Buisson / Tilleuls / Entrée Parc)',
+      'Dingy-Saint-Clair (Glandon / Village / Provenat / Chessenay)',
+      'La Balme-de-Thuy (Charvex / Salignon / Chef-Lieu)',
+      'Thônes (Morette / Thuy / Gare Routière 625 m)',
+      'Les Villards-sur-Thônes (Le Bourgeal / La Villaz)',
+      'Saint-Jean-de-Sixt (Forgeassoud / Chef-Lieu 960 m)',
+      'La Clusaz (Gare Routière 1040 m)',
+      'Le Grand-Bornand (Gare Routière 930 m)'
+    ],
+    color: '#0369a1',
+    url: 'https://www.laregionvoustransporte.fr',
+    timetable: {
+      headers: ['06:50', '13:35', '16:25', '16:55', '18:10', '18:55'],
+      rows: [
+        { stop: 'Annecy Gare Routière', times: ['06:50', '13:35', '16:25', '16:55', '18:10', '18:55'] },
+        { stop: 'Dingy-St-Clair Village', times: ['07:39', '14:25', '17:15', '17:45', '19:00', '19:45'] },
+        { stop: 'La Balme-de-Thuy Chef-Lieu', times: ['07:45', '14:30', '17:20', '17:50', '19:06', '19:50'] },
+        { stop: 'Thônes Gare Routière', times: ['07:54', '14:50', '17:40', '18:10', '19:26', '20:10'] },
+        { stop: 'La Clusaz / Gd-Bornand', times: ['08:14', '15:05', '18:25', '18:55', '19:30', '20:35'] }
+      ],
+      note: 'Desserte alternative de la vallée des Aravis par Dingy-Saint-Clair et La Balme-de-Thuy au pied du plateau des Glières.'
+    },
+    coords: '6.1296,45.8992;6.1550,45.9200;6.2230,45.9120;6.2780,45.8990;6.3250,45.8820;6.4110,45.9220;6.4250,45.9050;6.4280,45.9420'
+  },
+  {
+    id: 'bus-proximiti-460',
+    ref: 'Ligne 460',
+    name: 'Ligne 460 Proxim\'iTi : St-Pierre-en-Faucigny ↔ Glières-Val-de-Borne ↔ St-Jean-de-Sixt ↔ Le Grand-Bornand',
+    mode: 'bus',
+    operator: 'Proxim\'iTi (SM4CC)',
+    network: 'Réseau Proxim\'iTi',
+    route: 'St-Pierre-en-Faucigny (Gare SNCF) ↔ Glières-Val-de-Borne (Beffay, Lavey, Saxias, Pépinières, Chef-lieu, La Ville, Pont Nord, La Rivière) ↔ St-Jean-de-Sixt (Pt. de la Douane, Chef-Lieu, Forgeassoud) ↔ Le Grand-Bornand (Gare Routière, Télécabines Rosay/Joyère, Belvédère, Nant Robert, Les Potais)',
+    frequency: 'Liaisons régulières du lundi au vendredi, correspondances Léman Express L3 en gare de St-Pierre',
+    period: 'Toute l\'année (Liaison Faucigny ↔ Massif des Aravis)',
+    stops: [
+      'Saint-Pierre-en-Faucigny (Collège Karine Ruby)',
+      'Saint-Pierre-en-Faucigny (Gare SNCF - Léman Express L3)',
+      'Glières-Val-de-Borne (Beffay)',
+      'Glières-Val-de-Borne (Lavey)',
+      'Glières-Val-de-Borne (Saxias)',
+      'Glières-Val-de-Borne (Pépinières)',
+      'Glières-Val-de-Borne (Chef-lieu Entremont)',
+      'Glières-Val-de-Borne (La Ville)',
+      'Glières-Val-de-Borne (Pont Nord)',
+      'Glières-Val-de-Borne (Maison des Services)',
+      'Glières-Val-de-Borne (La Rivière)',
+      'Saint-Jean-de-Sixt (Point de la Douane)',
+      'Saint-Jean-de-Sixt (Chef-Lieu)',
+      'Saint-Jean-de-Sixt (Forgeassoud)',
+      'Le Grand-Bornand (Les Épinettes)',
+      'Le Grand-Bornand (Gare Routière 930 m)',
+      'Le Grand-Bornand (Télécabines Rosay / Joyère)',
+      'Le Grand-Bornand (Belvédère)',
+      'Le Grand-Bornand (Le Nant Robert)',
+      'Le Grand-Bornand (Les Potais)'
+    ],
+    color: '#e11d48',
+    url: 'https://www.proximiti.fr',
+    timetable: {
+      headers: ['08:32', '10:32', '15:32', '17:32', '18:32'],
+      rows: [
+        { stop: 'St-Pierre Gare (Léman Exp.)', times: ['08:32', '10:32', '15:32', '17:32', '18:32'] },
+        { stop: 'Glières Chef-lieu', times: ['08:46', '10:46', '15:46', '17:46', '18:46'] },
+        { stop: 'St-Jean-de-Sixt Chef-Lieu', times: ['09:09', '11:09', '16:09', '18:09', '19:09'] },
+        { stop: 'Gd-Bornand Gare Routière', times: ['09:18', '11:18', '16:18', '18:18', '19:18'] },
+        { stop: 'Gd-Bornand Les Potais', times: ['09:29', '11:29', '16:29', '18:29', '19:29'] }
+      ],
+      note: 'Ligne Proxim\'iTi reliant directement la vallée de l\'Arve (St-Pierre-en-Faucigny, train Léman Express vers Annemasse/Genève) au Grand-Bornand via les gorges des Bornes.'
+    },
+    coords: '6.3730,46.0600;6.3980,45.9980;6.4110,45.9220;6.4280,45.9420;6.4520,45.9320'
+  },
+  {
+    id: 'bus-proximiti-461',
+    ref: 'Ligne 461',
+    name: 'Ligne 461 Proxim\'iTi : St-Pierre-en-Faucigny ↔ Glières-Val-de-Borne ↔ Le Grand-Bornand (Vallée du Bouchet)',
+    mode: 'bus',
+    operator: 'Proxim\'iTi (SM4CC)',
+    network: 'Réseau Proxim\'iTi',
+    route: 'St-Pierre-en-Faucigny (Collège, Gare SNCF) ↔ Glières-Val-de-Borne (Chef-lieu) ↔ St-Jean-de-Sixt ↔ Le Grand-Bornand (Gare Routière, Télécabines Rosay/Joyère, Le Bouchet, Tardevant, Pont du Terret)',
+    frequency: 'Sur réservation via BusCheckin (app / 04 50 62 29 39) et services scolaires',
+    period: 'Toute l\'année (Périodes verte et orange)',
+    stops: [
+      'Saint-Pierre-en-Faucigny (Collège Karine Ruby)',
+      'Saint-Pierre-en-Faucigny (Gare SNCF)',
+      'Glières-Val-de-Borne (Chef-lieu)',
+      'Saint-Jean-de-Sixt (Chef-Lieu)',
+      'Le Grand-Bornand (Gare Routière)',
+      'Le Grand-Bornand (Télécabines Rosay / Joyère)',
+      'Le Grand-Bornand (Le Bouchet)',
+      'Le Grand-Bornand (Tardevant)',
+      'Le Grand-Bornand (Pont du Terret)'
+    ],
+    color: '#be123c',
+    url: 'https://www.proximiti.fr',
+    timetable: {
+      headers: ['07:36', '12:28', '16:55', '18:28'],
+      rows: [
+        { stop: 'St-Pierre Collège Karine Ruby', times: ['07:36', '12:28', '16:55', '18:28'] },
+        { stop: 'St-Pierre Gare SNCF', times: ['07:40', '12:32', '16:59', '18:32'] },
+        { stop: 'Glières Chef-Lieu', times: ['07:54', '12:46', '17:13', '18:46'] },
+        { stop: 'Gd-Bornand Gare Routière', times: ['08:26', '13:18', '17:45', '19:18'] }
+      ],
+      note: 'Service Proxim\'iTi avec réservation jusqu\'à 5 minutes avant le départ sur l\'application mobile BusCheckin (buscheckin.app) ou par téléphone au 04 50 62 29 39.'
+    },
+    coords: '6.3730,46.0600;6.3980,45.9980;6.4110,45.9220;6.4280,45.9420;6.4860,45.9180'
+  },
+  {
+    id: 'navette-aravis-a',
+    ref: 'Aravis Ligne A',
+    name: 'Navette Aravis Ligne A : Le Grand-Bornand ↔ Le Chinaillon (Office de Tourisme / Le Châtelet)',
+    mode: 'navette',
+    operator: 'Aravis Bus / Transdev Mont-Blanc Bus',
+    network: 'Navettes Aravis Bus',
+    route: 'Le Grand-Bornand Gare Routière ↔ Télécabines Rosay / Joyère ↔ Les Outalays ↔ Le Chinaillon (Office de Tourisme 1300 m) ↔ Le Châtelet',
+    frequency: 'Toutes les 15 à 30 min en saison (Service gratuit pour tous)',
+    period: 'Saisons Été & Hiver (Accès station d\'altitude du Chinaillon & départs randonnées)',
+    stops: [
+      'Le Grand-Bornand (Gare Routière 930 m)',
+      'Le Grand-Bornand (Télécabines Rosay / Joyère)',
+      'Le Chinaillon (Les Outalays)',
+      'Le Chinaillon (Office de Tourisme 1300 m)',
+      'Le Chinaillon (Le Châtelet 1350 m)'
+    ],
+    color: '#f97316',
+    url: 'https://www.aravisbus.fr',
+    coords: '6.4280,45.9420;6.4520,45.9690;6.4620,45.9750'
+  },
+  {
+    id: 'navette-aravis-g',
+    ref: 'Aravis Ligne G',
+    name: 'Navette Aravis Ligne G : Le Grand-Bornand ↔ Vallée du Bouchet ↔ Auberge Nordique',
+    mode: 'navette',
+    operator: 'Aravis Bus / Transdev Mont-Blanc Bus',
+    network: 'Navettes Aravis Bus',
+    route: 'Le Grand-Bornand Gare Routière ↔ Les Épinettes ↔ Les Potais ↔ Le Bouchet ↔ Les Plans ↔ Tardevant ↔ Auberge Nordique (Vallée du Bouchet)',
+    frequency: 'Navettes régulières gratuites toute la journée',
+    period: 'Saisons Été & Hiver (Domaine nordique, biathlon & départs rando Pointe Percée / Gramusset)',
+    stops: [
+      'Le Grand-Bornand (Gare Routière 930 m)',
+      'Le Grand-Bornand (Les Épinettes)',
+      'Le Grand-Bornand (Les Potais)',
+      'Le Grand-Bornand (Le Bouchet)',
+      'Le Grand-Bornand (Les Plans)',
+      'Le Grand-Bornand (Tardevant)',
+      'Le Grand-Bornand (Auberge Nordique 1050 m)'
+    ],
+    color: '#ea580c',
+    url: 'https://www.aravisbus.fr',
+    coords: '6.4280,45.9420;6.4480,45.9350;6.4680,45.9260;6.4860,45.9180'
+  },
+  {
+    id: 'navette-aravis-1',
+    ref: 'Aravis Ligne 1',
+    name: 'Navette Aravis Ligne 1 : La Clusaz ↔ Le Bossonnet ↔ Les Confins (Chapelle & Lac)',
+    mode: 'navette',
+    operator: 'Aravis Bus / Transdev Mont-Blanc Bus',
+    network: 'Navettes Aravis Bus',
+    route: 'La Clusaz Gare Routière ↔ Le Bossonnet ↔ Les Chenons ↔ Les Confins Chapelle (1430 m) ↔ Les Confins Lac (Pied de la Combe de Balme)',
+    frequency: 'Toutes les 20 à 30 min (Gratuit)',
+    period: 'Saisons Été & Hiver (Accès plateau des Confins & combes des Aravis : Balme, Bella Chaux, Grand Crêt)',
+    stops: [
+      'La Clusaz (Gare Routière 1040 m)',
+      'La Clusaz (Le Bossonnet)',
+      'La Clusaz (Les Chenons)',
+      'La Clusaz (Les Confins Chapelle 1430 m)',
+      'La Clusaz (Les Confins Lac - Combe de Balme)'
+    ],
+    color: '#16a34a',
+    url: 'https://www.aravisbus.fr',
+    coords: '6.4250,45.9050;6.4420,45.9110;6.4840,45.9160'
+  },
+  {
+    id: 'navette-aravis-7',
+    ref: 'Aravis Ligne 7',
+    name: 'Navette Aravis Ligne 7 : La Clusaz ↔ Col des Aravis (1486 m)',
+    mode: 'navette',
+    operator: 'Aravis Bus / Transdev Mont-Blanc Bus',
+    network: 'Navettes Aravis Bus',
+    route: 'La Clusaz Gare Routière ↔ Les Houches ↔ Les Étages ↔ Les Juments ↔ Col des Aravis (1486 m)',
+    frequency: 'Rotations quotidiennes estivales et hivernales gratuites',
+    period: 'Saison Été (Cols touristiques) & Hiver',
+    stops: [
+      'La Clusaz (Gare Routière 1040 m)',
+      'La Clusaz (Les Houches)',
+      'La Clusaz (Les Étages)',
+      'La Clusaz (Les Juments)',
+      'La Clusaz (Col des Aravis 1486 m, Panorama Mont-Blanc)'
+    ],
+    color: '#ca8a04',
+    url: 'https://www.aravisbus.fr',
+    coords: '6.4250,45.9050;6.4380,45.8920;6.4520,45.8790;6.4650,45.8720'
+  },
+  {
+    id: 'navette-aravis-8',
+    ref: 'Aravis Ligne 8',
+    name: 'Navette Aravis Ligne 8 : La Clusaz ↔ Col de la Croix-Fry (1467 m)',
+    mode: 'navette',
+    operator: 'Aravis Bus / Transdev Mont-Blanc Bus',
+    network: 'Navettes Aravis Bus',
+    route: 'La Clusaz Gare Routière ↔ Le Domanial Piscine ↔ Les Riffroids ↔ Croix-Fry Hameau de l\'Ours ↔ Col de la Croix-Fry (1467 m)',
+    frequency: 'Navettes quotidiennes gratuites',
+    period: 'Saisons Été & Hiver (Accès Plateau de Beauregard)',
+    stops: [
+      'La Clusaz (Gare Routière 1040 m)',
+      'La Clusaz (Le Domanial Piscine)',
+      'La Clusaz (Les Riffroids)',
+      'Croix-Fry (Hameau de l\'Ours)',
+      'Col de la Croix-Fry (1467 m)'
+    ],
+    color: '#e11d48',
+    url: 'https://www.aravisbus.fr',
+    coords: '6.4250,45.9050;6.4170,45.8920;6.4020,45.8780'
+  },
+  {
+    id: 'navette-aravis-is',
+    ref: 'Aravis Ligne IS',
+    name: 'Navette Aravis Ligne IS : La Clusaz ↔ Saint-Jean-de-Sixt ↔ Le Grand-Bornand (Inter-Stations)',
+    mode: 'navette',
+    operator: 'Aravis Bus / Transdev Mont-Blanc Bus',
+    network: 'Navettes Aravis Bus',
+    route: 'La Clusaz Gare Routière ↔ Saint-Jean-de-Sixt Chef-Lieu ↔ Forgeassoud ↔ Le Grand-Bornand Gare Routière',
+    frequency: 'Toutes les 30 min en journée (Liaison inter-stations gratuite)',
+    period: 'Toute l\'année (Été et Hiver)',
+    stops: [
+      'La Clusaz (Gare Routière 1040 m)',
+      'Saint-Jean-de-Sixt (Chef-Lieu 960 m)',
+      'Saint-Jean-de-Sixt (Forgeassoud)',
+      'Le Grand-Bornand (Gare Routière 930 m)'
+    ],
+    color: '#6366f1',
+    url: 'https://www.aravisbus.fr',
+    coords: '6.4250,45.9050;6.4110,45.9220;6.4280,45.9420'
+  },
+  {
+    id: 'navette-aravis-m',
+    ref: 'Aravis Ligne M',
+    name: 'Navette Aravis Ligne M : Thônes ↔ Manigod ↔ Col de la Croix-Fry ↔ Col de Merdassier',
+    mode: 'navette',
+    operator: 'Aravis Bus / Communauté de Communes des Vallées de Thônes',
+    network: 'Navettes Aravis Bus',
+    route: 'Thônes Gare Routière ↔ Les Clefs ↔ Manigod Chef-Lieu ↔ Col de la Croix-Fry (1467 m) ↔ Merdassier Centre (1500 m)',
+    frequency: 'Navettes quotidiennes en saison estivale et hivernale',
+    period: 'Saisons Été & Hiver (Vallée de Manigod & domaine de l\'Étale)',
+    stops: [
+      'Thônes (Gare Routière 625 m)',
+      'Les Clefs (Chef-lieu)',
+      'Manigod (Chef-lieu 930 m)',
+      'Col de la Croix-Fry (1467 m)',
+      'Merdassier Centre (1500 m)'
+    ],
+    color: '#0d9488',
+    url: 'https://www.aravisbus.fr',
+    coords: '6.3250,45.8820;6.3280,45.8620;6.3680,45.8600;6.4020,45.8780;6.4150,45.8650'
+  },
+  {
+    id: 'navette-aravis-v',
+    ref: 'Aravis Ligne V',
+    name: 'Navette Aravis Ligne V : Thônes ↔ Les Clefs ↔ Serraval ↔ Le Bouchet-Mont-Charvin',
+    mode: 'navette',
+    operator: 'Aravis Bus / Communauté de Communes des Vallées de Thônes',
+    network: 'Navettes Aravis Bus',
+    route: 'Thônes Gare Routière ↔ Les Clefs ↔ Serraval Chef-Lieu ↔ Le Bouchet-Mont-Charvin (Pied du Mont Charvin)',
+    frequency: 'Liaisons saisonnières régulières',
+    period: 'Saison Estivale (Accès randonnées Mont Charvin 2409 m & Lac du Charvin)',
+    stops: [
+      'Thônes (Gare Routière 625 m)',
+      'Les Clefs (Chef-lieu)',
+      'Serraval (Chef-lieu 800 m)',
+      'Le Bouchet-Mont-Charvin (Chef-lieu 950 m, pied du Mont Charvin)'
+    ],
+    color: '#84cc16',
+    url: 'https://www.aravisbus.fr',
+    coords: '6.3250,45.8820;6.3280,45.8620;6.3380,45.8030;6.3680,45.7980'
+  },
+  {
+    id: 'navette-aravis-cc',
+    ref: 'Desserte Colombière CC',
+    name: 'Navette Aravis CC : Le Grand-Bornand ↔ Le Chinaillon ↔ Col de la Colombière (1613 m)',
+    mode: 'navette',
+    operator: 'Aravis Bus / CCVT',
+    network: 'Cols des Aravis',
+    route: 'Le Grand-Bornand Gare Routière ↔ Le Chinaillon (Office de Tourisme) ↔ Col de la Colombière (1613 m)',
+    frequency: 'Navettes estivales vers le col touristique',
+    period: 'Été (Col ouvert de juin à octobre - Randonnées Pic du Jalouvre, Lac de Peyre, Bargy)',
+    stops: [
+      'Le Grand-Bornand (Gare Routière 930 m)',
+      'Le Chinaillon (Office de Tourisme 1300 m)',
+      'Col de la Colombière (1613 m, refuge de la Colombière & départ Lac de Peyre)'
+    ],
+    color: '#06b6d4',
+    url: 'https://www.aravisbus.fr',
+    coords: '6.4280,45.9420;6.4520,45.9690;6.4760,45.9920'
+  },
+  {
+    id: 'navette-aravis-ca',
+    ref: 'Desserte Col des Annes CA',
+    name: 'Navette Aravis CA : Le Grand-Bornand ↔ Vallée du Bouchet ↔ Col des Annes (1721 m)',
+    mode: 'navette',
+    operator: 'Aravis Bus / CCVT',
+    network: 'Cols des Aravis',
+    route: 'Le Grand-Bornand Gare Routière ↔ Le Bouchet ↔ Les Plans ↔ Col des Annes (1721 m)',
+    frequency: 'Navettes estivales vers le haut alpage des Annes',
+    period: 'Été (Accès au Refuge de la Pointe Percée - Gramusset & plus haut sommet des Aravis 2750 m)',
+    stops: [
+      'Le Grand-Bornand (Gare Routière 930 m)',
+      'Le Grand-Bornand (Le Bouchet)',
+      'Vallée du Bouchet (Les Plans)',
+      'Col des Annes (1721 m, alpage traditionnel des Aravis, départ Refuge de la Pointe Percée)'
+    ],
+    color: '#d97706',
+    url: 'https://www.aravisbus.fr',
+    coords: '6.4280,45.9420;6.4480,45.9350;6.4720,45.9450;6.5120,45.9620'
   },
   {
     id: 'bus-y81',
@@ -2961,7 +3315,109 @@ const STATIONS = [
   { id: 'hub-vaujany', name: 'Pôle Vaujany - Téléphérique du Dôme des Petites Rousses (1250 m)', mode: 'station', alt: 1250, lat: 45.1580, lng: 6.0760, lines: ['Cars Région T71/T70 (Bourg-d\'Oisans)', 'La Navette Oisans (PYSAE)', 'Téléphérique Dôme des Petites Rousses'], color: '#047857' },
   { id: 'hub-allemond', name: 'Pôle Allemond - Télécabine Eau d\'Olle Express (730 m)', mode: 'station', alt: 730, lat: 45.1320, lng: 6.0370, lines: ['Cars Région T71/T70 (Bourg-d\'Oisans / Vaujany)', 'Liaison Saisonnière Hiver (Alpe d\'Huez)', 'La Navette Oisans (PYSAE)', 'Télécabine Eau d\'Olle Express (accès Oz-en-Oisans)'], color: '#047857' },
   { id: 'hub-venosc', name: 'Pôle Télécabine de Venosc (945 m)', mode: 'station', alt: 945, lat: 44.9880, lng: 6.1180, lines: ['La Navette Oisans (Bourg-d\'Oisans/Vaujany)', 'Télécabine Venosc ↔ Les Deux Alpes', 'Accès Haute Vallée du Vénéon & Écrins'], color: '#eab308' },
-  { id: 'hub-rochetaillee', name: 'Carrefour de Rochetaillée (710 m)', mode: 'station', alt: 710, lat: 45.1050, lng: 5.9980, lines: ['Cars Région T75 (Grenoble)', 'Cars Région T71/T70 (Allemond/Vaujany)', 'Cars Région T73 (Les Deux Alpes)', 'La Navette Oisans'], color: '#10b981' }
+  { id: 'hub-rochetaillee', name: 'Carrefour de Rochetaillée (710 m)', mode: 'station', alt: 710, lat: 45.1050, lng: 5.9980, lines: ['Cars Région T75 (Grenoble)', 'Cars Région T71/T70 (Allemond/Vaujany)', 'Cars Région T73 (Les Deux Alpes)', 'La Navette Oisans'], color: '#10b981' },
+
+  // Pôles et Gares des Aravis & Grand-Bornand (Cars Région, Aravis Bus, Proxim'iTi)
+  { 
+    id: 'hub-grand-bornand', 
+    name: 'Gare Routière du Grand-Bornand (930 m)', 
+    mode: 'station', 
+    alt: 930, 
+    lat: 45.9420, 
+    lng: 6.4280, 
+    lines: ['Cars Région Y62/Y63 (Annecy)', 'Proxim\'iTi 460/461 (St-Pierre-en-Faucigny)', 'Aravis Bus A (Chinaillon)', 'Aravis Bus G (Auberge Nordique)', 'Aravis Bus IS (La Clusaz)', 'Aravis Bus CC (Col Colombière)', 'Aravis Bus CA (Col des Annes)'], 
+    color: '#0284c7' 
+  },
+  { 
+    id: 'hub-la-clusaz', 
+    name: 'Gare Routière de La Clusaz (1040 m)', 
+    mode: 'station', 
+    alt: 1040, 
+    lat: 45.9050, 
+    lng: 6.4250, 
+    lines: ['Cars Région Y62/Y63 (Annecy)', 'Aravis Bus 1 (Confins)', 'Aravis Bus 7 (Col des Aravis)', 'Aravis Bus 8 (Croix-Fry)', 'Aravis Bus IS (Grand-Bornand)'], 
+    color: '#0284c7' 
+  },
+  { 
+    id: 'hub-thones', 
+    name: 'Gare Routière de Thônes (625 m)', 
+    mode: 'station', 
+    alt: 625, 
+    lat: 45.8820, 
+    lng: 6.3250, 
+    lines: ['Cars Région Y62/Y63 (Annecy ↔ Aravis)', 'Aravis Bus ABD (Alex / Dingy)', 'Aravis Bus M (Manigod / Merdassier)', 'Aravis Bus V (Serraval / Bouchet)'], 
+    color: '#0284c7' 
+  },
+  { 
+    id: 'hub-saint-jean-de-sixt', 
+    name: 'Pôle de Saint-Jean-de-Sixt (960 m)', 
+    mode: 'station', 
+    alt: 960, 
+    lat: 45.9220, 
+    lng: 6.4110, 
+    lines: ['Cars Région Y62/Y63 (Annecy)', 'Proxim\'iTi 460/461 (St-Pierre-en-Faucigny)', 'Aravis Bus IS (La Clusaz ↔ Grand-Bornand)'], 
+    color: '#0284c7' 
+  },
+  { 
+    id: 'hub-chinaillon', 
+    name: 'Pôle Le Chinaillon - Office de Tourisme (1300 m)', 
+    mode: 'station', 
+    alt: 1300, 
+    lat: 45.9690, 
+    lng: 6.4520, 
+    lines: ['Aravis Bus A (Grand-Bornand)', 'Aravis Bus CC (Col Colombière)', 'Aravis Bus CA (Col des Annes)'], 
+    color: '#0284c7' 
+  },
+  { 
+    id: 'hub-confins', 
+    name: 'Pôle Les Confins - Chapelle & Lac (1430 m)', 
+    mode: 'station', 
+    alt: 1430, 
+    lat: 45.9160, 
+    lng: 6.4840, 
+    lines: ['Aravis Bus 1 (La Clusaz)', 'Accès Combe de Bellachat & Pointe Percée'], 
+    color: '#10b981' 
+  },
+  { 
+    id: 'hub-col-aravis', 
+    name: 'Pôle Col des Aravis (1486 m)', 
+    mode: 'station', 
+    alt: 1486, 
+    lat: 45.8720, 
+    lng: 6.4650, 
+    lines: ['Aravis Bus 7 (La Clusaz)', 'Accès Belvédère Mont-Blanc & Sentier des Crêtes'], 
+    color: '#10b981' 
+  },
+  { 
+    id: 'hub-col-colombiere', 
+    name: 'Pôle Col de la Colombière (1613 m)', 
+    mode: 'station', 
+    alt: 1613, 
+    lat: 45.9920, 
+    lng: 6.4760, 
+    lines: ['Aravis Bus CC (Le Grand-Bornand)', 'Accès Jallouvre, Bargy & Tour des Aravis'], 
+    color: '#10b981' 
+  },
+  { 
+    id: 'hub-col-croix-fry', 
+    name: 'Pôle Col de la Croix-Fry (1467 m)', 
+    mode: 'station', 
+    alt: 1467, 
+    lat: 45.8780, 
+    lng: 6.4020, 
+    lines: ['Aravis Bus 8 (La Clusaz)', 'Aravis Bus M (Thônes / Manigod)', 'Plateau de Beauregard'], 
+    color: '#10b981' 
+  },
+  { 
+    id: 'hub-st-pierre-faucigny', 
+    name: 'Gare de Saint-Pierre-en-Faucigny (478 m)', 
+    mode: 'station', 
+    alt: 478, 
+    lat: 46.0600, 
+    lng: 6.3730, 
+    lines: ['Léman Express L3', 'TER Auvergne-Rhône-Alpes', 'Proxim\'iTi 460/461 (Glières ↔ St-Jean ↔ Grand-Bornand)'], 
+    color: '#6366f1' 
+  }
 ];
 
 async function main() {
