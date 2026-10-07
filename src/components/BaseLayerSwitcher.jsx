@@ -1,39 +1,59 @@
-import { Satellite, Mountain } from 'lucide-react'
+import { Satellite, Mountain, Footprints } from 'lucide-react'
 
-const OPTIONS = [
-  { key: 'satellite', label: 'Satellite', Icon: Satellite },
-  { key: 'relief', label: 'Relief', Icon: Mountain },
-]
-
-/** Sélecteur segmenté de fond de carte (style glassmorphism). */
-export default function BaseLayerSwitcher({ value, onChange }) {
-  const index = OPTIONS.findIndex((o) => o.key === value)
+/**
+ * Sélecteur de fonds de carte et calque sentiers (Design Glassmorphism épuré).
+ */
+export default function BaseLayerSwitcher({
+  baseLayer,
+  onBaseLayerChange,
+  showTrails,
+  onToggleTrails,
+}) {
+  const isSatellite = baseLayer === 'satellite'
   return (
-    <div
-      role="radiogroup"
-      aria-label="Fond de carte"
-      className="glass absolute right-4 top-4 z-[1000] flex rounded-2xl p-1"
-    >
-      {/* Pastille animée */}
-      <span
-        aria-hidden
-        className="absolute bottom-1 top-1 w-[calc(50%-4px)] rounded-xl bg-white/20 shadow-inner transition-transform duration-300 ease-out"
-        style={{ transform: `translateX(${index * 100}%)`, left: 4 }}
-      />
-      {OPTIONS.map(({ key, label, Icon }) => (
+    <div className="glass absolute right-4 top-4 z-[1000] flex items-center gap-1.5 rounded-2xl p-1.5 shadow-2xl">
+      {/* Sélecteur de fond de carte */}
+      <div className="relative flex rounded-xl bg-black/30 p-0.5">
+        <span
+          aria-hidden
+          className="absolute bottom-0.5 top-0.5 w-[calc(50%-2px)] rounded-lg bg-white/20 shadow-sm transition-transform duration-300 ease-out"
+          style={{ transform: `translateX(${isSatellite ? 0 : 100}%)`, left: 2 }}
+        />
         <button
-          key={key}
-          role="radio"
-          aria-checked={value === key}
-          onClick={() => onChange(key)}
-          className={`relative z-10 flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-medium transition-colors ${
-            value === key ? 'text-white' : 'text-white/60 hover:text-white'
+          onClick={() => onBaseLayerChange('satellite')}
+          className={`relative z-10 flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+            isSatellite ? 'text-white font-semibold' : 'text-white/60 hover:text-white'
           }`}
         >
-          <Icon size={14} />
-          {label}
+          <Satellite size={13} />
+          Satellite
         </button>
-      ))}
+        <button
+          onClick={() => onBaseLayerChange('relief')}
+          className={`relative z-10 flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+            !isSatellite ? 'text-white font-semibold' : 'text-white/60 hover:text-white'
+          }`}
+        >
+          <Mountain size={13} />
+          Relief
+        </button>
+      </div>
+
+      <div className="mx-0.5 h-5 w-px bg-white/15" />
+
+      {/* Bouton bascule des sentiers de randonnée */}
+      <button
+        onClick={onToggleTrails}
+        title="Afficher/masquer les sentiers de randonnée (GR, PR)"
+        className={`glass-btn flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-medium transition-all ${
+          showTrails
+            ? 'border border-emerald-400/40 bg-emerald-500/30 text-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.3)]'
+            : 'bg-white/5 text-white/60 hover:text-white'
+        }`}
+      >
+        <Footprints size={14} className={showTrails ? 'text-emerald-400' : ''} />
+        Sentiers
+      </button>
     </div>
   )
 }

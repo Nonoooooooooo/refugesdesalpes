@@ -1,15 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import {
-  MapContainer,
-  TileLayer,
-  LayerGroup,
-  Marker,
-  Tooltip,
-  LayersControl,
-  Pane,
-  useMap,
-  useMapEvents,
-} from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Tooltip, Pane, useMap, useMapEvents } from 'react-leaflet'
 import MarkerClusterGroup from 'react-leaflet-cluster'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
@@ -20,6 +10,7 @@ import { typeInfo, FILTERABLE } from './lib/types.jsx'
 import MapControls from './components/MapControls.jsx'
 import FilterPanel from './components/FilterPanel.jsx'
 import Sidebar from './components/Sidebar.jsx'
+import BaseLayerSwitcher from './components/BaseLayerSwitcher.jsx'
 
 const MIN_ZOOM_FETCH = 9
 const IMAGERY_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
@@ -120,6 +111,8 @@ export default function App() {
   const [activeTypes, setActiveTypes] = useState(() => new Set(FILTERABLE.map((t) => t.key)))
   const [flyTarget, setFlyTarget] = useState(null)
   const [reloadKey, setReloadKey] = useState(0)
+  const [baseLayer, setBaseLayer] = useState('satellite')
+  const [showTrails, setShowTrails] = useState(false)
 
   // Cumule les points déjà vus pour éviter le scintillement, borne la taille.
   const handleData = useCallback((incoming) => {
@@ -169,34 +162,34 @@ export default function App() {
       >
         {/* Panes: tuiles (200) < toponymie (250) < overlay (400) < marqueurs (600) */}
         <Pane name="labels" style={{ zIndex: 250, pointerEvents: 'none' }} />
-        <LayersControl position="topright" collapsed={false}>
-          <LayersControl.BaseLayer checked name="Satellite">
-            <LayerGroup>
-              <TileLayer
-                attribution="Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics"
-                url={IMAGERY_URL}
-                maxZoom={18}
-              />
-              <TileLayer pane="labels" url={LABELS_URL} maxZoom={18} opacity={0.9} />
-            </LayerGroup>
-          </LayersControl.BaseLayer>
-          <LayersControl.BaseLayer name="Relief">
+        {baseLayer === 'satellite' ? (
+          <>
             <TileLayer
-              attribution="Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, USGS, NPS"
-              url={TOPO_URL}
+              key="sat"
+              attribution="Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics"
+              url={IMAGERY_URL}
               maxZoom={18}
             />
-          </LayersControl.BaseLayer>
-          <LayersControl.Overlay name="Sentiers de randonnée" checked={false}>
-            <TileLayer
-              pane="overlayPane"
-              url={TRAILS_URL}
-              attribution="Sentiers &copy; <a href='https://hiking.waymarkedtrails.org' target='_blank' rel='noreferrer'>Waymarked Trails</a>"
-              opacity={0.85}
-              maxZoom={18}
-            />
-          </LayersControl.Overlay>
-        </LayersControl>
+            <TileLayer key="labels" pane="labels" url={LABELS_URL} maxZoom={18} opacity={0.9} />
+          </>
+        ) : (
+          <TileLayer
+            key="topo"
+            attribution="Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, USGS, NPS"
+            url={TOPO_URL}
+            maxZoom={18}
+          />
+        )}
+        {showTrails && (
+          <TileLayer
+            key="trails"
+            pane="overlayPane"
+            url={TRAILS_URL}
+            attribution="Sentiers &copy; <a href='https://hiking.waymarkedtrails.org' target='_blank' rel='noreferrer'>Waymarked Trails</a>"
+            opacity={0.85}
+            maxZoom={18}
+          />
+        )}
         <BboxLoader onData={handleData} onStatus={setStatus} reloadKey={reloadKey} />
         <FlyToSelected target={flyTarget} />
         <MapControls />
@@ -234,6 +227,12 @@ export default function App() {
         </MarkerClusterGroup>
       </MapContainer>
 
+      <BaseLayerSwitcher
+        baseLayer={baseLayer}
+        onBaseLayerChange={setBaseLayer}
+        showTrails={showTrails}
+        onToggleTrails={() => setShowTrails((v) => !v)}
+      />
       <FilterPanel active={activeTypes} onToggle={toggleType} />
 
       {/* Statut discret */}
