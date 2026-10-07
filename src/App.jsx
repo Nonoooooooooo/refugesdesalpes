@@ -13,10 +13,12 @@ import MapControlBar from './components/MapControlBar.jsx'
 import SearchBar from './components/SearchBar.jsx'
 import TransportLayer from './features/transport/TransportLayer.jsx'
 import TransportSidebar from './features/transport/TransportSidebar.jsx'
+import OverpassLayer from './features/overpass/OverpassLayer.jsx'
 
 const MIN_ZOOM_FETCH = 9
 const IMAGERY_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
 const TOPO_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}'
+const CYCLOSM_URL = 'https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png'
 const LABELS_URL =
   'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}'
 const TRAILS_URL = 'https://tile.waymarkedtrails.org/hiking/{z}/{x}/{y}.png'
@@ -119,6 +121,8 @@ export default function App() {
   const [baseLayer, setBaseLayer] = useState('satellite')
   const [showTrails, setShowTrails] = useState(false)
   const [showTransports, setShowTransports] = useState(false)
+  const [showParkings, setShowParkings] = useState(false)
+  const [showPeaks, setShowPeaks] = useState(false)
 
   // Cumule les points déjà vus pour éviter le scintillement, borne la taille.
   const handleData = useCallback((incoming) => {
@@ -191,7 +195,7 @@ export default function App() {
       >
         {/* Panes: tuiles (200) < toponymie (250) < overlay (400) < marqueurs (600) */}
         <Pane name="labels" style={{ zIndex: 250, pointerEvents: 'none' }} />
-        {baseLayer === 'satellite' ? (
+        {baseLayer === 'satellite' && (
           <>
             <TileLayer
               key="sat"
@@ -201,11 +205,21 @@ export default function App() {
             />
             <TileLayer key="labels" pane="labels" url={LABELS_URL} maxZoom={18} opacity={0.9} />
           </>
-        ) : (
+        )}
+        {baseLayer === 'relief' && (
           <TileLayer
             key="topo"
             attribution="Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, USGS, NPS"
             url={TOPO_URL}
+            maxZoom={18}
+          />
+        )}
+        {baseLayer === 'cyclosm' && (
+          <TileLayer
+            key="cyclosm"
+            attribution="&copy; <a href='https://www.cyclosm.org'>CyclOSM</a> &copy; OpenStreetMap"
+            url={CYCLOSM_URL}
+            subdomains={['a', 'b', 'c']}
             maxZoom={18}
           />
         )}
@@ -224,6 +238,7 @@ export default function App() {
           onSelectTransport={handleSelectTransport}
           selectedTransport={selected?.isTransport ? selected : null}
         />
+        <OverpassLayer showParkings={showParkings} showPeaks={showPeaks} />
         <BboxLoader onData={handleData} onStatus={setStatus} reloadKey={reloadKey} />
         <FlyToSelected target={flyTarget} />
         <MapControls />
@@ -275,6 +290,10 @@ export default function App() {
         onToggleTrails={() => setShowTrails((v) => !v)}
         showTransports={showTransports}
         onToggleTransports={() => setShowTransports((v) => !v)}
+        showParkings={showParkings}
+        onToggleParkings={() => setShowParkings((v) => !v)}
+        showPeaks={showPeaks}
+        onTogglePeaks={() => setShowPeaks((v) => !v)}
         activeTypes={activeTypes}
         onToggleType={toggleType}
       />

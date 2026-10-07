@@ -2,20 +2,23 @@ import React, { useState } from 'react'
 import {
   Satellite,
   Mountain,
+  Bike,
   Footprints,
   TrainFront,
+  SquareParking,
+  MountainSnow,
   Filter,
   ChevronDown,
   ChevronUp,
   CheckCheck,
-  RotateCcw
+  RotateCcw,
 } from 'lucide-react'
 import { FILTERABLE } from '../lib/types.jsx'
 
 /**
  * Barre de contrôle unifiée en haut à droite :
- * Ligne 1 : Fond de carte (Satellite/Relief) | Sentiers | Transports | Bouton Filtres
- * Ligne 2 : Panneau de filtres des hébergements (parfaitement empilé sans chevauchement)
+ * Ligne 1 : Fond de carte (Satellite/Relief/CyclOSM) | Sentiers | Transports | Parkings | Sommets | Filtres
+ * Ligne 2 : Panneau de filtres des hébergements
  */
 export default function MapControlBar({
   baseLayer,
@@ -24,24 +27,25 @@ export default function MapControlBar({
   onToggleTrails,
   showTransports,
   onToggleTransports,
+  showParkings,
+  onToggleParkings,
+  showPeaks,
+  onTogglePeaks,
   activeTypes,
   onToggleType,
 }) {
   const [showFilters, setShowFilters] = useState(true)
-  const isSatellite = baseLayer === 'satellite'
   const activeCount = FILTERABLE.filter((t) => activeTypes.has(t.key)).length
   const allActive = activeCount === FILTERABLE.length
 
   const handleToggleAll = () => {
     if (allActive) {
-      // Garder uniquement les refuges gardés si on désactive tout
       FILTERABLE.forEach((t) => {
         if (t.key !== 'garde' && activeTypes.has(t.key)) {
           onToggleType(t.key)
         }
       })
     } else {
-      // Tout réactiver
       FILTERABLE.forEach((t) => {
         if (!activeTypes.has(t.key)) {
           onToggleType(t.key)
@@ -50,35 +54,43 @@ export default function MapControlBar({
     }
   }
 
+  const baseLayers = [
+    { key: 'satellite', label: 'Satellite', Icon: Satellite },
+    { key: 'relief', label: 'Relief', Icon: Mountain },
+    { key: 'cyclosm', label: 'CyclOSM', Icon: Bike },
+  ]
+
+  const activeBaseIdx = baseLayers.findIndex((b) => b.key === baseLayer)
+
   return (
     <div className="pointer-events-none absolute right-4 top-4 z-[1000] flex flex-col items-end gap-2">
       {/* ─── LIGNE 1 : Fond de carte & Calques majeurs ─── */}
-      <div className="pointer-events-auto glass flex items-center gap-1 rounded-2xl p-1.5 shadow-2xl backdrop-blur-xl">
-        {/* Sélecteur Satellite / Relief */}
+      <div className="pointer-events-auto glass flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-1 rounded-2xl p-1.5 shadow-2xl backdrop-blur-xl">
+        {/* Sélecteur Satellite / Relief / CyclOSM */}
         <div className="relative flex rounded-xl bg-black/40 p-0.5">
           <span
             aria-hidden
-            className="absolute bottom-0.5 top-0.5 w-[calc(50%-2px)] rounded-lg bg-white/20 shadow-sm transition-transform duration-300 ease-out"
-            style={{ transform: `translateX(${isSatellite ? 0 : 100}%)`, left: 2 }}
+            className="absolute bottom-0.5 top-0.5 w-[calc(33.33%-2px)] rounded-lg bg-white/20 shadow-sm transition-transform duration-300 ease-out"
+            style={{
+              transform: `translateX(${activeBaseIdx * 100}%)`,
+              left: 2,
+            }}
           />
-          <button
-            onClick={() => onBaseLayerChange('satellite')}
-            className={`relative z-10 flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors ${
-              isSatellite ? 'text-white font-semibold' : 'text-white/60 hover:text-white'
-            }`}
-          >
-            <Satellite size={13} />
-            <span className="hidden sm:inline">Satellite</span>
-          </button>
-          <button
-            onClick={() => onBaseLayerChange('relief')}
-            className={`relative z-10 flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors ${
-              !isSatellite ? 'text-white font-semibold' : 'text-white/60 hover:text-white'
-            }`}
-          >
-            <Mountain size={13} />
-            <span className="hidden sm:inline">Relief</span>
-          </button>
+          {baseLayers.map(({ key, label, Icon }) => {
+            const isActive = baseLayer === key
+            return (
+              <button
+                key={key}
+                onClick={() => onBaseLayerChange(key)}
+                className={`relative z-10 flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors ${
+                  isActive ? 'text-white font-semibold' : 'text-white/60 hover:text-white'
+                }`}
+              >
+                <Icon size={13} />
+                <span className="hidden sm:inline">{label}</span>
+              </button>
+            )
+          })}
         </div>
 
         <div className="mx-0.5 h-5 w-px bg-white/15" />
@@ -86,7 +98,7 @@ export default function MapControlBar({
         {/* Bouton Sentiers */}
         <button
           onClick={onToggleTrails}
-          title="Afficher/masquer les sentiers de randonnée (GR, PR)"
+          title="Afficher/masquer les sentiers de randonnée (Waymarked Trails)"
           className={`glass-btn flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-medium transition-all ${
             showTrails
               ? 'border border-emerald-400/50 bg-emerald-500/35 text-emerald-200 shadow-[0_0_12px_rgba(16,185,129,0.35)]'
@@ -100,7 +112,7 @@ export default function MapControlBar({
         {/* Bouton Transports */}
         <button
           onClick={onToggleTransports}
-          title="Afficher/masquer le réseau de transports alpins (trains, cars, navettes)"
+          title="Afficher/masquer le réseau de transports alpins"
           className={`glass-btn flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-medium transition-all ${
             showTransports
               ? 'border border-indigo-400/50 bg-indigo-500/35 text-indigo-200 shadow-[0_0_12px_rgba(99,102,241,0.35)] ring-1 ring-indigo-400/30'
@@ -108,12 +120,40 @@ export default function MapControlBar({
           }`}
         >
           <TrainFront size={14} className={showTransports ? 'text-indigo-300 animate-pulse' : ''} />
-          <span>Transports</span>
+          <span className="hidden sm:inline">Transports</span>
+        </button>
+
+        {/* Bouton Parkings (Overpass) */}
+        <button
+          onClick={onToggleParkings}
+          title="Afficher/masquer les parkings (zoom >= 13)"
+          className={`glass-btn flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-medium transition-all ${
+            showParkings
+              ? 'border border-blue-400/50 bg-blue-500/35 text-blue-200 shadow-[0_0_12px_rgba(59,130,246,0.35)]'
+              : 'bg-white/5 text-white/65 hover:text-white hover:bg-white/10'
+          }`}
+        >
+          <SquareParking size={14} className={showParkings ? 'text-blue-300' : ''} />
+          <span className="hidden sm:inline">Parkings</span>
+        </button>
+
+        {/* Bouton Sommets & Cols (Overpass) */}
+        <button
+          onClick={onTogglePeaks}
+          title="Afficher/masquer les sommets et cols (zoom >= 13)"
+          className={`glass-btn flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-medium transition-all ${
+            showPeaks
+              ? 'border border-amber-400/50 bg-amber-500/35 text-amber-200 shadow-[0_0_12px_rgba(245,158,11,0.35)]'
+              : 'bg-white/5 text-white/65 hover:text-white hover:bg-white/10'
+          }`}
+        >
+          <MountainSnow size={14} className={showPeaks ? 'text-amber-300' : ''} />
+          <span className="hidden sm:inline">Sommets & Cols</span>
         </button>
 
         <div className="mx-0.5 h-5 w-px bg-white/15" />
 
-        {/* Bouton pour basculer la visibilité des filtres */}
+        {/* Bouton Filtres hébergements */}
         <button
           onClick={() => setShowFilters((prev) => !prev)}
           title="Afficher/masquer les filtres des types d'hébergement"
@@ -132,7 +172,7 @@ export default function MapControlBar({
         </button>
       </div>
 
-      {/* ─── LIGNE 2 : Filtres des hébergements (alignés sous la ligne 1, zéro chevauchement) ─── */}
+      {/* ─── LIGNE 2 : Filtres des hébergements ─── */}
       {showFilters && (
         <div className="pointer-events-auto glass flex max-w-[calc(100vw-2rem)] sm:max-w-2xl flex-wrap items-center justify-end gap-1.5 rounded-2xl p-1.5 shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-top-1 duration-200">
           {FILTERABLE.map(({ key, label, color, Icon }) => {
