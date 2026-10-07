@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import * as maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
-import { X, RotateCw, Mountain, Compass, Maximize2, Minimize2, Loader2 } from 'lucide-react'
+import { X, RotateCw, Mountain, Compass, Maximize2, Minimize2, Loader2, Satellite, Map as MapIcon } from 'lucide-react'
 import { typeInfo } from '../../lib/types.jsx'
 
 export default function Terrain3DModal({ point, onClose }) {
@@ -10,20 +10,26 @@ export default function Terrain3DModal({ point, onClose }) {
   const [loading, setLoading] = useState(true)
   const [isRotating, setIsRotating] = useState(false)
   const [exaggeration, setExaggeration] = useState(1.5)
+  const [base3d, setBase3d] = useState('outdoor') // 'outdoor' ou 'satellite'
   const [isFullscreen, setIsFullscreen] = useState(false)
   const modalRef = useRef(null)
   const animFrameRef = useRef(null)
 
   const { color, Icon, label } = typeInfo(point?.type)
 
-  // Initialisation unique de la carte MapLibre 3D
+  // Initialisation de la carte MapLibre 3D avec Mapterhorn DEM
   useEffect(() => {
     if (!containerRef.current || !point) return
 
-    // Style MapLibre avec Imagerie Esri + Relief DEM Terrarium
+    // Style MapLibre utilisant Mapterhorn (DEM Terrarium haute fidélité pour les Alpes)
     const style = {
       version: 8,
       sources: {
+        'mapterhorn-dem': {
+          type: 'raster-dem',
+          url: 'https://tiles.mapterhorn.com/tilejson.json',
+          tileSize: 512,
+        },
         'esri-satellite': {
           type: 'raster',
           tiles: [
@@ -31,29 +37,51 @@ export default function Terrain3DModal({ point, onClose }) {
           ],
           tileSize: 256,
           maxzoom: 18,
-          attribution: '&copy; Esri, Maxar, Earthstar Geographics',
+          attribution: '&copy; Esri',
         },
-        'aws-terrarium-dem': {
-          type: 'raster-dem',
+        'osm-outdoor': {
+          type: 'raster',
           tiles: [
-            'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png',
+            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
           ],
           tileSize: 256,
-          encoding: 'terrarium',
-          maxzoom: 15,
+          maxzoom: 19,
+          attribution: '&copy; OpenStreetMap Contributors | Mapterhorn',
         },
       },
       layers: [
         {
-          id: 'esri-satellite-layer',
+          id: 'satellite-layer',
           type: 'raster',
           source: 'esri-satellite',
-          minzoom: 0,
-          maxzoom: 22,
+          layout: {
+            visibility: 'none',
+          },
+        },
+        {
+          id: 'outdoor-layer',
+          type: 'raster',
+          source: 'osm-outdoor',
+          layout: {
+            visibility: 'visible',
+          },
+        },
+        {
+          id: 'hillshade-layer',
+          type: 'hillshade',
+          source: 'mapterhorn-dem',
+          paint: {
+            'hillshade-shadow-color': '#1e293b',
+            'hillshade-highlight-color': '#ffffff',
+            'hillshade-exaggeration': 0.45,
+          },
+          layout: {
+            visibility: 'visible',
+          },
         },
       ],
       terrain: {
-        source: 'aws-terrarium-dem',
+        source: 'mapterhorn-dem',
         exaggeration: 1.5,
       },
     }
@@ -62,8 +90,8 @@ export default function Terrain3DModal({ point, onClose }) {
       container: containerRef.current,
       style,
       center: [point.lng, point.lat],
-      zoom: 14,
-      pitch: 70,
+      zoom: 13.5,
+      pitch: 72,
       bearing: 45,
       maxPitch: 85,
       attributionControl: false,
@@ -71,39 +99,35 @@ export default function Terrain3DModal({ point, onClose }) {
 
     mapInstanceRef.current = map
 
-    // Contrôles de navigation (inclinaison, boussole, zoom)
+    // Contrôles de navigation (boussole, inclinaison, zoom)
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'bottom-right')
 
-    const handleDoneLoading = () => {
-      setLoading(false)
-    }
+    const done = () => setLoading(false)
+    map.once('load', done)
+    map.once('render', done)
+    map.once('idle', done)
 
-    map.once('load', handleDoneLoading)
-    map.once('render', handleDoneLoading)
-    map.once('idle', handleDoneLoading)
-
-    // Sécurité de déblocage au bout de 400ms quoi qu'il arrive
-    const safetyTimer = setTimeout(handleDoneLoading, 400)
+    const safetyTimer = setTimeout(done, 500)
 
     map.on('load', () => {
-      handleDoneLoading()
-      // Application du relief 3D
+      done()
       try {
-        map.setTerrain({ source: 'aws-terrarium-dem', exaggeration: 1.5 })
+        map.setTerrain({ source: 'mapterhorn-dem', exaggeration: 1.5 })
       } catch (err) {
         console.warn('setTerrain error:', err)
       }
 
-      // Création du marqueur HTML 3D personnalisé
+      // Marqueur HTML 3D personnalisé avec ancre
       try {
         const el = document.createElement('div')
         el.className = 'group relative flex flex-col items-center cursor-pointer pointer-events-auto'
         el.innerHTML = `
-          <div style="background: ${color}" class="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold text-white shadow-2xl border border-white/50 backdrop-blur-md">
+          <div style="background: ${color}" class="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold text-white shadow-2xl border-2 border-white/90 backdrop-blur-md">
             <span>${point.nom || 'Point'}</span>
-            ${point.alt ? `<span class="opacity-80">(${point.alt}m)</span>` : ''}
+            ${point.alt ? `<span class="opacity-90 font-normal">(${point.alt}m)</span>` : ''}
           </div>
-          <div style="background: ${color}" class="h-2 w-2 rotate-45 transform -mt-1 shadow-md border-r border-b border-white/40"></div>
+          <div style="background: ${color}" class="h-2.5 w-2.5 rotate-45 transform -mt-1.5 shadow-md border-r-2 border-b-2 border-white/80"></div>
+          <div style="background: ${color}" class="h-2 w-2 rounded-full mt-0.5 opacity-80 ring-2 ring-white"></div>
         `
 
         new maplibregl.Marker({ element: el, anchor: 'bottom' })
@@ -122,15 +146,32 @@ export default function Terrain3DModal({ point, onClose }) {
     }
   }, [point, color])
 
-  // Ajustement dynamique de l'exagération du relief sans recharger la carte
+  // Changement de fond de carte (Satellite vs Carte Topo OSM)
+  const handleBaseChange = (mode) => {
+    setBase3d(mode)
+    const map = mapInstanceRef.current
+    if (!map) return
+
+    if (mode === 'satellite') {
+      if (map.getLayer('satellite-layer')) map.setLayoutProperty('satellite-layer', 'visibility', 'visible')
+      if (map.getLayer('outdoor-layer')) map.setLayoutProperty('outdoor-layer', 'visibility', 'none')
+      if (map.getLayer('hillshade-layer')) map.setLayoutProperty('hillshade-layer', 'visibility', 'none')
+    } else {
+      if (map.getLayer('satellite-layer')) map.setLayoutProperty('satellite-layer', 'visibility', 'none')
+      if (map.getLayer('outdoor-layer')) map.setLayoutProperty('outdoor-layer', 'visibility', 'visible')
+      if (map.getLayer('hillshade-layer')) map.setLayoutProperty('hillshade-layer', 'visibility', 'visible')
+    }
+  }
+
+  // Ajustement dynamique de l'exagération du relief
   const handleExaggerationChange = (val) => {
     setExaggeration(val)
     const map = mapInstanceRef.current
     if (map) {
       try {
-        map.setTerrain({ source: 'aws-terrarium-dem', exaggeration: val })
+        map.setTerrain({ source: 'mapterhorn-dem', exaggeration: val })
       } catch (err) {
-        console.warn('setTerrain change error:', err)
+        console.warn('setTerrain error:', err)
       }
     }
   }
@@ -171,8 +212,8 @@ export default function Terrain3DModal({ point, onClose }) {
     if (!map) return
     map.flyTo({
       center: [point.lng, point.lat],
-      zoom: 14,
-      pitch: 70,
+      zoom: 13.5,
+      pitch: 72,
       bearing: 45,
       essential: true,
       duration: 1200,
@@ -200,7 +241,7 @@ export default function Terrain3DModal({ point, onClose }) {
       <div className="relative flex h-full w-full max-w-6xl flex-col overflow-hidden rounded-3xl border border-white/15 bg-neutral-950 shadow-2xl backdrop-blur-2xl">
         {/* ─── Header de la modale ─── */}
         <header className="absolute left-4 right-4 top-4 z-20 flex items-center justify-between pointer-events-none">
-          <div className="pointer-events-auto glass flex items-center gap-3 rounded-2xl px-4 py-2.5 shadow-2xl backdrop-blur-xl bg-black/50 border border-white/10">
+          <div className="pointer-events-auto glass flex items-center gap-3 rounded-2xl px-4 py-2.5 shadow-2xl backdrop-blur-xl bg-black/55 border border-white/10">
             <span
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl shadow-md"
               style={{ background: color }}
@@ -213,7 +254,7 @@ export default function Terrain3DModal({ point, onClose }) {
                   {point.nom || 'Point 3D'}
                 </h2>
                 <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-semibold text-emerald-300 border border-emerald-500/30">
-                  Vue 3D Relief
+                  Vue 3D Mapterhorn
                 </span>
               </div>
               <p className="text-xs text-white/70">
@@ -222,8 +263,34 @@ export default function Terrain3DModal({ point, onClose }) {
             </div>
           </div>
 
-          {/* Actions : Plein écran & Fermer */}
+          {/* Actions : Bascule Carte/Satellite, Plein écran & Fermer */}
           <div className="pointer-events-auto flex items-center gap-2">
+            {/* Sélecteur Carte / Satellite 3D */}
+            <div className="flex rounded-xl bg-black/50 p-1 border border-white/10 backdrop-blur-xl">
+              <button
+                onClick={() => handleBaseChange('outdoor')}
+                className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium transition-colors ${
+                  base3d === 'outdoor'
+                    ? 'bg-white/20 text-white font-semibold shadow-sm'
+                    : 'text-white/60 hover:text-white'
+                }`}
+              >
+                <MapIcon size={13} />
+                <span className="hidden sm:inline">Carte Topo</span>
+              </button>
+              <button
+                onClick={() => handleBaseChange('satellite')}
+                className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium transition-colors ${
+                  base3d === 'satellite'
+                    ? 'bg-white/20 text-white font-semibold shadow-sm'
+                    : 'text-white/60 hover:text-white'
+                }`}
+              >
+                <Satellite size={13} />
+                <span className="hidden sm:inline">Satellite</span>
+              </button>
+            </div>
+
             <button
               onClick={toggleFullscreen}
               title="Plein écran"
