@@ -11,6 +11,7 @@ import MapControls from './components/MapControls.jsx'
 import FilterPanel from './components/FilterPanel.jsx'
 import Sidebar from './components/Sidebar.jsx'
 import BaseLayerSwitcher from './components/BaseLayerSwitcher.jsx'
+import SearchBar from './components/SearchBar.jsx'
 import TransportLayer from './features/transport/TransportLayer.jsx'
 import TransportToggle from './features/transport/TransportToggle.jsx'
 import TransportSidebar from './features/transport/TransportSidebar.jsx'
@@ -102,7 +103,10 @@ function BboxLoader({ onData, onStatus, reloadKey }) {
 function FlyToSelected({ target }) {
   const map = useMap()
   useEffect(() => {
-    if (target) map.flyTo([target.lat, target.lng], Math.max(map.getZoom(), 12), { duration: 0.8 })
+    if (target) {
+      const zoom = target.zoom || Math.max(map.getZoom(), 12)
+      map.flyTo([target.lat, target.lng], zoom, { duration: 0.8 })
+    }
   }, [target, map])
   return null
 }
@@ -141,14 +145,30 @@ export default function App() {
 
   const selectPoint = (p) => {
     setSelected(p)
-    setFlyTarget({ lat: p.lat, lng: p.lng, t: Date.now() })
+    setFlyTarget({ lat: p.lat, lng: p.lng, zoom: 13, t: Date.now() })
   }
 
+  const handleSelectRefuge = useCallback((refuge) => {
+    setSelected(refuge)
+    setFlyTarget({ lat: refuge.lat, lng: refuge.lng, zoom: 13, t: Date.now() })
+    setPoints((prev) => {
+      if (prev.some((p) => p.id === refuge.id)) return prev
+      return [refuge, ...prev]
+    })
+  }, [])
+
   const handleSelectTransport = useCallback((t) => {
+    setShowTransports(true)
     setSelected(t)
-    if (t?.lat && t?.lng && t?.mode === 'station') {
-      setFlyTarget({ lat: t.lat, lng: t.lng, t: Date.now() })
+    const lat = t.centerLat || t.lat
+    const lng = t.centerLng || t.lng
+    if (lat && lng) {
+      setFlyTarget({ lat, lng, zoom: t.mode === 'station' ? 13 : 11, t: Date.now() })
     }
+  }, [])
+
+  const handleSelectCity = useCallback((city) => {
+    setFlyTarget({ lat: city.lat, lng: city.lng, zoom: 12, t: Date.now() })
   }, [])
 
   // Survol : on attend un court instant avant d'afficher l'info-bulle
@@ -238,6 +258,13 @@ export default function App() {
           ))}
         </MarkerClusterGroup>
       </MapContainer>
+
+      <SearchBar
+        onSelectRefuge={handleSelectRefuge}
+        onSelectTransport={handleSelectTransport}
+        onSelectCity={handleSelectCity}
+        hasSelected={Boolean(selected)}
+      />
 
       <BaseLayerSwitcher
         baseLayer={baseLayer}
