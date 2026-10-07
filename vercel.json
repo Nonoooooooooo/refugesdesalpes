@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/rimg/:path*", "destination": "https://www.refuges.info/:path*" }
+  ]
+}

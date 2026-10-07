@@ -1,6 +1,8 @@
 import { useEffect, useState, useCallback } from 'react'
 import { X, Loader2, TriangleAlert, Mountain, BedDouble, ExternalLink, RefreshCw, MessageSquare } from 'lucide-react'
 import { fetchPoint } from '../lib/api'
+import { fetchCommonsPhotos } from '../lib/wikimedia'
+import { dedupePhotos } from '../lib/dedupe'
 import { typeInfo } from '../lib/types.jsx'
 import { cleanText } from '../lib/text'
 import Gallery from './Gallery.jsx'
@@ -12,13 +14,34 @@ export default function Sidebar({ point, onClose }) {
   useEffect(() => {
     const ctrl = new AbortController()
     setState({ loading: true, error: null, data: null })
-    fetchPoint(point.id, ctrl.signal)
-      .then((data) => setState({ loading: false, error: null, data }))
-      .catch((e) => {
-        if (!ctrl.signal.aborted) setState({ loading: false, error: e.message, data: null })
-      })
+
+    async function loadData() {
+      try {
+        const [pointDetails, wikiPhotos] = await Promise.all([
+          fetchPoint(point.id, ctrl.signal),
+          fetchCommonsPhotos(point.lat, point.lng, ctrl.signal, 300).catch((e) => {
+            if (ctrl.signal.aborted) throw e
+            return []
+          }),
+        ])
+
+        if (ctrl.signal.aborted) return
+
+        // Dédoublonnage exact + perceptuel (dHash)
+        const mergedPhotos = await dedupePhotos([...pointDetails.photos, ...wikiPhotos])
+        pointDetails.photos = mergedPhotos
+
+        setState({ loading: false, error: null, data: pointDetails })
+      } catch (e) {
+        if (!ctrl.signal.aborted) {
+          setState({ loading: false, error: e.message, data: null })
+        }
+      }
+    }
+
+    loadData()
     return () => ctrl.abort()
-  }, [point.id, attempt])
+  }, [point.id, point.lat, point.lng, attempt])
 
   const retry = useCallback(() => setAttempt((a) => a + 1), [])
   const { color, Icon, label } = typeInfo(point.type)

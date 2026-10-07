@@ -55,12 +55,17 @@ export async function fetchPoint(id, signal) {
   const p = feature.properties
 
   const all = Object.values(comments).filter((c) => c && typeof c === 'object')
+  const fixPhotoRel = (path) =>
+    path ? '/rimg' + path.replace(/(jpe?g|png|webp)md=/, '$1?md=') : null
+
   const photos = all
     .filter((c) => c['photo-reduite'])
     .map((c) => ({
-      id: c.id_commentaire,
+      id: `refuge-${c.id_commentaire}`,
+      source: 'Refuges.info',
       thumb: fixPhoto(c['photo-vignette']),
       src: fixPhoto(c['photo-reduite']),
+      hashSrc: fixPhotoRel(c['photo-vignette'] || c['photo-reduite']),
       full: fixPhoto(c['photo-originale'] ?? c['photo-reduite']),
       legend: c.texte_commentaire,
       auteur: c.auteur_commentaire,
