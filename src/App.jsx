@@ -169,7 +169,7 @@ export default function App() {
       >
         {/* Panes: tuiles (200) < toponymie (250) < overlay (400) < marqueurs (600) */}
         <Pane name="labels" style={{ zIndex: 250, pointerEvents: 'none' }} />
-        <LayersControl position="topright">
+        <LayersControl position="topright" collapsed={false}>
           <LayersControl.BaseLayer checked name="Satellite">
             <LayerGroup>
               <TileLayer

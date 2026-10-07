@@ -2,7 +2,7 @@ import { FILTERABLE } from '../lib/types.jsx'
 
 export default function FilterPanel({ active, onToggle }) {
   return (
-    <div className="glass absolute right-16 top-4 z-[1000] hidden max-w-[calc(100vw-22rem)] flex-wrap justify-end gap-1.5 rounded-2xl p-2 md:flex">
+    <div className="glass absolute right-52 top-4 z-[1000] hidden max-w-[calc(100vw-30rem)] flex-wrap justify-end gap-1.5 rounded-2xl p-2 lg:flex">
       {FILTERABLE.map(({ key, label, color, Icon }) => {
         const on = active.has(key)
         return (
