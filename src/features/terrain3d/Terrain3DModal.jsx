@@ -74,32 +74,48 @@ export default function Terrain3DModal({ point, onClose }) {
     // Contrôles de navigation (inclinaison, boussole, zoom)
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'bottom-right')
 
-    map.on('load', () => {
+    const handleDoneLoading = () => {
       setLoading(false)
-      // Forcer l'application du relief au chargement
+    }
+
+    map.once('load', handleDoneLoading)
+    map.once('render', handleDoneLoading)
+    map.once('idle', handleDoneLoading)
+
+    // Sécurité de déblocage au bout de 400ms quoi qu'il arrive
+    const safetyTimer = setTimeout(handleDoneLoading, 400)
+
+    map.on('load', () => {
+      handleDoneLoading()
+      // Application du relief 3D
       try {
         map.setTerrain({ source: 'aws-terrarium-dem', exaggeration: 1.5 })
       } catch (err) {
-        console.warn('setTerrain load error:', err)
+        console.warn('setTerrain error:', err)
       }
 
       // Création du marqueur HTML 3D personnalisé
-      const el = document.createElement('div')
-      el.className = 'group relative flex flex-col items-center cursor-pointer pointer-events-auto'
-      el.innerHTML = `
-        <div style="background: ${color}" class="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold text-white shadow-2xl border border-white/50 backdrop-blur-md">
-          <span>${point.nom || 'Point'}</span>
-          ${point.alt ? `<span class="opacity-80">(${point.alt}m)</span>` : ''}
-        </div>
-        <div style="background: ${color}" class="h-2 w-2 rotate-45 transform -mt-1 shadow-md border-r border-b border-white/40"></div>
-      `
+      try {
+        const el = document.createElement('div')
+        el.className = 'group relative flex flex-col items-center cursor-pointer pointer-events-auto'
+        el.innerHTML = `
+          <div style="background: ${color}" class="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold text-white shadow-2xl border border-white/50 backdrop-blur-md">
+            <span>${point.nom || 'Point'}</span>
+            ${point.alt ? `<span class="opacity-80">(${point.alt}m)</span>` : ''}
+          </div>
+          <div style="background: ${color}" class="h-2 w-2 rotate-45 transform -mt-1 shadow-md border-r border-b border-white/40"></div>
+        `
 
-      new maplibregl.Marker({ element: el, anchor: 'bottom' })
-        .setLngLat([point.lng, point.lat])
-        .addTo(map)
+        new maplibregl.Marker({ element: el, anchor: 'bottom' })
+          .setLngLat([point.lng, point.lat])
+          .addTo(map)
+      } catch (e) {
+        console.warn('Marker creation error:', e)
+      }
     })
 
     return () => {
+      clearTimeout(safetyTimer)
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current)
       map.remove()
       mapInstanceRef.current = null
@@ -230,10 +246,9 @@ export default function Terrain3DModal({ point, onClose }) {
           <div ref={containerRef} className="h-full w-full" />
 
           {loading && (
-            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-neutral-950/80 backdrop-blur-sm">
-              <Loader2 size={32} className="animate-spin text-emerald-400" />
-              <div className="text-sm font-semibold text-white/90">Génération du relief 3D…</div>
-              <div className="text-xs text-white/50">Chargement des données d'élévation MNT Terrarium</div>
+            <div className="pointer-events-none absolute top-20 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 rounded-full bg-black/60 px-3.5 py-1.5 text-xs text-white/80 backdrop-blur-md border border-white/10">
+              <Loader2 size={13} className="animate-spin text-emerald-400" />
+              <span>Chargement du relief 3D…</span>
             </div>
           )}
         </div>
