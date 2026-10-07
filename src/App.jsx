@@ -13,6 +13,7 @@ import Sidebar from './components/Sidebar.jsx'
 import BaseLayerSwitcher from './components/BaseLayerSwitcher.jsx'
 import TransportLayer from './features/transport/TransportLayer.jsx'
 import TransportToggle from './features/transport/TransportToggle.jsx'
+import TransportSidebar from './features/transport/TransportSidebar.jsx'
 
 const MIN_ZOOM_FETCH = 9
 const IMAGERY_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
@@ -143,6 +144,13 @@ export default function App() {
     setFlyTarget({ lat: p.lat, lng: p.lng, t: Date.now() })
   }
 
+  const handleSelectTransport = useCallback((t) => {
+    setSelected(t)
+    if (t?.lat && t?.lng && t?.mode === 'station') {
+      setFlyTarget({ lat: t.lat, lng: t.lng, t: Date.now() })
+    }
+  }, [])
+
   // Survol : on attend un court instant avant d'afficher l'info-bulle
   const [hoveredId, setHoveredId] = useState(null)
   const hoverTimer = useRef(null)
@@ -193,7 +201,7 @@ export default function App() {
             maxZoom={18}
           />
         )}
-        <TransportLayer active={showTransports} />
+        <TransportLayer active={showTransports} onSelectTransport={handleSelectTransport} />
         <BboxLoader onData={handleData} onStatus={setStatus} reloadKey={reloadKey} />
         <FlyToSelected target={flyTarget} />
         <MapControls />
@@ -266,7 +274,12 @@ export default function App() {
         )}
       </div>
 
-      {selected && <Sidebar point={selected} onClose={() => setSelected(null)} />}
+      {selected &&
+        (selected.isTransport ? (
+          <TransportSidebar transport={selected} onClose={() => setSelected(null)} />
+        ) : (
+          <Sidebar point={selected} onClose={() => setSelected(null)} />
+        ))}
     </div>
   )
 }
