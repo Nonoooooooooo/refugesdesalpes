@@ -93,8 +93,13 @@ export default function Gallery({ photos }) {
           >
             <img
               src={current.full || current.src}
-              alt=""
-              className="max-h-[75vh] rounded-2xl object-contain shadow-2xl"
+              alt={cleanText(current.legend ?? '')}
+              onError={(e) => {
+                if (current.src && e.target.src !== current.src) {
+                  e.target.src = current.src
+                }
+              }}
+              className="max-h-[80vh] w-auto max-w-[90vw] rounded-2xl object-contain shadow-2xl"
             />
             <figcaption className="max-w-xl text-center text-sm text-white/85">
               {cleanText(current.legend ?? '')}

@@ -60,17 +60,25 @@ export async function fetchPoint(id, signal) {
 
   const photos = all
     .filter((c) => c['photo-reduite'])
-    .map((c) => ({
-      id: `refuge-${c.id_commentaire}`,
-      source: 'Refuges.info',
-      thumb: fixPhoto(c['photo-vignette']),
-      src: fixPhoto(c['photo-reduite']),
-      hashSrc: fixPhotoRel(c['photo-vignette'] || c['photo-reduite']),
-      full: fixPhoto(c['photo-originale'] ?? c['photo-reduite']),
-      legend: c.texte_commentaire,
-      auteur: c.auteur_commentaire,
-      date: c.date_commentaire,
-    }))
+    .map((c) => {
+      // Dans l'API Refuges.info, 'photo-originale' pointe parfois par erreur vers la vignette.
+      // On dérive la vraie photo originale haute résolution depuis 'photo-reduite'.
+      const fullPath = c['photo-reduite'].replace('-reduite.', '-originale.')
+      const srcPath = c['photo-reduite']
+      const thumbPath = c['photo-vignette'] || c['photo-reduite']
+
+      return {
+        id: `refuge-${c.id_commentaire}`,
+        source: 'Refuges.info',
+        thumb: fixPhoto(thumbPath),
+        src: fixPhoto(srcPath),
+        hashSrc: fixPhotoRel(thumbPath),
+        full: fixPhoto(fullPath),
+        legend: c.texte_commentaire,
+        auteur: c.auteur_commentaire,
+        date: c.date_commentaire,
+      }
+    })
 
   return {
     id: p.id,
