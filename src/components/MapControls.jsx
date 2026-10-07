@@ -11,7 +11,7 @@ export default function MapControls() {
   const btn = 'glass-btn flex h-10 w-10 items-center justify-center'
   return (
     <div
-      className="absolute right-4 top-4 z-[1000] flex flex-col gap-2"
+      className="absolute bottom-8 right-4 z-[1000] flex flex-col gap-2"
       onMouseDown={(e) => e.stopPropagation()}
       onDoubleClick={(e) => e.stopPropagation()}
     >

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { MapContainer, TileLayer, Marker, LayersControl, Pane, useMap, useMapEvents } from 'react-leaflet'
+import { MapContainer, TileLayer, LayerGroup, Marker, Tooltip, LayersControl, Pane, useMap, useMapEvents } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { renderToStaticMarkup } from 'react-dom/server'
@@ -11,7 +11,8 @@ import FilterPanel from './components/FilterPanel.jsx'
 import Sidebar from './components/Sidebar.jsx'
 
 const MIN_ZOOM_FETCH = 9
-const CONTOURS_URL = 'https://tiles.opensnowmap.org/contours/{z}/{x}/{y}.png'
+const IMAGERY_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+const TOPO_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}'
 const LABELS_URL =
   'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}'
 const iconCache = new Map()
@@ -124,6 +125,18 @@ export default function App() {
     setFlyTarget({ lat: p.lat, lng: p.lng, t: Date.now() })
   }
 
+  // Survol : on attend un court instant avant d'afficher l'info-bulle
+  const [hoveredId, setHoveredId] = useState(null)
+  const hoverTimer = useRef(null)
+  const onHoverStart = (id) => {
+    clearTimeout(hoverTimer.current)
+    hoverTimer.current = setTimeout(() => setHoveredId(id), 350)
+  }
+  const onHoverEnd = () => {
+    clearTimeout(hoverTimer.current)
+    setHoveredId(null)
+  }
+
   return (
     <div className="relative h-screen w-screen overflow-hidden">
       <MapContainer
@@ -132,31 +145,26 @@ export default function App() {
         zoomControl={false}
         className="h-full w-full"
       >
-        <TileLayer
-          attribution="Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics"
-          url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-          maxZoom={18}
-        />
-        {/* Panes: tuiles (200) < contours (240) < toponymie (250) < overlay (400) < marqueurs (600) */}
-        <Pane name="contours" style={{ zIndex: 240 }} />
+        {/* Panes: tuiles (200) < toponymie (250) < overlay (400) < marqueurs (600) */}
         <Pane name="labels" style={{ zIndex: 250, pointerEvents: 'none' }} />
-        <TileLayer
-          pane="labels"
-          url={LABELS_URL}
-          maxZoom={18}
-          opacity={0.9}
-          zIndex={250}
-        />
-        <LayersControl position="bottomright">
-          <LayersControl.Overlay name="Courbes de niveau">
+        <LayersControl position="topright">
+          <LayersControl.BaseLayer checked name="Satellite">
+            <LayerGroup>
+              <TileLayer
+                attribution="Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics"
+                url={IMAGERY_URL}
+                maxZoom={18}
+              />
+              <TileLayer pane="labels" url={LABELS_URL} maxZoom={18} opacity={0.9} />
+            </LayerGroup>
+          </LayersControl.BaseLayer>
+          <LayersControl.BaseLayer name="Relief">
             <TileLayer
-              pane="contours"
-              url={CONTOURS_URL}
-              opacity={0.6}
+              attribution="Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, USGS, NPS"
+              url={TOPO_URL}
               maxZoom={18}
-              attribution="Contours &copy; OpenSnowMap"
             />
-          </LayersControl.Overlay>
+          </LayersControl.BaseLayer>
         </LayersControl>
         <BboxLoader onData={handleData} onStatus={setStatus} reloadKey={reloadKey} />
         <FlyToSelected target={flyTarget} />
@@ -166,9 +174,23 @@ export default function App() {
             key={p.id}
             position={[p.lat, p.lng]}
             icon={pinIcon(p.type, selected?.id === p.id)}
-            title={p.nom}
-            eventHandlers={{ click: () => selectPoint(p) }}
-          />
+            eventHandlers={{
+              click: () => selectPoint(p),
+              mouseover: () => onHoverStart(p.id),
+              mouseout: onHoverEnd,
+            }}
+          >
+            {hoveredId === p.id && (
+              <Tooltip permanent direction="top" offset={[0, -20]} className="refuge-tooltip">
+                <div className="refuge-tooltip-name">{p.nom}</div>
+                <div className="refuge-tooltip-meta">
+                  <span style={{ background: typeInfo(p.type).color }} className="refuge-tooltip-dot" />
+                  {p.alt != null ? `${p.alt} m` : 'Altitude inconnue'}
+                  <span className="opacity-60"> · {typeInfo(p.type).label}</span>
+                </div>
+              </Tooltip>
+            )}
+          </Marker>
         ))}
       </MapContainer>
 
