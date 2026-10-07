@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  overflow: hidden;
+  font-family: 'Inter', system-ui, sans-serif;
+  background: #0b1210;
+}
+
+.glass {
+  background: rgba(15, 23, 20, 0.55);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  color: #fff;
+}
+
+.glass-btn {
+  transition: background 0.2s, transform 0.15s;
+}
+.glass-btn:hover { background: rgba(255, 255, 255, 0.18); }
+.glass-btn:active { transform: scale(0.94); }
+
+.refuge-marker {
+  background: none !important;
+  border: none !important;
+}
+.refuge-pin {
+  width: 34px;
+  height: 34px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  transition: transform 0.15s;
+}
+.refuge-pin:hover { transform: scale(1.18); }
+.refuge-pin.selected {
+  transform: scale(1.3);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.35), 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.leaflet-container { background: #0b1210; font-family: inherit; }
+
+.sidebar-enter { animation: slideIn 0.3s ease-out; }
+@keyframes slideIn {
+  from { transform: translateX(-24px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.scroll-thin::-webkit-scrollbar { width: 6px; }
+.scroll-thin::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.25); border-radius: 9999px; }
