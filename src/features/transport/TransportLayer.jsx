@@ -10,6 +10,8 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
   const [data, setData] = useState(() => cachedTransportData);
   const layerGroupRef = useRef(null);
   const layersMapRef = useRef(new Map());
+  const selectedTransportRef = useRef(selectedTransport);
+  selectedTransportRef.current = selectedTransport;
 
   // 1. Chargement unique du jeu de données haute fidélité
   useEffect(() => {
@@ -194,6 +196,16 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
               },
               mouseover: (e) => {
                 const target = e.target;
+                const currentSelection = selectedTransportRef.current;
+                const hasSelection = Boolean(currentSelection);
+                const isSelected = hasSelection && (currentSelection.id === featId || currentSelection.name === props.name);
+
+                // Si une ligne est déjà sélectionnée dans la fenêtre de gauche :
+                // Les autres lignes NE DOIVENT PAS se ré-éclairer au survol.
+                if (hasSelection && !isSelected) {
+                  return;
+                }
+
                 if (target.setStyle) {
                   const isCable = props.mode === 'cable_car' || props.mode === 'funicular';
                   target.setStyle({ weight: isCable ? 6 : 7, opacity: 1 });
@@ -202,14 +214,23 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
               },
               mouseout: (e) => {
                 const target = e.target;
+                const currentSelection = selectedTransportRef.current;
+                const hasSelection = Boolean(currentSelection);
+                const isSelected = hasSelection && (currentSelection.id === featId || currentSelection.name === props.name);
+
                 if (target.setStyle) {
-                  const hasSelection = Boolean(selectedTransport);
-                  const isSelected = selectedTransport && (selectedTransport.id === featId || selectedTransport.name === props.name);
                   target.setStyle(getFeatureStyle(feature, isSelected, hasSelection));
-                  // Si une autre ligne est sélectionnée, remettre la sélection au premier plan
-                  if (hasSelection && !isSelected) {
-                    const selObj = layersMapRef.current.get(selectedTransport.id);
-                    if (selObj?.layer?.bringToFront) selObj.layer.bringToFront();
+                  // Si une ligne est sélectionnée et qu'on survolait autre chose, remettre la sélection au premier plan
+                  if (hasSelection) {
+                    const selObj = layersMapRef.current.get(currentSelection.id);
+                    if (selObj?.layer) {
+                      if (selObj.layer.eachLayer) {
+                        selObj.layer.eachLayer((sub) => {
+                          if (sub.bringToFront) sub.bringToFront();
+                        });
+                      }
+                      if (selObj.layer.bringToFront) selObj.layer.bringToFront();
+                    }
                   }
                 }
               },
