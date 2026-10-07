@@ -1,8 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react'
 import * as maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
+import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
 import { X, RotateCw, Mountain, Compass, Maximize2, Minimize2, Loader2, Satellite, Map as MapIcon } from 'lucide-react'
 import { typeInfo } from '../../lib/types.jsx'
+
+// Configuration obligatoire pour Vite : injecter l'URL du Web Worker MapLibre
+if (maplibregl.setWorkerUrl) {
+  maplibregl.setWorkerUrl(workerUrl)
+}
 
 export default function Terrain3DModal({ point, onClose }) {
   const containerRef = useRef(null)
@@ -21,14 +27,28 @@ export default function Terrain3DModal({ point, onClose }) {
   useEffect(() => {
     if (!containerRef.current || !point) return
 
-    // Style MapLibre utilisant Mapterhorn (DEM Terrarium haute fidélité pour les Alpes)
+    // Style MapLibre utilisant Mapterhorn (DEM Terrarium haute résolution pour les Alpes)
     const style = {
       version: 8,
       sources: {
         'mapterhorn-dem': {
           type: 'raster-dem',
-          url: 'https://tiles.mapterhorn.com/tilejson.json',
+          tiles: [
+            'https://tiles.mapterhorn.com/{z}/{x}/{y}.webp',
+          ],
+          encoding: 'terrarium',
           tileSize: 512,
+          maxzoom: 16,
+          attribution: '&copy; Mapterhorn',
+        },
+        'mapterhorn-hillshade': {
+          type: 'raster-dem',
+          tiles: [
+            'https://tiles.mapterhorn.com/{z}/{x}/{y}.webp',
+          ],
+          encoding: 'terrarium',
+          tileSize: 512,
+          maxzoom: 16,
         },
         'esri-satellite': {
           type: 'raster',
@@ -69,7 +89,7 @@ export default function Terrain3DModal({ point, onClose }) {
         {
           id: 'hillshade-layer',
           type: 'hillshade',
-          source: 'mapterhorn-dem',
+          source: 'mapterhorn-hillshade',
           paint: {
             'hillshade-shadow-color': '#1e293b',
             'hillshade-highlight-color': '#ffffff',
@@ -98,6 +118,7 @@ export default function Terrain3DModal({ point, onClose }) {
     })
 
     mapInstanceRef.current = map
+    window.__map3d = map
 
     // Contrôles de navigation (boussole, inclinaison, zoom)
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'bottom-right')
