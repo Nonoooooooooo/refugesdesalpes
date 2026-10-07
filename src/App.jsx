@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, LayersControl, Pane, useMap, useMapEvents } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { renderToStaticMarkup } from 'react-dom/server'
@@ -11,6 +11,9 @@ import FilterPanel from './components/FilterPanel.jsx'
 import Sidebar from './components/Sidebar.jsx'
 
 const MIN_ZOOM_FETCH = 9
+const CONTOURS_URL = 'https://tiles.opensnowmap.org/contours/{z}/{x}/{y}.png'
+const LABELS_URL =
+  'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}'
 const iconCache = new Map()
 
 function pinIcon(type, selected) {
@@ -134,6 +137,27 @@ export default function App() {
           url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
           maxZoom={18}
         />
+        {/* Panes: tuiles (200) < contours (240) < toponymie (250) < overlay (400) < marqueurs (600) */}
+        <Pane name="contours" style={{ zIndex: 240 }} />
+        <Pane name="labels" style={{ zIndex: 250, pointerEvents: 'none' }} />
+        <TileLayer
+          pane="labels"
+          url={LABELS_URL}
+          maxZoom={18}
+          opacity={0.9}
+          zIndex={250}
+        />
+        <LayersControl position="bottomright">
+          <LayersControl.Overlay name="Courbes de niveau">
+            <TileLayer
+              pane="contours"
+              url={CONTOURS_URL}
+              opacity={0.6}
+              maxZoom={18}
+              attribution="Contours &copy; OpenSnowMap"
+            />
+          </LayersControl.Overlay>
+        </LayersControl>
         <BboxLoader onData={handleData} onStatus={setStatus} reloadKey={reloadKey} />
         <FlyToSelected target={flyTarget} />
         <MapControls />

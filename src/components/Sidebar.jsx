@@ -26,7 +26,7 @@ export default function Sidebar({ point, onClose }) {
   const description = d && cleanText(d.description)
 
   return (
-    <aside className="sidebar-enter glass scroll-thin absolute bottom-0 left-0 top-0 z-[1100] flex w-full flex-col overflow-y-auto sm:bottom-4 sm:left-4 sm:top-4 sm:w-[420px] sm:rounded-3xl">
+    <aside className="sidebar-enter glass glass-panel scroll-thin absolute bottom-0 left-0 top-0 z-[1100] flex w-full flex-col overflow-y-auto sm:bottom-4 sm:left-4 sm:top-4 sm:w-[420px] sm:rounded-3xl">
       <header className="sticky top-0 z-10 flex items-start gap-3 border-b border-white/10 bg-black/30 p-5 backdrop-blur-xl">
         <span
           className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full"

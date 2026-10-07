@@ -18,6 +18,25 @@ html, body, #root {
   color: #fff;
 }
 
+/* Panneau de détails : quasi opaque pour la lisibilité (équivalent sombre de bg-white/95) */
+.glass.glass-panel {
+  background: rgba(15, 23, 20, 0.95);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.glass-panel header { background: rgba(15, 23, 20, 0.95) !important; backdrop-filter: none !important; }
+
+.leaflet-control-layers {
+  background: rgba(15, 23, 20, 0.55) !important;
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 16px !important;
+  color: #fff;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35) !important;
+  font-size: 13px;
+}
+.leaflet-control-layers-expanded { padding: 8px 12px !important; }
+
 .glass-btn {
   transition: background 0.2s, transform 0.15s;
 }
