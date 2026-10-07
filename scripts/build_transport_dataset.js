@@ -1051,33 +1051,49 @@ const BUS_ROUTES = [
   // ═══════════════════════════════════════════════════════
   {
     id: 'bus-t85',
-    ref: 'T85',
-    name: 'Ligne T85 : Grenoble ↔ Autrans-Méaudre (Vercors Nord)',
+    ref: 'T85 / T66',
+    name: 'Ligne T85 (T66) : Grenoble ↔ Autrans ↔ Méaudre ↔ Villard-de-Lans ↔ Corrençon',
     mode: 'bus',
     operator: 'Cars Région Isère',
-    network: 'Cars Région',
-    route: 'Grenoble ↔ Sassenage ↔ Autrans ↔ Méaudre (Plateau du Vercors)',
-    frequency: 'Quotidien',
-    period: 'Toute l\'année',
-    stops: ['Grenoble Gare', 'Sassenage', 'Autrans Centre (1050 m)', 'Méaudre Village (1012 m)'],
+    network: 'Cars Région Vercors',
+    route: 'Grenoble Gare ↔ Sassenage ↔ Autrans Centre ↔ Méaudre ↔ Villard-de-Lans Gare Routière ↔ Corrençon-en-Vercors (Hauts Plateaux)',
+    frequency: 'Liaison quotidienne régulière toute l\'année (équipée porte-vélos)',
+    period: 'Toute l\'année (Accès Plateau des 4 Montagnes, Gorges du Méaudret & Réserve Naturelle des Hauts Plateaux)',
+    stops: [
+      'Grenoble Gare Routière / SNCF',
+      'Sassenage',
+      'Engins',
+      'Autrans Centre (1050 m, Domaine nordique)',
+      'Méaudre Village (1012 m)',
+      'Gorges du Méaudret',
+      'Villard-de-Lans Gare Routière (1025 m, Pôle multimodal Vercors)',
+      'Corrençon-en-Vercors (1111 m, Porte d\'entrée de la Réserve Naturelle des Hauts Plateaux & GR91)'
+    ],
     color: '#10b981',
-    url: 'https://www.carsisere.auvergnerhonealpes.fr',
-    coords: '5.7140,45.1910;5.6610,45.1960;5.5440,45.1730;5.5270,45.1310'
+    url: 'https://carsisere.auvergnerhonealpes.fr',
+    coords: '5.7140,45.1910;5.6610,45.1960;5.5440,45.1730;5.5280,45.1260;5.5525,45.0726;5.5270,45.0310'
   },
   {
     id: 'bus-t86',
-    ref: 'T86',
-    name: 'Ligne T86 : Grenoble ↔ Corrençon-en-Vercors (Hauts Plateaux)',
+    ref: 'T86 / T64',
+    name: 'Ligne T86 (T64) : Grenoble ↔ Engins ↔ Lans-en-Vercors ↔ Villard-de-Lans ↔ Corrençon',
     mode: 'bus',
     operator: 'Cars Région Isère',
-    network: 'Cars Région',
-    route: 'Grenoble ↔ Villard-de-Lans ↔ Corrençon-en-Vercors (Accès Réserve Naturelle des Hauts Plateaux)',
-    frequency: 'Quotidien',
-    period: 'Toute l\'année',
-    stops: ['Grenoble Gare', 'Villard-de-Lans', 'Corrençon-en-Vercors (1111 m, porte de la Réserve Naturelle & GR91)'],
-    color: '#10b981',
-    url: 'https://www.carsisere.auvergnerhonealpes.fr',
-    coords: '5.7140,45.1910;5.5520,45.0720;5.5190,45.0310'
+    network: 'Cars Région Vercors',
+    route: 'Grenoble Gare ↔ Sassenage ↔ Engins ↔ Lans-en-Vercors ↔ Villard-de-Lans ↔ Corrençon-en-Vercors',
+    frequency: 'Quotidien toute l\'année, cadencement renforcé week-ends et vacances',
+    period: 'Toute l\'année (Liaison directe Grenoble ↔ Cœur du Vercors & Hauts Plateaux)',
+    stops: [
+      'Grenoble Gare',
+      'Sassenage',
+      'Engins',
+      'Lans-en-Vercors (Office de Tourisme)',
+      'Villard-de-Lans Gare Routière',
+      'Corrençon-en-Vercors (1111 m, départ Réserve des Hauts Plateaux du Vercors)'
+    ],
+    color: '#059669',
+    url: 'https://carsisere.auvergnerhonealpes.fr',
+    coords: '5.7140,45.1910;5.6610,45.1960;5.5880,45.1280;5.5525,45.0726;5.5270,45.0310'
   },
   {
     id: 'bus-chartreuse',
@@ -2711,8 +2727,9 @@ async function main() {
 
   const outputPath = 'public/transport_alps_v2.geojson';
   fs.writeFileSync(outputPath, JSON.stringify(outputGeoJSON));
+  fs.writeFileSync('public/transports_alpes.json', JSON.stringify(outputGeoJSON));
   const stats = fs.statSync(outputPath);
-  console.log(`\nTERMINE ! Fichier généré avec succès dans ${outputPath}`);
+  console.log(`\nTERMINE ! Fichier généré avec succès dans ${outputPath} et public/transports_alpes.json`);
   console.log(`Nombre total de fonctionnalités transport : ${features.length}`);
   console.log(`Taille du fichier optimisé : ${(stats.size / 1024).toFixed(1)} KB (vs 8300 KB auparavant)`);
 }
