@@ -5,10 +5,11 @@ import L from 'leaflet';
 // Cache mémoire global pour éviter tout re-téléchargement
 let cachedTransportData = null;
 
-export default function TransportLayer({ active, onSelectTransport }) {
+export default function TransportLayer({ active, onSelectTransport, selectedTransport }) {
   const map = useMap();
   const [data, setData] = useState(() => cachedTransportData);
   const layerGroupRef = useRef(null);
+  const layersMapRef = useRef(new Map());
 
   // 1. Chargement unique du jeu de données haute fidélité
   useEffect(() => {
@@ -33,6 +34,48 @@ export default function TransportLayer({ active, onSelectTransport }) {
     };
   }, [active, data]);
 
+  // Style selon le mode de transport et l'état de sélection
+  const getFeatureStyle = (feature, isSelected, hasSelection) => {
+    const mode = feature.properties?.mode;
+    const isCable = mode === 'cable_car' || mode === 'funicular';
+    const isTrain = mode === 'train' || mode === 'mountain_train';
+    const isNavette = mode === 'navette';
+    const baseColor = feature.properties?.color || (isTrain ? '#6366f1' : isNavette ? '#f59e0b' : '#10b981');
+
+    if (hasSelection) {
+      if (isSelected) {
+        return {
+          color: baseColor,
+          weight: isCable ? 5 : 6,
+          opacity: 1,
+          dashArray: isCable ? '6, 6' : null,
+          lineCap: 'round',
+          lineJoin: 'round',
+        };
+      } else {
+        // Lignes non sélectionnées : estompées / moins lumineuses
+        return {
+          color: baseColor,
+          weight: isCable ? 2 : 2.5,
+          opacity: 0.22,
+          dashArray: isCable ? '6, 6' : null,
+          lineCap: 'round',
+          lineJoin: 'round',
+        };
+      }
+    }
+
+    // Aucun transport sélectionné : luminosité et opacité normales
+    return {
+      color: baseColor,
+      weight: isCable ? 3 : 4,
+      opacity: 0.9,
+      dashArray: isCable ? '6, 6' : null,
+      lineCap: 'round',
+      lineJoin: 'round',
+    };
+  };
+
   // 2. Rendu Vectoriel Ultra-Fluide sur Canvas GPU
   useEffect(() => {
     if (!active || !data) {
@@ -40,6 +83,7 @@ export default function TransportLayer({ active, onSelectTransport }) {
         map.removeLayer(layerGroupRef.current);
         layerGroupRef.current = null;
       }
+      layersMapRef.current.clear();
       return;
     }
 
@@ -47,28 +91,11 @@ export default function TransportLayer({ active, onSelectTransport }) {
     if (layerGroupRef.current) {
       map.removeLayer(layerGroupRef.current);
     }
+    layersMapRef.current.clear();
 
     // Moteur Canvas Leaflet dédié : 60 FPS, zéro DOM SVG lourd, tolérance de clic 10px
     const canvasRenderer = L.canvas({ padding: 0.5, tolerance: 10 });
     const group = L.featureGroup();
-
-    // Style selon le mode de transport
-    const getStyle = (feature) => {
-      const mode = feature.properties?.mode;
-      const isCable = mode === 'cable_car' || mode === 'funicular';
-      const isTrain = mode === 'train' || mode === 'mountain_train';
-      const isNavette = mode === 'navette';
-
-      return {
-        renderer: canvasRenderer,
-        color: feature.properties?.color || (isTrain ? '#6366f1' : isNavette ? '#f59e0b' : '#10b981'),
-        weight: isCable ? 3 : 4,
-        opacity: 0.9,
-        dashArray: isCable ? '6, 6' : null,
-        lineCap: 'round',
-        lineJoin: 'round',
-      };
-    };
 
     // Tooltip formaté
     const createTooltipContent = (props) => {
@@ -110,13 +137,14 @@ export default function TransportLayer({ active, onSelectTransport }) {
     // Traitement des entités GeoJSON
     data.features.forEach((feature) => {
       const props = feature.properties || {};
+      const featId = props.id || feature.id;
 
       if (feature.geometry.type === 'Point') {
         const [lng, lat] = feature.geometry.coordinates;
         const marker = L.circleMarker([lat, lng], {
           renderer: canvasRenderer,
           radius: 5.5,
-          fillColor: '#3b82f6',
+          fillColor: props.color || '#3b82f6',
           color: '#ffffff',
           weight: 2,
           fillOpacity: 1,
@@ -135,13 +163,21 @@ export default function TransportLayer({ active, onSelectTransport }) {
           }
         });
 
+        if (featId) {
+          layersMapRef.current.set(featId, { type: 'point', layer: marker, feature, props });
+        }
         group.addLayer(marker);
       } else if (
         feature.geometry.type === 'LineString' ||
         feature.geometry.type === 'MultiLineString'
       ) {
+        const initialStyle = {
+          renderer: canvasRenderer,
+          ...getFeatureStyle(feature, false, false),
+        };
+
         const line = L.geoJSON(feature, {
-          style: getStyle(feature),
+          style: () => initialStyle,
           onEachFeature: (_, layer) => {
             layer.bindTooltip(createTooltipContent(props), {
               className: 'refuge-tooltip',
@@ -165,13 +201,18 @@ export default function TransportLayer({ active, onSelectTransport }) {
               mouseout: (e) => {
                 const target = e.target;
                 if (target.setStyle) {
-                  target.setStyle(getStyle(feature));
+                  const hasSelection = Boolean(selectedTransport);
+                  const isSelected = selectedTransport && (selectedTransport.id === featId || selectedTransport.name === props.name);
+                  target.setStyle(getFeatureStyle(feature, isSelected, hasSelection));
                 }
               },
             });
           },
         });
 
+        if (featId) {
+          layersMapRef.current.set(featId, { type: 'line', layer: line, feature, props });
+        }
         group.addLayer(line);
       }
     });
@@ -184,8 +225,47 @@ export default function TransportLayer({ active, onSelectTransport }) {
         map.removeLayer(layerGroupRef.current);
         layerGroupRef.current = null;
       }
+      layersMapRef.current.clear();
     };
   }, [active, data, map, onSelectTransport]);
+
+  // 3. Mise à jour instantanée du style lors de la sélection / désélection d'une ligne
+  useEffect(() => {
+    if (!layerGroupRef.current || layersMapRef.current.size === 0) return;
+
+    const hasSelection = Boolean(selectedTransport);
+    const selectedId = selectedTransport?.id;
+    const selectedName = selectedTransport?.name;
+
+    layersMapRef.current.forEach(({ type, layer, feature, props }) => {
+      const isSelected = hasSelection && (props.id === selectedId || props.name === selectedName);
+
+      if (type === 'line') {
+        const newStyle = getFeatureStyle(feature, isSelected, hasSelection);
+        layer.setStyle(newStyle);
+        if (isSelected && layer.bringToFront) {
+          layer.bringToFront();
+        }
+      } else if (type === 'point') {
+        if (hasSelection) {
+          layer.setStyle({
+            fillOpacity: isSelected ? 1 : 0.25,
+            opacity: isSelected ? 1 : 0.25,
+            radius: isSelected ? 7 : 4.5,
+          });
+          if (isSelected && layer.bringToFront) {
+            layer.bringToFront();
+          }
+        } else {
+          layer.setStyle({
+            fillOpacity: 1,
+            opacity: 1,
+            radius: 5.5,
+          });
+        }
+      }
+    });
+  }, [selectedTransport]);
 
   return null;
 }

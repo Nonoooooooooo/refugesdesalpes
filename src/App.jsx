@@ -219,7 +219,11 @@ export default function App() {
             maxZoom={18}
           />
         )}
-        <TransportLayer active={showTransports} onSelectTransport={handleSelectTransport} />
+        <TransportLayer
+          active={showTransports}
+          onSelectTransport={handleSelectTransport}
+          selectedTransport={selected?.isTransport ? selected : null}
+        />
         <BboxLoader onData={handleData} onStatus={setStatus} reloadKey={reloadKey} />
         <FlyToSelected target={flyTarget} />
         <MapControls />

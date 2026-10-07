@@ -737,68 +737,49 @@ const BUS_ROUTES = [
   // ═══════════════════════════════════════════════════════
   // NAVETTES MANQUANTES - HAUTES-ALPES (CLARÉE, QUEYRAS, UBAYE, VALGAUDEMAR)
   // ═══════════════════════════════════════════════════════
+  // ═════════════════════════════════════════════════════════════════════════
+  // NAVETTES OFFICIELLES HAUTE CLARÉE (ALTIGO N3 & N4)
+  // ═════════════════════════════════════════════════════════════════════════
   {
-    id: 'navette-claree',
-    ref: 'Navette Clarée',
-    name: 'Navette Vallée de la Clarée : Briançon ↔ Val-des-Prés ↔ Névache ↔ Fontcouverte (Refuge de la Fruitière)',
+    id: 'altigo-n3-claree',
+    ref: 'ALTIGO N3',
+    name: 'Navette ALTIGO N3 : Névache Roubion ↔ Névache Ville-Haute',
     mode: 'navette',
-    operator: 'Communauté de Communes du Briançonnais',
-    network: 'Navettes Clarée',
-    route: 'Briançon Gare ↔ Val-des-Prés ↔ Plampinet ↔ Névache Village ↔ Ville Haute ↔ Hameau de Fontcouverte (Refuge de la Fruitière)',
-    frequency: 'Navettes régulières en saison (toutes les heures environ, parking obligatoire Névache)',
-    period: 'Été (Juin-Septembre, accès réglementé vallée de la Clarée)',
+    operator: 'Réseau AltiGo / Autocars Resalp',
+    network: 'AltiGo Clarée',
+    route: 'Névache Parking du Roubion (Foyer ski de fond) ↔ Névache Ville-Haute (Église Saint-Marcellin)',
+    frequency: 'Gratuit, navette continue toutes les 15 à 20 min en saison estivale et hivernale',
+    period: 'Toute l\'année (Renforts quotidiens été & hiver)',
     stops: [
-      'Briançon Gare SNCF',
-      'Val-des-Prés',
-      'Plampinet',
-      'Névache Village (1600 m)',
-      'Névache Ville Haute',
-      'Pont du Rately (Départ Refuge de Buffère)',
-      'Hameau de Fontcouverte (Auberge & Refuge de la Fruitière, Cascade de Fontcouverte)'
+      'Névache Roubion (Grand Parking obligatoire & Foyer nordique)',
+      'Névache Village',
+      'Névache Ville-Haute (1600 m, Pôle navettes Haute Vallée)'
     ],
-    color: '#f59e0b',
-    url: 'https://www.nevache-tourisme.fr',
-    coords: '6.6340,44.8980;6.6060,44.9350;6.5790,44.9490;6.5370,44.9720;6.5110,44.9830'
+    color: '#06b6d4',
+    url: 'https://www.monaltigo.fr',
+    coords: '6.6040,45.0200;6.5890,45.0250;6.5790,45.0270'
   },
   {
-    id: 'navette-claree-haute',
-    ref: 'Navette Haute Clarée',
-    name: 'Navette Haute Clarée : Névache ↔ Fontcouverte (Refuge de la Fruitière) ↔ Laval ↔ Drayères',
+    id: 'altigo-n4-claree',
+    ref: 'ALTIGO N4',
+    name: 'Navette ALTIGO N4 : Névache Ville-Haute ↔ Fontcouverte (Refuge Fruitière) ↔ Laval (Drayères)',
     mode: 'navette',
-    operator: 'Communauté de Communes du Briançonnais',
-    network: 'Navettes Clarée',
-    route: 'Névache Ville Haute ↔ Pont du Rately ↔ Fontcouverte (Auberge & Refuge de la Fruitière) ↔ Chalets de Laval ↔ Parking de Laval / Drayères',
-    frequency: 'Navettes continues en été toutes les 20 à 30 min (Circulation interdite aux voitures)',
-    period: 'Été (Juillet-Août, accès véhicules strictement interdit au-delà de Névache de 9h à 18h)',
+    operator: 'Réseau AltiGo / Communauté de Communes du Briançonnais',
+    network: 'AltiGo Clarée',
+    route: 'Névache Ville-Haute ↔ Pont du Rately ↔ Fontcouverte (Refuge de la Fruitière) ↔ Pont du Moutet ↔ Chalets de Laval ↔ Parking de Laval / Drayères',
+    frequency: 'Navettes cadencées toutes les 20 à 30 min (Circulation réglementée fermée aux voitures de 9h à 18h)',
+    period: 'Été (Du début juillet à fin août - Accès unique aux refuges du fond de vallée)',
     stops: [
-      'Névache Ville Haute (1600 m, Parking obligatoire)',
-      'Pont du Rately (Départ sentier & Refuge de Buffère 2076 m)',
-      'Hameau de Fontcouverte (Auberge & Refuge de la Fruitière 1857 m, Cascade de Fontcouverte)',
-      'Pont du Moutet (Départ sentier & Refuge du Chardonnet 2223 m)',
+      'Névache Ville-Haute (1600 m, Billetterie & Départ navettes)',
+      'Pont du Rately (1680 m, départ Refuge de Buffère 2076 m)',
+      'Hameau de Fontcouverte (1857 m, Auberge & Refuge de la Fruitière, Cascade de Fontcouverte)',
+      'Pont du Moutet (Départ sentier Refuge du Chardonnet 2223 m)',
       'Chalets de Laval (Refuge de Laval 2010 m)',
-      'Parking de Laval / Pont de la Clarée (Départ Refuge des Drayères 2180 m & Refuge de Ricou 2115 m, GR57)'
+      'Parking de Laval / Pont de la Clarée (2030 m, départ direct Refuge des Drayères 2180 m & Refuge de Ricou 2115 m, GR57)'
     ],
-    color: '#f59e0b',
-    url: 'https://www.nevache-tourisme.fr',
-    coords: '6.5370,44.9720;6.5110,44.9830;6.4950,44.9920;6.4780,45.0050'
-  },
-  {
-    id: 'navette-claree-buffere',
-    ref: 'Navette Buffère',
-    name: 'Navette Clarée - Pont du Rately : Névache ↔ Pont du Rately (Accès Refuge de Buffère)',
-    mode: 'navette',
-    operator: 'Communauté de Communes du Briançonnais',
-    network: 'Navettes Clarée',
-    route: 'Névache Ville Haute ↔ Pont du Rately (Départ sentier vers Refuge de Buffère 2076 m & Col de Buffère)',
-    frequency: 'Navettes estivales régulières',
-    period: 'Été (Juillet-Août)',
-    stops: [
-      'Névache Ville Haute',
-      'Pont du Rately (1680 m, départ Refuge de Buffère, Lac Vert, GR57)'
-    ],
-    color: '#f59e0b',
-    url: 'https://www.nevache-tourisme.fr',
-    coords: '6.5370,44.9720;6.5210,44.9780'
+    color: '#10b981',
+    url: 'https://www.monaltigo.fr',
+    coords: '6.5790,45.0270;6.5786,45.0189;6.5491,45.0318;6.5350,45.0450;6.5299,45.0575;6.5240,45.0680'
   },
   {
     id: 'navette-vallee-etroite',
@@ -1718,7 +1699,7 @@ const BUS_ROUTES = [
     ],
     color: '#ec4899',
     url: 'https://www.monaltigo.fr',
-    coords: '6.6340,44.8980;6.6430,44.8990;6.6780,44.9210;6.6060,44.9350;6.5790,44.9490;6.5370,44.9720'
+    coords: '6.6340,44.8980;6.6430,44.8990;6.6730,44.9160;6.6770,44.9490;6.6617,45.0031;6.6040,45.0200;6.5790,45.0270'
   },
   {
     id: 'altigo-ld',
@@ -1740,6 +1721,136 @@ const BUS_ROUTES = [
     color: '#6366f1',
     url: 'https://www.monaltigo.fr',
     coords: '6.6430,44.8990;6.6370,44.8980;6.6340,44.8980;6.6280,44.8870;6.6210,44.8770'
+  },
+  // ─── NAVETTES HIVER / ÉTÉ SPÉCIFIQUES ALTIGO (N1, N2, N5) ───
+  {
+    id: 'altigo-n1-montgenevre',
+    ref: 'ALTIGO N1',
+    name: 'Navette ALTIGO N1 : Montgenèvre Front de Neige (Durancia / Chalmettes)',
+    mode: 'navette',
+    operator: 'Réseau AltiGo / Mairie de Montgenèvre',
+    network: 'AltiGo Montgenèvre',
+    route: 'Montgenèvre Gare Routière ↔ Espace Prarial (OT) ↔ Durancia / Chalmettes ↔ Obélisque ↔ Route d\'Italie',
+    frequency: 'Gratuit, continu toutes les 15 min en saison (Front de Neige)',
+    period: 'Saisonnier (Hiver & Été - Navette gratuite interne station frontière)',
+    stops: [
+      'Montgenèvre Gare Routière',
+      'Espace Prarial (Office de Tourisme)',
+      'Durancia / Les Chalmettes (Espace Balnéo)',
+      'Fontaine de l\'Obélisque (Frontière historique)',
+      'Route d\'Italie'
+    ],
+    color: '#ef4444',
+    url: 'https://www.monaltigo.fr',
+    coords: '6.7180,44.9310;6.7260,44.9340;6.7320,44.9360;6.7410,44.9380'
+  },
+  {
+    id: 'altigo-n2-montgenevre',
+    ref: 'ALTIGO N2',
+    name: 'Navette ALTIGO N2 : Montgenèvre Village & Hameaux',
+    mode: 'navette',
+    operator: 'Réseau AltiGo / Mairie de Montgenèvre',
+    network: 'AltiGo Montgenèvre',
+    route: 'Gare Routière ↔ Espace Prarial ↔ Durancia ↔ Les Montagnards ↔ Serre Blanc ↔ Plein Soleil ↔ Chamoisière',
+    frequency: 'Gratuit, circuit continu toutes les 20 min en saison (Quartiers résidentiels & chalets)',
+    period: 'Saisonnier (Hiver & Été - Navette de desserte du village)',
+    stops: [
+      'Montgenèvre Gare Routière',
+      'Espace Prarial (OT)',
+      'Les Montagnards',
+      'Serre Blanc',
+      'Plein Soleil',
+      'Chamoisière (Départ sentiers bois de Sestrières)'
+    ],
+    color: '#f97316',
+    url: 'https://www.monaltigo.fr',
+    coords: '6.7180,44.9310;6.7210,44.9330;6.7250,44.9380;6.7280,44.9420'
+  },
+  {
+    id: 'altigo-n5-meije',
+    ref: 'Navette ALTIGO N5',
+    name: 'Navette ALTIGO N5 : La Grave ↔ Villar-d\'Arêne ↔ Le Chazelet (Meije & Arsine)',
+    mode: 'navette',
+    operator: 'Réseau AltiGo / Autocars Resalp',
+    network: 'AltiGo Haute Romanche',
+    route: 'La Grave Téléphérique des Glaciers de la Meije ↔ Villar-d\'Arêne Village ↔ Domaine Nordique d\'Arsine ↔ Hameau perché du Chazelet',
+    frequency: 'Plusieurs allers-retours quotidiens en saison',
+    period: 'Saisonnier (Hiver & Été - Accès direct Plateau d\'Emparis, Arsine & Massif de la Meije)',
+    stops: [
+      'La Grave (Téléphérique des Glaciers de la Meije 3200 m)',
+      'Villar-d\'Arêne Village',
+      'Domaine nordique d\'Arsine (Accès Réserve Naturelle & Refuges des Écrins)',
+      'Le Chazelet (Station village, vue panoramique face à la Meije)'
+    ],
+    color: '#8b5cf6',
+    url: 'https://www.monaltigo.fr',
+    coords: '6.3050,45.0450;6.3360,45.0420;6.3630,45.0310;6.2858,45.0540'
+  },
+  // ─── NAVETTES MARCHÉ ALTIGO (M1, M2, M3) ───
+  {
+    id: 'altigo-m1-marche',
+    ref: 'ALTIGO M1',
+    name: 'Navette Marché ALTIGO M1 : Puy-Saint-André ↔ Puy-Saint-Pierre ↔ Briançon Berwick',
+    mode: 'navette',
+    operator: 'Réseau AltiGo / Communauté de Communes du Briançonnais',
+    network: 'AltiGo Navettes Marché',
+    route: 'Puy-Saint-André ↔ Puy-Saint-Pierre ↔ Pont d\'Asfeld ↔ Briançon Place Berwick / Marché Couvert',
+    frequency: 'Tous les mercredis matin pour le grand marché traditionnel de Briançon',
+    period: 'Toute l\'année (Mercredis matins)',
+    stops: [
+      'Puy-Saint-André',
+      'Puy-Saint-Pierre',
+      'Pont d\'Asfeld',
+      'Briançon Berwick / Marché traditionnel'
+    ],
+    color: '#14b8a6',
+    url: 'https://www.monaltigo.fr',
+    coords: '6.5980,44.8780;6.6170,44.8930;6.6410,44.8980;6.6340,44.8980'
+  },
+  {
+    id: 'altigo-m2-marche',
+    ref: 'ALTIGO M2',
+    name: 'Navette Marché ALTIGO M2 : Le Monêtier-les-Bains ↔ La Salle-les-Alpes ↔ Briançon Berwick',
+    mode: 'navette',
+    operator: 'Réseau AltiGo / Communauté de Communes du Briançonnais',
+    network: 'AltiGo Navettes Marché',
+    route: 'Le Lauzet ↔ Le Casset ↔ Le Monêtier-les-Bains ↔ Les Guibertes ↔ Le Freyssinet ↔ Villeneuve (Aravet) ↔ Chantemerle ↔ Briançon Berwick',
+    frequency: 'Tous les mercredis matin pour le grand marché traditionnel',
+    period: 'Toute l\'année (Mercredis matins)',
+    stops: [
+      'Le Lauzet',
+      'Le Casset (Porte du Parc des Écrins)',
+      'Le Monêtier-les-Bains (Centre & Grands Bains)',
+      'Les Guibertes',
+      'Le Freyssinet',
+      'La Salle-les-Alpes (Aravet)',
+      'Chantemerle (Saint-Chaffrey)',
+      'Briançon Place Berwick (Marché)'
+    ],
+    color: '#a855f7',
+    url: 'https://www.monaltigo.fr',
+    coords: '6.4380,45.0210;6.4710,45.0110;6.5080,44.9750;6.5280,44.9620;6.5440,44.9540;6.5860,44.9340;6.6340,44.8980'
+  },
+  {
+    id: 'altigo-m3-marche',
+    ref: 'ALTIGO M3',
+    name: 'Navette Marché ALTIGO M3 : Saint-Chaffrey (Champs Arnoux) ↔ Briançon Marché',
+    mode: 'navette',
+    operator: 'Réseau AltiGo / Communauté de Communes du Briançonnais',
+    network: 'AltiGo Navettes Marché',
+    route: 'Saint-Chaffrey (Champs Arnoux, Mairie) ↔ Chantemerle-Crocus ↔ Quartier du 15/9 ↔ Briançon Marché Couvert',
+    frequency: 'Tous les mercredis matin pour le marché traditionnel',
+    period: 'Toute l\'année (Mercredis matins)',
+    stops: [
+      'Saint-Chaffrey (Champs Arnoux)',
+      'Saint-Chaffrey Mairie',
+      'Chantemerle Crocus',
+      'Quartier du 15/9',
+      'Briançon Berwick / Marché Couvert'
+    ],
+    color: '#f43f5e',
+    url: 'https://www.monaltigo.fr',
+    coords: '6.5920,44.9310;6.6010,44.9250;6.6180,44.9120;6.6340,44.8980'
   },
   {
     id: 'navette-oisans-vaujany',
