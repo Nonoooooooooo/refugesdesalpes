@@ -161,7 +161,7 @@ async function buildFinalCarsRegionExpress() {
   const sqTol = tol * tol;
 
   const finalRoutes = [];
-  const EXCLUDED_REFS = new Set(['X76', 'X73', 'X18', 'X13', 'X25']);
+  const EXCLUDED_REFS = new Set(['X76', 'X73', 'X18', 'X13', 'X25', 'X51', 'X71', 'X74', 'X75']);
 
   routesMap.forEach((r, rId) => {
     if (EXCLUDED_REFS.has((r.shortName || '').toUpperCase())) {

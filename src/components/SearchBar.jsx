@@ -82,7 +82,7 @@ export default function SearchBar({
     if (cachedTransports) {
       setTransportsData(cachedTransports)
     } else {
-      fetch('/transports_alpes.json')
+      fetch('/transports_alpes.json', { cache: 'no-cache' })
         .then((r) => (r.ok ? r.json() : { features: [] }))
         .then((geojson) => {
           const items = (geojson.features || []).map((f) => {

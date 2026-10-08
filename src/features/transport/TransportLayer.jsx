@@ -160,7 +160,7 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
     if (!active || data) return;
 
     let isMounted = true;
-    fetch('/transports_alpes.json')
+    fetch('/transports_alpes.json', { cache: 'no-cache' })
       .then((res) => {
         if (!res.ok) throw new Error('Impossible de charger les transports');
         return res.json();

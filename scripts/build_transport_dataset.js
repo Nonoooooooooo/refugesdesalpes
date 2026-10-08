@@ -5,7 +5,7 @@ const CHAMONIX_BUS_ROUTES = fs.existsSync('scripts/data/chamonix_bus.json')
   ? JSON.parse(fs.readFileSync('scripts/data/chamonix_bus.json', 'utf8'))
   : [];
 
-const EXCLUDED_CRE_REFS = new Set(['X76', 'X73', 'X18', 'X13', 'X25']);
+const EXCLUDED_CRE_REFS = new Set(['X76', 'X73', 'X18', 'X13', 'X25', 'X51', 'X71', 'X74', 'X75']);
 const CARS_REGION_EXPRESS_ROUTES = (fs.existsSync('scripts/data/cars_region_express_final.json')
   ? JSON.parse(fs.readFileSync('scripts/data/cars_region_express_final.json', 'utf8'))
   : []).filter(r => !EXCLUDED_CRE_REFS.has((r.ref || '').toUpperCase()));
@@ -3694,12 +3694,12 @@ const STATIONS = [
   // Pôles et Gares Cars Région Express & Haute-Savoie
   { id: 'st-annemasse', name: 'Gare d\'Annemasse (Léman Express & TGV)', mode: 'station', alt: 435, lat: 46.1996, lng: 6.2381, lines: ['Léman Express L1/L2/L3/L4', 'TER AURA', 'Cars Région Y02/Y04'] },
   { id: 'st-bellegarde', name: 'Gare de Bellegarde-sur-Valserine (TGV)', mode: 'station', alt: 350, lat: 46.1106, lng: 5.8250, lines: ['TGV Lyria (Paris-Genève)', 'Léman Express', 'Cars Express X33 (Ferney/Divonne)', 'Cars Express X36 (Nurieux/Bourg)'] },
-  { id: 'st-valence-tgv', name: 'Gare de Valence TGV Rhône-Alpes Sud', mode: 'station', alt: 160, lat: 44.9919, lng: 4.9786, lines: ['TGV Méditerranée', 'Cars Express X73 (Aubenas)', 'Cars Express X74 (Les Vans)', 'Cars Express X76 (Vallon-Pont-d\'Arc)'] },
+  { id: 'st-valence-tgv', name: 'Gare de Valence TGV Rhône-Alpes Sud', mode: 'station', alt: 160, lat: 44.9919, lng: 4.9786, lines: ['TGV Méditerranée', 'TER Valence - Grenoble', 'Ligne des Alpes'] },
   // Pôles et Gares Drôme Alpine & Savoie
   { id: 'st-aix-bains', name: 'Gare d\'Aix-les-Bains-Le Revard', mode: 'station', alt: 244, lat: 45.6880, lng: 5.9090, lines: ['TGV InOui', 'TER AURA', 'Cars Région S10, S11 (Revard), S12 (Aillon)'] },
   { id: 'st-crest', name: 'Gare de Crest', mode: 'station', alt: 195, lat: 44.7290, lng: 5.0210, lines: ['TER Livron-Veynes', 'Cars Région D24, D25, D27, D28, D52, D53'] },
   { id: 'st-die', name: 'Gare de Die (Diois / Vercors Sud)', mode: 'station', alt: 410, lat: 44.7570, lng: 5.3690, lines: ['TER Livron-Veynes / Train de nuit', 'Cars Région D28 (Crest), D29 (Luc-en-Diois)'] },
-  { id: 'st-nyons', name: 'Gare Routière de Nyons (Baronnies Provençales)', mode: 'station', alt: 270, lat: 44.3590, lng: 5.1380, lines: ['Cars Région Express X71', 'Cars Région D36, D37, D38, D44'] },
+  { id: 'st-nyons', name: 'Gare Routière de Nyons (Baronnies Provençales)', mode: 'station', alt: 270, lat: 44.3590, lng: 5.1380, lines: ['Cars Région D36, D37, D38, D44'] },
   // Pôles et Gares de Tignes & Haute-Tarentaise
   { id: 'hub-tignes-lac', name: 'Gare Routière de Tignes Le Lac (2100 m)', mode: 'station', alt: 2100, lat: 45.4695, lng: 6.9075, lines: ['Navette Gratuite 2100', 'Navette Gratuite 1800', 'Cars Région S83 (Bourg-St-Maurice)', 'Cars Région S82 (Val d\'Isère)'], color: '#06b6d4' },
   { id: 'hub-tignes-val-claret', name: 'Pôle Tignes Val Claret - Grande Motte (2120 m)', mode: 'station', alt: 2120, lat: 45.4550, lng: 6.8985, lines: ['Funiculaire Perce-Neige (Glacier 3032 m)', 'Navette Gratuite 2100', 'Navette Gratuite 1800', 'Cars Région S83', 'Départ Tour des Glaciers de la Vanoise & Refuges Leisse / Palet'], color: '#06b6d4' },
