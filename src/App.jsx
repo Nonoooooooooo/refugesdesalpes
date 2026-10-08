@@ -5,6 +5,7 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { Loader2, TriangleAlert, ZoomIn } from 'lucide-react'
+import { Analytics } from '@vercel/analytics/react'
 import { fetchBbox } from './lib/api'
 import { typeInfo, FILTERABLE } from './lib/types.jsx'
 import MapControls from './components/MapControls.jsx'
@@ -348,6 +349,7 @@ export default function App() {
           )}
         </ErrorBoundary>
       )}
+      <Analytics />
     </div>
   )
 }
