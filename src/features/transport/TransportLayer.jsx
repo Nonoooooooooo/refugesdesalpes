@@ -423,8 +423,12 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
 
         // Créer les arrêts de CETTE ligne posés exactement sur SON trait
         if (Array.isArray(props.stopPoints) && props.stopPoints.length > 0) {
+          const seenLineStopKeys = new Set();
           props.stopPoints.forEach((sp) => {
             if (sp.lat == null || sp.lng == null) return;
+            const stopKey = `${(sp.name || '').toLowerCase().trim()}_${sp.lat.toFixed(4)}_${sp.lng.toFixed(4)}`;
+            if (seenLineStopKeys.has(stopKey)) return;
+            seenLineStopKeys.add(stopKey);
 
             const segData = findClosestSegment(sp.lat, sp.lng, feature.geometry);
 

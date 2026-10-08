@@ -320,99 +320,6 @@ export default function TransportSidebar({ transport, onClose, onSelectTransport
           </Section>
         )}
 
-        {/* Section Grille Horaires Officiels */}
-        {displayTimetable &&
-          Array.isArray(displayTimetable.rows) &&
-          displayTimetable.rows.length > 0 &&
-          (() => {
-            const rows = displayTimetable.rows;
-            const maxCols = Math.max(
-              ...rows.map((r) => (Array.isArray(r.times) ? r.times.length : 0)),
-              0
-            );
-            const rawHeaders = Array.isArray(displayTimetable.headers)
-              ? displayTimetable.headers
-              : [];
-            const headers =
-              rawHeaders.length > 0
-                ? rawHeaders
-                : Array.from({ length: maxCols }, (_, idx) => `Dép. ${idx + 1}`);
-
-            return (
-              <Section title={displayTimetable.title || 'Horaires et départs réguliers'}>
-                <div className="rounded-2xl bg-white/[0.05] p-3 ring-1 ring-white/10">
-                  <div className="overflow-x-auto scroll-thin">
-                    <table className="w-full min-w-[340px] text-left text-xs">
-                      <thead>
-                        <tr className="border-b border-white/15 text-[10px] uppercase tracking-wider text-white/60">
-                          <th className="pb-2 pr-2 font-semibold">Arrêt</th>
-                          {headers.map((h, i) => (
-                            <th
-                              key={i}
-                              className="pb-2 px-1 text-center font-semibold text-white/90"
-                            >
-                              {h}
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-white/5">
-                        {rows.map((row, i) => {
-                          const stopName =
-                            typeof row.stop === 'string'
-                              ? row.stop
-                              : row.stop?.name || row.name || 'Arrêt';
-                          const times = Array.isArray(row.times) ? row.times : [];
-                          const isSelectedStop =
-                            transport.selectedStop &&
-                            (transport.selectedStop.name === stopName ||
-                              stopName
-                                .toLowerCase()
-                                .includes(transport.selectedStop.name.toLowerCase()));
-
-                          return (
-                            <tr
-                              key={i}
-                              className={`transition-colors ${
-                                isSelectedStop
-                                  ? 'bg-amber-500/20 font-semibold'
-                                  : 'hover:bg-white/5'
-                              }`}
-                            >
-                              <td className="py-1.5 pr-2 font-medium text-white/90 whitespace-nowrap">
-                                <span className="flex items-center gap-1.5">
-                                  {isSelectedStop && (
-                                    <MapPin size={12} className="text-amber-400 shrink-0" />
-                                  )}
-                                  {stopName}
-                                </span>
-                              </td>
-                              {times.map((t, j) => (
-                                <td
-                                  key={j}
-                                  className={`py-1.5 px-1 text-center font-mono text-[11px] whitespace-nowrap ${
-                                    isSelectedStop ? 'text-amber-200' : 'text-white/80'
-                                  }`}
-                                >
-                                  {t || '-'}
-                                </td>
-                              ))}
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                  {displayTimetable.note && (
-                    <div className="mt-2.5 border-t border-white/10 pt-2 text-[11px] leading-relaxed italic text-white/70">
-                      {displayTimetable.note}
-                    </div>
-                  )}
-                </div>
-              </Section>
-            );
-          })()}
-
         {/* Section Arrêts & Gares desservis ordonnés selon la direction */}
         {Array.isArray(displayStops) && displayStops.length > 0 && (
           <Section
@@ -487,6 +394,99 @@ export default function TransportSidebar({ transport, onClose, onSelectTransport
             </div>
           </Section>
         )}
+
+        {/* Section Grille Horaires Officiels */}
+        {displayTimetable &&
+          Array.isArray(displayTimetable.rows) &&
+          displayTimetable.rows.length > 0 &&
+          (() => {
+            const rows = displayTimetable.rows;
+            const maxCols = Math.max(
+              ...rows.map((r) => (Array.isArray(r.times) ? r.times.length : 0)),
+              0
+            );
+            const rawHeaders = Array.isArray(displayTimetable.headers)
+              ? displayTimetable.headers
+              : [];
+            const headers =
+              rawHeaders.length > 0
+                ? rawHeaders
+                : Array.from({ length: maxCols }, (_, idx) => `Dép. ${idx + 1}`);
+
+            return (
+              <Section title={displayTimetable.title || 'Horaires et départs réguliers'}>
+                <div className="rounded-2xl bg-white/[0.05] p-3 ring-1 ring-white/10">
+                  <div className="overflow-x-auto scroll-thin">
+                    <table className="w-full min-w-[340px] text-left text-xs">
+                      <thead>
+                        <tr className="border-b border-white/15 text-[10px] uppercase tracking-wider text-white/60">
+                          <th className="pb-2 pr-2 font-semibold">Arrêt</th>
+                          {headers.map((h, i) => (
+                            <th
+                              key={i}
+                              className="pb-2 px-1 text-center font-semibold text-white/90"
+                            >
+                              {h}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/5">
+                        {rows.map((row, i) => {
+                          const stopName =
+                            typeof row.stop === 'string'
+                              ? row.stop
+                              : row.stop?.name || row.name || 'Arrêt';
+                          const times = Array.isArray(row.times) ? row.times : [];
+                          const isSelectedStop =
+                            transport.selectedStop &&
+                            (transport.selectedStop.name === stopName ||
+                              stopName
+                                .toLowerCase()
+                                .includes(transport.selectedStop.name.toLowerCase()));
+
+                          return (
+                            <tr
+                              key={i}
+                              className={`transition-colors ${
+                                isSelectedStop
+                              ? 'bg-amber-500/20 font-semibold'
+                                  : 'hover:bg-white/5'
+                              }`}
+                            >
+                              <td className="py-1.5 pr-2 font-medium text-white/90 whitespace-nowrap">
+                                <span className="flex items-center gap-1.5">
+                                  {isSelectedStop && (
+                                    <MapPin size={12} className="text-amber-400 shrink-0" />
+                                  )}
+                                  {stopName}
+                                </span>
+                              </td>
+                              {times.map((t, j) => (
+                                <td
+                                  key={j}
+                                  className={`py-1.5 px-1 text-center font-mono text-[11px] whitespace-nowrap ${
+                                    isSelectedStop ? 'text-amber-200' : 'text-white/80'
+                                  }`}
+                                >
+                                  {t || '-'}
+                                </td>
+                              ))}
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                  {displayTimetable.note && (
+                    <div className="mt-2.5 border-t border-white/10 pt-2 text-[11px] leading-relaxed italic text-white/70">
+                      {displayTimetable.note}
+                    </div>
+                  )}
+                </div>
+              </Section>
+            );
+          })()}
 
         {/* Info mobilités douces & randonnée */}
         <div className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-3.5 text-xs leading-relaxed text-white/75">
