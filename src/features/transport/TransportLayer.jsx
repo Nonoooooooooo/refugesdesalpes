@@ -324,7 +324,7 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
     const stopName = sp.name || 'Arrêt';
     const isTGV = lineProps.isTGV || lineProps.ref === 'TGV INOUI';
     const lineBadge = isTGV ? 'TGV INOUI' : (lineProps.ref || (lineProps.mode === 'train' ? 'TER' : 'Ligne'));
-    const timeInfo = sp.time ? `🕒 Passage : ${sp.time.split('|')[0].trim()}` : '';
+    const timeInfo = sp.time ? `Passage : ${sp.time.split('|')[0].trim()}` : '';
 
     return `
       <div style="font-family: inherit; min-width: 150px; max-width: 260px; padding: 2px;">
@@ -395,23 +395,23 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
         const stopCount = (props.stopPoints || []).length;
 
         return `
-          <div style="font-family: inherit; width: 285px; max-width: 310px; overflow: hidden; border-radius: 12px; color: #fff;">
-            <!-- Bandeau Pictogramme TGV inOui Duplex conforme au modèle -->
+          <div style="font-family: inherit; width: 295px; max-width: 320px; overflow: hidden; border-radius: 12px; color: #fff;">
+            <!-- Bandeau Pictogramme TGV inOui Duplex conforme au modèle exact -->
             <div style="background: linear-gradient(180deg, #18091a 0%, #2e0c29 100%); border-bottom: 2px solid #e11d48; padding: 10px 12px 8px 12px; text-align: center;">
-              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
-                <span style="font-size: 9px; font-weight: 800; letter-spacing: 0.6px; color: #f43f5e; text-transform: uppercase;">
-                  🚆 SNCF Grande Vitesse
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px;">
+                <span style="font-size: 9.5px; font-weight: 800; letter-spacing: 0.6px; color: #f43f5e; text-transform: uppercase;">
+                  SNCF Voyageurs &bull; TGV INOUI
                 </span>
-                <span style="background: #e11d48; color: #fff; font-size: 9px; font-weight: 800; padding: 1.5px 6px; border-radius: 9999px; letter-spacing: 0.3px;">
-                  320 km/h
+                <span style="background: rgba(225, 29, 72, 0.2); border: 1px solid rgba(225, 29, 72, 0.5); color: #fecdd3; font-size: 9px; font-weight: 700; padding: 1.5px 7px; border-radius: 9999px;">
+                  Grande Vitesse
                 </span>
               </div>
               <div style="height: 52px; display: flex; align-items: center; justify-content: center; margin: 3px 0;">
-                <img src="/icons/tgv_inoui.svg" alt="TGV inOui" style="width: 100%; max-height: 50px; object-fit: contain; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.6));" />
+                <img src="/icons/tgv_inoui_model.png" alt="TGV inOui" style="width: 100%; max-height: 48px; object-fit: contain; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.6)); display: block; margin: 0 auto;" />
               </div>
               <div style="display: flex; align-items: center; justify-content: space-between; font-size: 10px; color: rgba(254, 205, 211, 0.9); font-weight: 600; padding-top: 3px; border-top: 1px solid rgba(225, 29, 72, 0.25);">
-                <span>Rame TGV Duplex inOui</span>
-                <span>Sillon Alpin</span>
+                <span>Rame Duplex inOui</span>
+                <span>Liaison Directe Alpes</span>
               </div>
             </div>
 
@@ -435,12 +435,12 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
 
               <div style="margin-top: 8px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 11px;">
                 <div style="color: #fecdd3; font-weight: 600; display: flex; align-items: center; gap: 4px;">
-                  <span>📍</span>
-                  <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${originName} ➔ ${destName}</span>
+                  <span style="color: #fb7185; font-size: 9.5px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.3px;">Liaison :</span>
+                  <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${originName} &rarr; ${destName}</span>
                 </div>
                 <div style="display: flex; align-items: center; justify-content: space-between; color: rgba(255,255,255,0.5); font-size: 10px; margin-top: 3px;">
                   <span>${props.operator || 'SNCF Voyageurs'}</span>
-                  <span style="color: #fb7185; font-weight: 600;">Cliquer pour détails ➔</span>
+                  <span style="color: #fb7185; font-weight: 600;">Cliquer pour détails &rarr;</span>
                 </div>
               </div>
             </div>
@@ -454,14 +454,14 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
         const stopCount = (props.stopPoints || []).length;
 
         return `
-          <div style="font-family: inherit; width: 285px; max-width: 310px; overflow: hidden; border-radius: 12px; color: #fff;">
+          <div style="font-family: inherit; width: 295px; max-width: 320px; overflow: hidden; border-radius: 12px; color: #fff;">
             <div style="background: linear-gradient(180deg, #200508 0%, #3e0910 100%); border-bottom: 2px solid #dc2626; padding: 10px 12px 8px 12px; text-align: center;">
               <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
-                <span style="font-size: 9px; font-weight: 800; letter-spacing: 0.6px; color: #f87171; text-transform: uppercase;">
-                  🚅 Trenitalia Alta Velocità
+                <span style="font-size: 9.5px; font-weight: 800; letter-spacing: 0.6px; color: #f87171; text-transform: uppercase;">
+                  Trenitalia Alta Velocità
                 </span>
-                <span style="background: #dc2626; color: #fff; font-size: 9px; font-weight: 800; padding: 1.5px 6px; border-radius: 9999px;">
-                  300 km/h
+                <span style="background: rgba(220, 38, 38, 0.25); border: 1px solid rgba(220, 38, 38, 0.5); color: #fca5a5; font-size: 9px; font-weight: 700; padding: 1.5px 7px; border-radius: 9999px;">
+                  Frecciarossa
                 </span>
               </div>
               <div style="padding: 6px 0; font-size: 14px; font-weight: 900; letter-spacing: 1px; color: #ffffff; text-transform: uppercase;">
@@ -469,7 +469,7 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
               </div>
               <div style="display: flex; align-items: center; justify-content: space-between; font-size: 10px; color: rgba(254, 202, 202, 0.9); font-weight: 600; padding-top: 3px; border-top: 1px solid rgba(220, 38, 38, 0.3);">
                 <span>Liaison Transalpine</span>
-                <span>France ↔ Italie</span>
+                <span>France &bull; Italie</span>
               </div>
             </div>
 
@@ -478,12 +478,13 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
                 ${props.name}
               </div>
               <div style="margin-top: 8px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 11px;">
-                <div style="color: #fca5a5; font-weight: 600;">
-                  📍 ${originName} ➔ ${destName}
+                <div style="color: #fca5a5; font-weight: 600; display: flex; align-items: center; gap: 4px;">
+                  <span style="color: #f87171; font-size: 9.5px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.3px;">Liaison :</span>
+                  <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${originName} &rarr; ${destName}</span>
                 </div>
                 <div style="display: flex; align-items: center; justify-content: space-between; color: rgba(255,255,255,0.5); font-size: 10px; margin-top: 3px;">
                   <span>${props.operator || 'Trenitalia'}</span>
-                  <span style="color: #f87171; font-weight: 600;">Cliquer pour détails ➔</span>
+                  <span style="color: #f87171; font-weight: 600;">Cliquer pour détails &rarr;</span>
                 </div>
               </div>
             </div>
@@ -1075,8 +1076,8 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
           icon: L.divIcon({
             className: 'custom-direction-marker',
             html: `
-              <div style="display: inline-flex; align-items: center; gap: 4px; background: #059669; color: #fff; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 9999px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); border: 2px solid #fff; white-space: nowrap; transform: translate(-50%, -120%); pointer-events: none;">
-                <span style="font-size: 11px;">🟢 DÉPART</span>
+              <div style="display: inline-flex; align-items: center; gap: 5px; background: #059669; color: #fff; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 9999px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); border: 2px solid #fff; white-space: nowrap; transform: translate(-50%, -120%); pointer-events: none;">
+                <span style="font-size: 10px; font-weight: 900; letter-spacing: 0.5px; opacity: 0.95;">DÉPART</span>
                 <span style="max-width: 130px; overflow: hidden; text-overflow: ellipsis; font-weight: 600;">${originLabel}</span>
               </div>
             `,
@@ -1090,8 +1091,8 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
           icon: L.divIcon({
             className: 'custom-direction-marker',
             html: `
-              <div style="display: inline-flex; align-items: center; gap: 4px; background: #e11d48; color: #fff; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 9999px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); border: 2px solid #fff; white-space: nowrap; transform: translate(-50%, -120%); pointer-events: none;">
-                <span style="font-size: 11px;">🏁 TERMINUS</span>
+              <div style="display: inline-flex; align-items: center; gap: 5px; background: #e11d48; color: #fff; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 9999px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); border: 2px solid #fff; white-space: nowrap; transform: translate(-50%, -120%); pointer-events: none;">
+                <span style="font-size: 10px; font-weight: 900; letter-spacing: 0.5px; opacity: 0.95;">TERMINUS</span>
                 <span style="max-width: 130px; overflow: hidden; text-overflow: ellipsis; font-weight: 600;">${destLabel}</span>
               </div>
             `,

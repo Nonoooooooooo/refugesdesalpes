@@ -175,7 +175,7 @@ export default function TransportSidebar({ transport, onClose, onSelectTransport
 
   // Liaison textuelle selon la direction
   const displayRoute = activeDirection
-    ? `${activeDirection.origin} ➔ ${activeDirection.destination}`
+    ? `${activeDirection.origin} → ${activeDirection.destination}`
     : transport.route;
 
   // Grille horaire adaptée à la direction
@@ -230,7 +230,7 @@ export default function TransportSidebar({ transport, onClose, onSelectTransport
 
       {/* Corps du panneau */}
       <div className="flex flex-col gap-5 p-5">
-        {/* En-tête exclusif TGV inOui avec pictogramme officiel haute vitesse */}
+        {/* En-tête exclusif TGV inOui avec pictogramme officiel conforme au modèle exact */}
         {Boolean(transport.isTGV || transport.ref === 'TGV INOUI') && (
           <div className="relative overflow-hidden rounded-2xl border border-rose-500/35 bg-gradient-to-br from-[#1b081d] via-[#2f0827] to-[#160517] p-3.5 shadow-xl">
             <div className="flex items-center justify-between">
@@ -238,13 +238,13 @@ export default function TransportSidebar({ transport, onClose, onSelectTransport
                 <span className="inline-block h-2 w-2 rounded-full bg-rose-500 shadow-[0_0_8px_#f43f5e]" />
                 SNCF Voyageurs &bull; TGV INOUI
               </span>
-              <span className="rounded-full bg-gradient-to-r from-rose-600 to-pink-600 px-2.5 py-0.5 text-[9.5px] font-black tracking-wide text-white shadow-sm">
-                320 km/h
+              <span className="rounded-full border border-rose-500/30 bg-rose-500/20 px-2.5 py-0.5 text-[9.5px] font-bold text-rose-200">
+                Ligne à Grande Vitesse
               </span>
             </div>
             <div className="my-2.5 flex h-14 items-center justify-center">
               <img
-                src="/icons/tgv_inoui.svg"
+                src="/icons/tgv_inoui_model.png"
                 alt="TGV INOUI Duplex"
                 className="h-full w-full object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.7)]"
               />
