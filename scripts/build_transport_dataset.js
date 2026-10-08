@@ -23,6 +23,10 @@ const DROME_ALPINE_ROUTES = fs.existsSync('scripts/data/drome_alpine_final.json'
   ? JSON.parse(fs.readFileSync('scripts/data/drome_alpine_final.json', 'utf8'))
   : [];
 
+const MISSING_RESORTS_ROUTES = fs.existsSync('scripts/data/missing_resorts_final.json')
+  ? JSON.parse(fs.readFileSync('scripts/data/missing_resorts_final.json', 'utf8'))
+  : [];
+
 const OSRM_URL = 'https://router.project-osrm.org/route/v1/driving/';
 
 function fetchRoute(coords) {
@@ -745,6 +749,11 @@ const BUS_ROUTES = [
   // RÉSEAU DRÔME ALPINE & PRÉALPES (VERCORS, DIOIS, BARONNIES, VALENCE TGV) - 12 LIGNES OFFICIELLES GTFS
   // ═══════════════════════════════════════════════════════
   ...DROME_ALPINE_ROUTES,
+
+  // ═══════════════════════════════════════════════════════
+  // VAL D'ISÈRE, ALPE D'HUEZ & VALMOREL - 10 LIGNES & NAVETTES OFFICIELLES
+  // ═══════════════════════════════════════════════════════
+  ...MISSING_RESORTS_ROUTES,
   {
     id: 'navette-sixt-lignon',
     ref: 'Navette Giffre',
@@ -3872,6 +3881,46 @@ const STATIONS = [
     lng: 6.7445,
     lines: ['Télécabine d\'Ardent (Avoriaz / Lindarets)', 'Navette M (Morzine Pléney)', 'Accès Lac de Montriond & Cascade d\'Ardent'],
     color: '#10b981'
+  },
+  {
+    id: 'hub-valdisere-centre',
+    name: 'Pôle Val d\'Isère - Gare Routière (1850 m)',
+    mode: 'station',
+    alt: 1850,
+    lat: 45.45045,
+    lng: 6.97688,
+    lines: ['Cars Région S82 (Bourg-St-Maurice TGV)', 'Navette Train Rouge (La Daille ↔ Le Fornet)', 'Accès Col de l\'Iseran & Parc de la Vanoise'],
+    color: '#dc2626'
+  },
+  {
+    id: 'hub-alpe-huez-sports',
+    name: 'Pôle Alpe d\'Huez - Palais des Sports (1860 m)',
+    mode: 'station',
+    alt: 1860,
+    lat: 45.0920,
+    lng: 6.0694,
+    lines: ['Cars Région Isère T76 (Bourg-d\'Oisans)', 'Navettes Citron, Pomme, Fraise, Myrtille', 'Télécentre / Alpe Express'],
+    color: '#059669'
+  },
+  {
+    id: 'hub-valmorel-bourg',
+    name: 'Pôle Valmorel - Le Bourg & Crève-Cœur (1400 m)',
+    mode: 'station',
+    alt: 1400,
+    lat: 45.4623,
+    lng: 6.4437,
+    lines: ['Cars Région Savoie S62 (Moûtiers TGV)', 'Vallée\'BUS (Notre-Dame-de-Briançon)', 'Télébourg'],
+    color: '#ea580c'
+  },
+  {
+    id: 'hub-doucy-station',
+    name: 'Pôle Doucy-Station (Valmorel 1250 m)',
+    mode: 'station',
+    alt: 1250,
+    lat: 45.4746,
+    lng: 6.4674,
+    lines: ['Cars Région Savoie S61 (Moûtiers TGV)', 'Télésiège de Doucy'],
+    color: '#d97706'
   }
 ];
 
