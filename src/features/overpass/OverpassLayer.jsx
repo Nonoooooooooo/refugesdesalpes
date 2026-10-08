@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useMap, useMapEvents, Marker, Tooltip, Popup } from 'react-leaflet'
-import MarkerClusterGroup from 'react-leaflet-cluster'
 import L from 'leaflet'
 import { Loader2, ZoomIn, Navigation } from 'lucide-react'
 import { fetchOverpassParkings, fetchOverpassPeaksAndPasses } from '../../lib/overpass'
@@ -22,23 +21,6 @@ function getParkingIcon() {
     )
   }
   return iconCache.get('parking')
-}
-
-// Icône de regroupement (Cluster) pour les parkings
-function getParkingClusterIcon(cluster) {
-  const count = cluster.getChildCount()
-  const size = count < 10 ? 28 : count < 50 ? 34 : 40
-  return L.divIcon({
-    className: 'parking-cluster-marker',
-    html: `
-      <div class="parking-cluster" style="width:${size}px;height:${size}px">
-        <span class="parking-cluster-badge">P</span>
-        <span class="parking-cluster-count">${count}</span>
-      </div>
-    `,
-    iconSize: [size, size],
-    iconAnchor: [size / 2, size / 2],
-  })
 }
 
 // Icône Sommet / Col avec texte direct sur la carte
@@ -66,23 +48,22 @@ export default function OverpassLayer({ showParkings, showPeaks }) {
 
   const abortRef = useRef(null)
   const timerRef = useRef(null)
-  const inFlightRef = useRef(false)
-  const pendingRunRef = useRef(false)
-  const lastCenterRef = useRef(null)
-  const lastZoomRef = useRef(null)
+  const prevShowParkingsRef = useRef(showParkings)
 
-  // Zoom automatique vers le niveau minimal si l'utilisateur active les parkings depuis un dézoom
+  // Zoom automatique fluide vers le niveau minimal si l'utilisateur active les parkings depuis un dézoom (< 12)
   useEffect(() => {
-    if (showParkings && map.getZoom() < MIN_ZOOM) {
-      map.setZoom(MIN_ZOOM)
+    if (showParkings && !prevShowParkingsRef.current) {
+      if (map.getZoom() < MIN_ZOOM) {
+        map.flyTo(map.getCenter(), MIN_ZOOM, { duration: 0.8 })
+      }
     }
+    prevShowParkingsRef.current = showParkings
   }, [showParkings, map])
 
   // Nettoyage ciblé lors de la désactivation
   useEffect(() => {
     if (!showParkings) {
       setParkings([])
-      lastCenterRef.current = null
     }
   }, [showParkings])
 
@@ -94,7 +75,6 @@ export default function OverpassLayer({ showParkings, showPeaks }) {
 
   const fetchLayers = useCallback(() => {
     const currentZoom = map.getZoom()
-    const currentCenter = map.getCenter()
     setZoomLevel(currentZoom)
 
     // Si aucun calque actif
@@ -103,46 +83,28 @@ export default function OverpassLayer({ showParkings, showPeaks }) {
       return
     }
 
-    // Si zoom trop faible : on ne télécharge pas, mais on conserve les points existants
+    // Si zoom trop faible (< 12) : on ne télécharge pas
     if (currentZoom < MIN_ZOOM) {
       setLoading(false)
-      return
-    }
-
-    // Vérifier si le déplacement est suffisant pour justifier un appel API
-    if (lastCenterRef.current && lastZoomRef.current === currentZoom) {
-      const distanceMoved = map.distance(lastCenterRef.current, currentCenter)
-      // Si déplacé de moins de 1200 mètres sans changement de zoom, on évite de spammer l'API
-      if (distanceMoved < 1200) {
-        return
-      }
-    }
-
-    // Protection anti-concurrence : maximum 1 requête active à la fois
-    if (inFlightRef.current) {
-      pendingRunRef.current = true
       return
     }
 
     abortRef.current?.abort()
     const ctrl = new AbortController()
     abortRef.current = ctrl
-    inFlightRef.current = true
     setLoading(true)
-
-    lastCenterRef.current = currentCenter
-    lastZoomRef.current = currentZoom
 
     const b = map.getBounds()
     const bounds = [b.getSouth(), b.getWest(), b.getNorth(), b.getEast()]
     const promises = []
 
-    // 1. Requête Parkings si actif
+    // 1. Requête Parkings si actif (fonctionne à tout zoom >= 12 : 12, 13, 14, 15, 16...)
     if (showParkings) {
       const p1 = fetchOverpassParkings(bounds, ctrl.signal)
         .then((incoming) => {
+          if (ctrl.signal.aborted) return
           setParkings((prev) => {
-            const mapById = new Map(prev.slice(-1200).map((item) => [item.id, item]))
+            const mapById = new Map(prev.slice(-1500).map((item) => [item.id, item]))
             incoming.forEach((item) => mapById.set(item.id, item))
             return [...mapById.values()]
           })
@@ -157,8 +119,9 @@ export default function OverpassLayer({ showParkings, showPeaks }) {
     if (showPeaks) {
       const p2 = fetchOverpassPeaksAndPasses(bounds, ctrl.signal)
         .then((incoming) => {
+          if (ctrl.signal.aborted) return
           setPeaks((prev) => {
-            const mapById = new Map(prev.slice(-800).map((item) => [item.id, item]))
+            const mapById = new Map(prev.slice(-1000).map((item) => [item.id, item]))
             incoming.forEach((item) => mapById.set(item.id, item))
             return [...mapById.values()]
           })
@@ -170,23 +133,16 @@ export default function OverpassLayer({ showParkings, showPeaks }) {
     }
 
     Promise.allSettled(promises).finally(() => {
-      inFlightRef.current = false
       if (!ctrl.signal.aborted) {
         setLoading(false)
-      }
-      // Si un déplacement a eu lieu pendant la requête, on planifie la suivante
-      if (pendingRunRef.current) {
-        pendingRunRef.current = false
-        clearTimeout(timerRef.current)
-        timerRef.current = setTimeout(fetchLayers, 400)
       }
     })
   }, [map, showParkings, showPeaks])
 
-  // Débouncé à 650ms pour laisser l'utilisateur terminer son geste de pan/zoom
+  // Débouncé à 400ms pour laisser l'utilisateur terminer son mouvement de carte
   const schedule = useCallback(() => {
     clearTimeout(timerRef.current)
-    timerRef.current = setTimeout(fetchLayers, 650)
+    timerRef.current = setTimeout(fetchLayers, 400)
   }, [fetchLayers])
 
   useMapEvents({
@@ -203,7 +159,7 @@ export default function OverpassLayer({ showParkings, showPeaks }) {
   }, [fetchLayers])
 
   const handleZoomIn = () => {
-    map.setZoom(MIN_ZOOM)
+    map.flyTo(map.getCenter(), MIN_ZOOM, { duration: 0.6 })
   }
 
   const isTooFar = (showParkings || showPeaks) && zoomLevel < MIN_ZOOM
@@ -234,87 +190,78 @@ export default function OverpassLayer({ showParkings, showPeaks }) {
         </div>
       )}
 
-      {/* ─── Calque Parkings avec regroupement (Cluster) ─── */}
-      {showParkings && parkings.length > 0 && (
-        <MarkerClusterGroup
-          chunkedLoading
-          maxClusterRadius={42}
-          disableClusteringAtZoom={15}
-          spiderfyOnMaxZoom={true}
-          iconCreateFunction={getParkingClusterIcon}
-        >
-          {parkings.map((p) => {
-            const gmapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}`
-            return (
-              <Marker
-                key={p.id}
-                position={[p.lat, p.lng]}
-                icon={getParkingIcon()}
-                zIndexOffset={300}
-              >
-                <Tooltip direction="top" offset={[0, -10]} className="refuge-tooltip">
-                  <div className="font-semibold text-xs flex items-center gap-1.5">
-                    <span className="text-blue-400 font-bold">🅿</span>
-                    <span>{p.name}</span>
+      {/* ─── Calque Parkings (Marqueurs directs fiables à tout niveau de zoom >= 12) ─── */}
+      {showParkings &&
+        parkings.map((p) => {
+          const gmapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}`
+          return (
+            <Marker
+              key={p.id}
+              position={[p.lat, p.lng]}
+              icon={getParkingIcon()}
+              zIndexOffset={300}
+            >
+              <Tooltip direction="top" offset={[0, -10]} className="refuge-tooltip">
+                <div className="font-semibold text-xs flex items-center gap-1.5">
+                  <span className="text-blue-400 font-bold">🅿</span>
+                  <span>{p.name}</span>
+                </div>
+                {(p.fee || p.capacity) && (
+                  <div className="text-[11px] text-white/75 mt-0.5">
+                    {p.fee && <span>{p.fee}</span>}
+                    {p.fee && p.capacity && <span> · </span>}
+                    {p.capacity && <span>{p.capacity} places</span>}
                   </div>
-                  {(p.fee || p.capacity) && (
-                    <div className="text-[11px] text-white/75 mt-0.5">
-                      {p.fee && <span>{p.fee}</span>}
-                      {p.fee && p.capacity && <span> · </span>}
-                      {p.capacity && <span>{p.capacity} places</span>}
-                    </div>
-                  )}
-                </Tooltip>
-                <Popup className="glass-popup" offset={[0, -8]}>
-                  <div className="p-2.5 text-slate-100 min-w-[190px]">
-                    <div className="flex items-center gap-2 font-bold text-sm text-white">
-                      <span className="flex h-5 w-5 items-center justify-center rounded bg-blue-600 text-xs font-black text-white shadow-sm">P</span>
-                      <span className="truncate">{p.name}</span>
-                    </div>
-
-                    <div className="my-2.5 space-y-1.5 text-xs text-slate-300 border-y border-white/10 py-2">
-                      {p.fee && (
-                        <div className="flex justify-between items-center">
-                          <span className="text-slate-400">Tarif :</span>
-                          <span className={`font-medium px-1.5 py-0.5 rounded text-[11px] ${p.fee === 'Gratuit' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/20 text-amber-300'}`}>{p.fee}</span>
-                        </div>
-                      )}
-                      {p.capacity && (
-                        <div className="flex justify-between items-center">
-                          <span className="text-slate-400">Capacité :</span>
-                          <span className="font-medium text-white">{p.capacity} places</span>
-                        </div>
-                      )}
-                      {p.surface && (
-                        <div className="flex justify-between items-center">
-                          <span className="text-slate-400">Revêtement :</span>
-                          <span className="font-medium capitalize text-slate-200">{p.surface}</span>
-                        </div>
-                      )}
-                      {p.parkingType && (
-                        <div className="flex justify-between items-center">
-                          <span className="text-slate-400">Type :</span>
-                          <span className="font-medium capitalize text-slate-200">{p.parkingType}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    <a
-                      href={gmapsUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="mt-2 flex items-center justify-center gap-1.5 rounded-lg bg-blue-600/90 hover:bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white transition shadow-sm"
-                    >
-                      <Navigation size={12} />
-                      <span>Y aller (GPS)</span>
-                    </a>
+                )}
+              </Tooltip>
+              <Popup className="glass-popup" offset={[0, -8]}>
+                <div className="p-2.5 text-slate-100 min-w-[190px]">
+                  <div className="flex items-center gap-2 font-bold text-sm text-white">
+                    <span className="flex h-5 w-5 items-center justify-center rounded bg-blue-600 text-xs font-black text-white shadow-sm">P</span>
+                    <span className="truncate">{p.name}</span>
                   </div>
-                </Popup>
-              </Marker>
-            )
-          })}
-        </MarkerClusterGroup>
-      )}
+
+                  <div className="my-2.5 space-y-1.5 text-xs text-slate-300 border-y border-white/10 py-2">
+                    {p.fee && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-400">Tarif :</span>
+                        <span className={`font-medium px-1.5 py-0.5 rounded text-[11px] ${p.fee === 'Gratuit' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/20 text-amber-300'}`}>{p.fee}</span>
+                      </div>
+                    )}
+                    {p.capacity && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-400">Capacité :</span>
+                        <span className="font-medium text-white">{p.capacity} places</span>
+                      </div>
+                    )}
+                    {p.surface && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-400">Revêtement :</span>
+                        <span className="font-medium capitalize text-slate-200">{p.surface}</span>
+                      </div>
+                    )}
+                    {p.parkingType && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-400">Type :</span>
+                        <span className="font-medium capitalize text-slate-200">{p.parkingType}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <a
+                    href={gmapsUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-2 flex items-center justify-center gap-1.5 rounded-lg bg-blue-600/90 hover:bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white transition shadow-sm"
+                  >
+                    <Navigation size={12} />
+                    <span>Y aller (GPS)</span>
+                  </a>
+                </div>
+              </Popup>
+            </Marker>
+          )
+        })}
 
       {/* ─── Calque Sommets & Cols ─── */}
       {showPeaks &&

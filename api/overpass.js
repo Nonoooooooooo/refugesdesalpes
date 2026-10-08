@@ -2,6 +2,8 @@
 // Proxy pour Overpass API afin de contourner l'erreur 406 Not Acceptable (User-Agent requis)
 // et gérer le basculement automatique entre plusieurs serveurs miroirs avec mise en cache CDN/mémoire.
 
+export const maxDuration = 15 // Durée maximale sur Vercel (Hobby: 15s)
+
 const OVERPASS_ENDPOINTS = [
   'https://lz4.overpass-api.de/api/interpreter',
   'https://z.overpass-api.de/api/interpreter',
@@ -50,7 +52,8 @@ export default async function handler(req, res) {
   for (const endpoint of OVERPASS_ENDPOINTS) {
     try {
       const controller = new AbortController()
-      const timer = setTimeout(() => controller.abort(), 6500)
+      // Timeout de 12 secondes pour laisser le temps aux requêtes Overpass d'aboutir
+      const timer = setTimeout(() => controller.abort(), 12000)
 
       const upstreamRes = await fetch(endpoint, {
         method: 'POST',
@@ -67,8 +70,8 @@ export default async function handler(req, res) {
       if (upstreamRes.ok) {
         const data = await upstreamRes.json()
 
-        // Mise en cache
-        if (cache.size > 200) {
+        // Mise en cache mémoire
+        if (cache.size > 250) {
           const firstKey = cache.keys().next().value
           cache.delete(firstKey)
         }

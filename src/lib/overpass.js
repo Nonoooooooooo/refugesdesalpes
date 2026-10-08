@@ -74,18 +74,16 @@ async function queryOverpass(qlQuery, signal) {
 
 /**
  * Récupère les parkings dans la bounding box (zoom >= 12)
- * Quantifie les coordonnées sur une grille (~4.4km) pour maximiser le cache
  * @param {[number, number, number, number]} bounds [south, west, north, east]
  */
 export async function fetchOverpassParkings([south, west, north, east], signal) {
-  // Grille quantifiée (0.04° ~ 4.4 km) pour réutiliser le cache lors des micro-déplacements
-  const STEP = 0.04
-  const s = (Math.floor(south / STEP) * STEP).toFixed(4)
-  const w = (Math.floor(west / STEP) * STEP).toFixed(4)
-  const n = (Math.ceil(north / STEP) * STEP).toFixed(4)
-  const e = (Math.ceil(east / STEP) * STEP).toFixed(4)
+  // Arrondi à 3 décimales (~100m) pour dédoublonner le cache sans restreindre la précision
+  const s = south.toFixed(3)
+  const w = west.toFixed(3)
+  const n = north.toFixed(3)
+  const e = east.toFixed(3)
 
-  const ql = `[out:json][timeout:12];(node["amenity"="parking"](${s},${w},${n},${e});way["amenity"="parking"](${s},${w},${n},${e}););out center;`
+  const ql = `[out:json][timeout:20];(node["amenity"="parking"](${s},${w},${n},${e});way["amenity"="parking"](${s},${w},${n},${e}););out center;`
   const elements = await queryOverpass(ql, signal)
 
   return elements
@@ -132,13 +130,12 @@ export async function fetchOverpassParkings([south, west, north, east], signal) 
  * @param {[number, number, number, number]} bounds [south, west, north, east]
  */
 export async function fetchOverpassPeaksAndPasses([south, west, north, east], signal) {
-  const STEP = 0.05
-  const s = (Math.floor(south / STEP) * STEP).toFixed(4)
-  const w = (Math.floor(west / STEP) * STEP).toFixed(4)
-  const n = (Math.ceil(north / STEP) * STEP).toFixed(4)
-  const e = (Math.ceil(east / STEP) * STEP).toFixed(4)
+  const s = south.toFixed(3)
+  const w = west.toFixed(3)
+  const n = north.toFixed(3)
+  const e = east.toFixed(3)
 
-  const ql = `[out:json][timeout:12];(node["natural"="peak"](${s},${w},${n},${e});node["natural"="saddle"](${s},${w},${n},${e});node["mountain_pass"="yes"](${s},${w},${n},${e}););out;`
+  const ql = `[out:json][timeout:20];(node["natural"="peak"](${s},${w},${n},${e});node["natural"="saddle"](${s},${w},${n},${e});node["mountain_pass"="yes"](${s},${w},${n},${e}););out;`
   const elements = await queryOverpass(ql, signal)
 
   return elements
