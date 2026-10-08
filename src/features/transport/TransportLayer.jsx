@@ -113,6 +113,7 @@ const LineStopMarker = L.CircleMarker.extend({
     segmentData: null,
   },
   _project: function () {
+    if (!this._map) return;
     this._point = this._map.latLngToLayerPoint(this._latlng);
     const offset = this.options.offset || 0;
     const seg = this.options.segmentData;
@@ -136,8 +137,10 @@ const LineStopMarker = L.CircleMarker.extend({
   },
   setOffset: function (offset) {
     this.options.offset = offset;
-    this._project();
-    this.redraw();
+    if (this._map) {
+      this._project();
+      this.redraw();
+    }
     return this;
   },
 });
@@ -799,10 +802,12 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
     // 3. Masquage dynamique des lignes TGV & Frecciarossa au zoom sur les Alpes
     // Si la grande métropole de départ (ex: Paris) n'est plus dans le cadre, le trait disparaît !
     const syncHighSpeedVisibility = () => {
-      if (!layerGroupRef.current) return;
+      if (!layerGroupRef.current || !map) return;
       const grp = layerGroupRef.current;
       const currentSel = selectedTransportRef.current;
       const currentSelId = currentSel?.id;
+      const currentZoom = map.getZoom();
+      const shouldOffset = currentZoom >= ZOOM_OFFSET_THRESHOLD;
 
       layersMapRef.current.forEach((item) => {
         if (item.type !== 'line' || !item.isHighSpeed) return;
@@ -820,6 +825,9 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
           (item.stopMarkers || []).forEach((m) => {
             if (!grp.hasLayer(m)) {
               grp.addLayer(m);
+              if (m.setOffset && m._rawOffset != null && m._map) {
+                m.setOffset(shouldOffset ? m._rawOffset : 0);
+              }
             }
           });
         } else {
@@ -841,6 +849,8 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
     // 4. Gestion dynamique du zoom et du déplacement de carte
     let rafId = null;
     const onMapMove = () => {
+      // Éviter de muter les calques pendant l'animation fluide de zoom Leaflet
+      if (map._animatingZoom) return;
       if (rafId) cancelAnimationFrame(rafId);
       rafId = requestAnimationFrame(syncHighSpeedVisibility);
     };
@@ -857,9 +867,13 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
         if (layer.setOffset) layer.setOffset(targetOffset);
         if (layer.eachLayer) {
           layer.eachLayer((sub) => {
-            if (sub.setOffset) sub.setOffset(targetOffset);
-            else if (sub.options) {
+            if (sub.setOffset) {
+              sub.setOffset(targetOffset);
+            } else if (sub.options) {
               sub.options.offset = targetOffset;
+            }
+            if (sub._map) {
+              if (sub._project) sub._project();
               sub.redraw?.();
             }
           });
@@ -867,7 +881,7 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
       });
 
       stopMarkersRef.current.forEach((marker) => {
-        if (marker.setOffset && marker._rawOffset != null) {
+        if (marker.setOffset && marker._rawOffset != null && marker._map) {
           marker.setOffset(shouldOffset ? marker._rawOffset : 0);
         }
       });
@@ -938,6 +952,7 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
     // Arrêts : sous-brillance synchronisée avec les traits
     if (stopMarkersRef.current && stopMarkersRef.current.length > 0) {
       stopMarkersRef.current.forEach((marker) => {
+        if (!marker._map) return;
         if (marker._isStation) {
           // Gare / pôle
           if (hasSelection) {
