@@ -969,6 +969,61 @@ const BUS_ROUTES = [
     coords: '6.5317,45.4836;6.5050,45.3800;6.5360,45.3230;6.5800,45.2980'
   },
   {
+    id: 'bus-s66',
+    ref: 'S66',
+    name: 'Ligne S66 : Moûtiers ↔ Bozel ↔ Champagny ↔ Pralognan',
+    mode: 'bus',
+    operator: 'Cars Région Savoie (Transdev)',
+    network: 'Cars Région',
+    route: 'Moûtiers Gare Routière SNCF TGV ↔ Brides-les-Bains ↔ Bozel ↔ Champagny-en-Vanoise ↔ Pralognan-la-Vanoise',
+    frequency: 'Quotidien toute l\'année (renforts saisonniers été & hiver)',
+    period: 'Toute l\'année (Artère centrale d\'accès au Parc National de la Vanoise)',
+    stops: [
+      'Moûtiers Gare Routière / SNCF',
+      'Salins-Fontaine',
+      'Brides-les-Bains Office de Tourisme',
+      'Bozel Centre / Mairie',
+      'Champagny-en-Vanoise Office de Tourisme / Télécabine',
+      'Le Villard du Plan',
+      'Pralognan-la-Vanoise Gare Routière'
+    ],
+    color: '#10b981',
+    url: 'https://www.cars-region-savoie.fr',
+    coords: '6.5317,45.4836;6.5680,45.4520;6.6490,45.4430;6.6940,45.4545;6.7210,45.3800',
+    timetable: {
+      headers: ['Matin (07h)', 'Matin (09h)', 'Midi (12h)', 'Après-midi (15h)', 'Soir (18h)'],
+      rows: [
+        { stop: 'Moûtiers Gare Routière / SNCF', times: ['07:15', '09:30', '12:15', '15:45', '18:15'] },
+        { stop: 'Brides-les-Bains Office de Tourisme', times: ['07:30', '09:45', '12:30', '16:00', '18:30'] },
+        { stop: 'Bozel Centre / Mairie', times: ['07:45', '10:00', '12:45', '16:15', '18:45'] },
+        { stop: 'Champagny-en-Vanoise Office de Tourisme / Télécabine', times: ['08:00', '10:15', '13:00', '16:30', '19:00'] },
+        { stop: 'Pralognan-la-Vanoise Gare Routière', times: ['08:25', '10:40', '13:25', '16:55', '19:25'] }
+      ],
+      note: 'Ligne officielle Cars Région Savoie S66 (Liaison régulière Moûtiers TGV ↔ Champagny & Vanoise)'
+    }
+  },
+  {
+    id: 'navette-vallee-bozel',
+    ref: 'Navette Bozel',
+    name: 'Navette Vallée de Bozel : Bozel ↔ Champagny ↔ Pralognan',
+    mode: 'navette',
+    operator: 'Communauté de Communes Val Vanoise',
+    network: 'Navettes Vanoise',
+    route: 'Bozel Centre (Plan d\'Eau) ↔ Champagny-en-Vanoise ↔ Pralognan-la-Vanoise',
+    frequency: 'Navettes régulières gratuites été & hiver',
+    period: 'Saisonnier Été & Hiver',
+    stops: [
+      'Bozel Centre',
+      'Le Chevril',
+      'Champagny-en-Vanoise Village (Télécabine)',
+      'La Croix',
+      'Pralognan-la-Vanoise Centre'
+    ],
+    color: '#f59e0b',
+    url: 'https://www.valvanoise.fr',
+    coords: '6.6490,45.4430;6.6940,45.4545;6.7210,45.3800'
+  },
+  {
     id: 'bus-s14',
     ref: 'S14',
     name: 'Ligne S14 : Bourg-Saint-Maurice ↔ Tignes ↔ Val d\'Isère',
@@ -1976,17 +2031,34 @@ const BUS_ROUTES = [
   {
     id: 'navette-champagny-laisonnay',
     ref: 'Navette Champagny',
-    name: 'Navette Champagny-en-Vanoise ↔ Le Laisonnay d\'en Bas',
+    name: 'Navette Champagny : Village ↔ Champagny-le-Haut ↔ Le Laisonnay',
     mode: 'navette',
-    operator: 'Mairie de Champagny-en-Vanoise',
+    operator: 'Commune de Champagny-en-Vanoise',
     network: 'Navettes Vanoise',
-    route: 'Champagny-le-Haut ↔ Le Laisonnay d\'en Bas (1570 m)',
-    frequency: 'Navettes estivales',
-    period: 'Été (Accès direct refuge de la Glière & cirque de Champagny)',
-    stops: ['Champagny-le-Haut', 'Le Laisonnay d\'en Bas (1570 m, refuge de la Glière & accès Col de la Vanoise)'],
+    route: 'Champagny Village (1250 m) ↔ Champagny-le-Haut (1470 m) ↔ Le Laisonnay d\'en Bas (1570 m)',
+    frequency: 'Toutes les heures en saison estivale (Navette gratuite)',
+    period: 'Été (Accès direct porte du Parc National de la Vanoise, cascades & refuge de la Glière)',
+    stops: [
+      'Champagny-en-Vanoise Centre (Office de Tourisme / Télécabine 1250 m)',
+      'La Chiserette',
+      'Le Bois',
+      'Champagny-le-Haut (Espace Glacial / Pôle Nordique 1470 m)',
+      'Friburge',
+      'Le Laisonnay d\'en Bas (1570 m, refuge de la Glière & accès Col de la Vanoise)'
+    ],
     color: '#f59e0b',
     url: 'https://www.champagny.com',
-    coords: '6.7080,45.4280;6.7110,45.3970'
+    coords: '6.6940,45.4545;6.7280,45.4370;6.7460,45.4300;6.7640,45.4230',
+    timetable: {
+      headers: ['Matin (08h)', 'Matin (10h)', 'Midi (12h)', 'Après-midi (14h)', 'Fin d\'après-midi (17h)'],
+      rows: [
+        { stop: 'Champagny-en-Vanoise Centre (Office de Tourisme / Télécabine 1250 m)', times: ['08:30', '10:00', '12:00', '14:30', '17:00'] },
+        { stop: 'La Chiserette', times: ['08:40', '10:10', '12:10', '14:40', '17:10'] },
+        { stop: 'Champagny-le-Haut (Espace Glacial / Pôle Nordique 1470 m)', times: ['08:50', '10:20', '12:20', '14:50', '17:20'] },
+        { stop: 'Le Laisonnay d\'en Bas (1570 m, refuge de la Glière & accès Col de la Vanoise)', times: ['09:05', '10:35', '12:35', '15:05', '17:35'] }
+      ],
+      note: 'Navette estivale gratuite de la vallée de Champagny-le-Haut (Correspondances bus S66)'
+    }
   },
   // (Ancienne navette Termignon-Bellecombe remplacée par Ligne 2 HMV officielle)
   {
@@ -3705,7 +3777,7 @@ const STATIONS = [
   { id: 'st-annecy', name: 'Gare d\'Annecy', mode: 'station', alt: 448, lat: 45.8992, lng: 6.1296, lines: ['TGV InOui', 'Léman Express', 'TER AURA', 'Cars Région Y51/Y62/Y91'] },
   { id: 'st-modane', name: 'Gare de Modane (Frontière Fr/It)', mode: 'station', alt: 1057, lat: 45.2020, lng: 6.6710, lines: ['TGV Paris-Milan', 'TER Maurienne', 'Cars Région S52/S53 (Val Cenis & Vanoise)'] },
   { id: 'st-bsm', name: 'Gare de Bourg-Saint-Maurice', mode: 'station', alt: 810, lat: 45.6180, lng: 6.7700, lines: ['TGV des Neiges / Eurostar', 'TER Tarentaise', 'Funiculaire Arc-en-Ciel', 'Cars S14/S15/S16'] },
-  { id: 'st-moutiers', name: 'Gare de Moûtiers - Salins - Brides-les-Bains', mode: 'station', alt: 480, lat: 45.4836, lng: 6.5317, lines: ['TGV des Neiges', 'TER Tarentaise', 'Cars S10 (Courchevel)/S11 (Méribel)/S12 (Val Thorens)'] },
+  { id: 'st-moutiers', name: 'Gare de Moûtiers - Salins - Brides-les-Bains', mode: 'station', alt: 480, lat: 45.4836, lng: 6.5317, lines: ['TGV des Neiges / Eurostar', 'TER Tarentaise', 'Cars S10 (Courchevel)', 'Cars S11 (Méribel)', 'Cars S12 (Val Thorens)', 'Cars S66 (Champagny & Pralognan)'] },
   { id: 'st-albertville', name: 'Gare d\'Albertville', mode: 'station', alt: 340, lat: 45.6756, lng: 6.3927, lines: ['TER Tarentaise', 'Cars Région Y51 (Annecy)', 'Cars S20 (Beaufort)'] },
   { id: 'st-briancon', name: 'Gare de Briançon (1204 m)', mode: 'station', alt: 1204, lat: 44.8980, lng: 6.6340, lines: ['Train de nuit Intercités Paris-Briançon', 'TER Val de Durance', 'ZOU! 54/55/57', 'Navette Clarée'] },
   { id: 'st-gap', name: 'Gare de Gap', mode: 'station', alt: 745, lat: 44.5630, lng: 6.0790, lines: ['TER Valence-Briançon', 'TER Marseille-Briançon', 'Ligne des Alpes', 'ZOU! 51/52/Dévoluy'] },
@@ -3723,7 +3795,8 @@ const STATIONS = [
   { id: 'st-st-dalmas', name: 'Gare de Saint-Dalmas-de-Tende', mode: 'station', alt: 710, lat: 44.0520, lng: 7.5950, lines: ['Train des Merveilles (Ligne de Tende)', 'Navette Vallée des Merveilles'] },
   { id: 'st-barcelonnette', name: 'Gare Routière de Barcelonnette', mode: 'station', alt: 1132, lat: 44.3860, lng: 6.6510, lines: ['ZOU! 51 (Gap-Embrun)', 'ZOU! Digne', 'Navette Haute Ubaye (Maljasset/Fouillouse)'] },
   { id: 'hub-madame-carle', name: 'Pôle Navettes Pré de Madame Carle', mode: 'station', alt: 1874, lat: 44.9180, lng: 6.4180, lines: ['Navette Écrins (Vallouise - Ailefroide - Madame Carle)', 'Départ direct refuges Glacier Blanc & Cézanne'] },
-  { id: 'hub-pralognan', name: 'Pôle Navettes Pralognan-la-Vanoise', mode: 'station', alt: 1410, lat: 45.3800, lng: 6.7210, lines: ['Navette Parc Vanoise Les Prioux', 'Départ refuges Félix Faure, Péclet-Polset, Roc de la Pêche'] },
+  { id: 'hub-champagny', name: 'Pôle Mobilité Champagny-en-Vanoise (1250 m)', mode: 'station', alt: 1250, lat: 45.4545, lng: 6.6940, lines: ['Cars Région S66 (Moûtiers TGV)', 'Navette Champagny-le-Haut & Le Laisonnay', 'Télécabine Champagny ↔ La Plagne Paradiski', 'Navette Vallée de Bozel'], color: '#10b981' },
+  { id: 'hub-pralognan', name: 'Pôle Navettes Pralognan-la-Vanoise', mode: 'station', alt: 1410, lat: 45.3800, lng: 6.7210, lines: ['Cars Région S66 (Moûtiers TGV)', 'Navette Parc Vanoise Les Prioux', 'Navette Vallée de Bozel', 'Départ refuges Félix Faure, Péclet-Polset, Roc de la Pêche'] },
   { id: 'hub-berarde', name: 'Pôle Navettes La Bérarde (Écrins)', mode: 'station', alt: 1727, lat: 44.9330, lng: 6.2940, lines: ['Navette Oisans Saint-Christophe / Bourg-d\'Oisans', 'Départ refuges Promontoire, Châtelleret, Carrelet'] },
   { id: 'hub-gioberney', name: 'Pôle Navettes Gioberney (Valgaudemar)', mode: 'station', alt: 1640, lat: 44.7680, lng: 6.2750, lines: ['Navette Valgaudemar', 'Départ refuges Xavier Blanc & Vallonpierre'] },
   { id: 'hub-notre-dame-gorge', name: 'Pôle Navettes Notre-Dame de la Gorge', mode: 'station', alt: 1210, lat: 45.7870, lng: 6.7130, lines: ['Navette Les Contamines', 'Départ Tour du Mont-Blanc & refuge Nant Borrant'] },
@@ -4400,6 +4473,19 @@ async function main() {
       stops: ['Plan Bouchet (2300 m)', 'Cime Caron (3195 m)'],
       color: '#ec4899',
       url: 'https://www.valthorens.com'
+    },
+    'Champagny': {
+      ref: 'TC Champagny',
+      name: 'Télécabine de Champagny : Champagny (1250 m) ↔ La Plagne (2000 m)',
+      mode: 'cable_car',
+      operator: 'SAP La Plagne',
+      network: 'La Plagne Paradiski',
+      route: 'Champagny-en-Vanoise (1250 m) ↔ Roc des Blanchets (2000 m, Domaine de La Plagne)',
+      frequency: 'Continu en saison',
+      period: 'Été & Hiver (Liaison directe piétons, VTT & randonneurs entre Vanoise et Paradiski)',
+      stops: ['Champagny-en-Vanoise Village (1250 m)', 'Gare d\'arrivée Sommet des Blanchets (2000 m)'],
+      color: '#ec4899',
+      url: 'https://www.la-plagne.com'
     }
   };
 
