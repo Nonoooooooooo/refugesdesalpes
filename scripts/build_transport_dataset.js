@@ -1035,20 +1035,169 @@ const BUS_ROUTES = [
     url: 'https://www.valvanoise.fr',
     coords: '6.6490,45.4430;6.6940,45.4545;6.7210,45.3800'
   },
+  // ─────────────────────────────────────────────────────────
+  // HAUTE-TARENTAISE : TIGNES & GLACIER DE LA GRANDE MOTTE
+  // ─────────────────────────────────────────────────────────
   {
-    id: 'bus-s14',
-    ref: 'S14',
-    name: 'Ligne S14 : Bourg-Saint-Maurice ↔ Tignes ↔ Val d\'Isère',
+    id: 'bus-s83-tignes',
+    ref: 'S83',
+    name: 'Ligne Régionale S83 : Bourg-Saint-Maurice TGV ↔ Tignes (Val Claret)',
     mode: 'bus',
     operator: 'Cars Région Savoie',
-    network: 'Cars Région',
-    route: 'Bourg-Saint-Maurice ↔ Sainte-Foy ↔ Tignes (Les Brévières, Le Lac, Val Claret) ↔ Val d\'Isère',
-    frequency: 'Toutes les heures en saison',
-    period: 'Toute l\'année',
-    stops: ['Bourg-Saint-Maurice Gare', 'Sainte-Foy Station', 'Tignes Les Boisses', 'Tignes Le Lac', 'Val d\'Isère Gare Routière'],
-    color: '#10b981',
+    network: 'Cars Région Haute-Tarentaise',
+    route: 'Gare TGV Bourg-Saint-Maurice ↔ Séez ↔ Sainte-Foy ↔ Tignes Les Brévières ↔ Tignes 1800 ↔ Tignes Le Lac ↔ Tignes Val Claret',
+    frequency: 'Quotidien cadencé (Correspondances directes TGV & Eurostar)',
+    period: 'Toute l\'année (Renforts fréquents en saison)',
+    stops: [
+      'Gare TGV de Bourg-Saint-Maurice (810 m)',
+      'Séez Chef-Lieu',
+      'Sainte-Foy-Tarentaise (La Thuile)',
+      'Tignes Les Brévières (1550 m)',
+      'Tignes 1800 (Les Boisses)',
+      'Tignes Le Lac (Gare Routière 2100 m)',
+      'Tignes Val Claret (Grande Motte 2120 m)'
+    ],
+    color: '#0284c7',
     url: 'https://www.laregionvoustransporte.fr',
-    coords: '6.7700,45.6180;6.8830,45.5490;6.9150,45.4980;6.9770,45.4480'
+    directCoordinates: fs.existsSync('scripts/data/tignes_rel_17013466.json')
+      ? JSON.parse(fs.readFileSync('scripts/data/tignes_rel_17013466.json', 'utf8'))
+      : null,
+    coords: '6.7718,45.6194;6.8000,45.6230;6.8836,45.5903;6.9200,45.5080;6.9250,45.4910;6.9075,45.4695;6.8985,45.4550'
+  },
+  {
+    id: 'bus-s82-valdisere',
+    ref: 'S82',
+    name: 'Ligne Régionale S82 : Bourg-Saint-Maurice TGV ↔ Val d\'Isère',
+    mode: 'bus',
+    operator: 'Cars Région Savoie',
+    network: 'Cars Région Haute-Tarentaise',
+    route: 'Gare TGV Bourg-Saint-Maurice ↔ Séez ↔ Sainte-Foy ↔ Barrage du Chevril ↔ Val d\'Isère Gare Routière',
+    frequency: 'Quotidien cadencé',
+    period: 'Toute l\'année',
+    stops: [
+      'Gare TGV de Bourg-Saint-Maurice (810 m)',
+      'Séez Chef-Lieu',
+      'Sainte-Foy-Tarentaise',
+      'Barrage du Chevril',
+      'La Daille (Val d\'Isère)',
+      'Val d\'Isère Gare Routière (1850 m)'
+    ],
+    color: '#0284c7',
+    url: 'https://www.laregionvoustransporte.fr',
+    coords: '6.7718,45.6194;6.8000,45.6230;6.8836,45.5903;6.9250,45.4910;6.9770,45.4480'
+  },
+  {
+    id: 'navette-tignes-circuit-2100',
+    ref: 'Navette 2100',
+    name: 'Navette Gratuite Tignes 2100 : Le Lavachet ↔ Le Lac ↔ Val Claret',
+    mode: 'navette',
+    operator: 'STGM / Commune de Tignes',
+    network: 'Navettes Tignes (Zenbus)',
+    route: 'Le Lavachet ↔ Le Lac (Gare Routière) ↔ Rond-Point des Pistes ↔ Val Claret (Grande Motte)',
+    frequency: 'Toutes les 5 à 10 min en journée, 24h/24 en saison (Gratuit)',
+    period: 'Saisons d\'hiver & d\'été (Départ sentiers Vanoise, Refuge de la Leisse & Palet)',
+    stops: [
+      'Tignes Le Lavachet (2050 m)',
+      'Tignes Le Lac (Gare Routière / Le Lagon)',
+      'Tignes Le Lac (Rond-Point des Pistes)',
+      'Tignes Val Claret (Les Balcons)',
+      'Tignes Val Claret (Écrin des Neiges)',
+      'Tignes Val Claret (Grande Motte / Funiculaire Perce-Neige)'
+    ],
+    color: '#06b6d4',
+    url: 'https://www.tignes.net',
+    directCoordinates: fs.existsSync('scripts/data/tignes_rel_2023055.json')
+      ? JSON.parse(fs.readFileSync('scripts/data/tignes_rel_2023055.json', 'utf8'))
+      : null,
+    coords: '6.9000,45.4600;6.9075,45.4695;6.9110,45.4680;6.9050,45.4600;6.8985,45.4550'
+  },
+  {
+    id: 'navette-tignes-circuit-1800',
+    ref: 'Navette 1800',
+    name: 'Navette Gratuite Tignes 1800 : Les Boisses ↔ Le Lac ↔ Val Claret',
+    mode: 'navette',
+    operator: 'STGM / Commune de Tignes',
+    network: 'Navettes Tignes (Zenbus)',
+    route: 'Tignes 1800 (Les Boisses) ↔ Barrage de Tignes (Chevril) ↔ Tignes Le Lac ↔ Tignes Val Claret',
+    frequency: 'Toutes les 30 min (Gratuit)',
+    period: 'Saisons d\'hiver & d\'été',
+    stops: [
+      'Tignes 1800 (Les Boisses)',
+      'Barrage de Tignes (Chevril)',
+      'Tignes Le Lac (Gare Routière 2100 m)',
+      'Tignes Val Claret (Grande Motte 2120 m)'
+    ],
+    color: '#06b6d4',
+    url: 'https://www.tignes.net',
+    directCoordinates: fs.existsSync('scripts/data/tignes_rel_3960475.json')
+      ? JSON.parse(fs.readFileSync('scripts/data/tignes_rel_3960475.json', 'utf8'))
+      : null,
+    coords: '6.9253,45.4907;6.9200,45.4780;6.9075,45.4695;6.8985,45.4550'
+  },
+  {
+    id: 'navette-tignes-brevieres',
+    ref: 'Navette Brévières',
+    name: 'Navette Tignes : Les Brévières (1550 m) ↔ Tignes 1800 (Les Boisses)',
+    mode: 'navette',
+    operator: 'STGM / Commune de Tignes',
+    network: 'Navettes Tignes',
+    route: 'Tignes Les Brévières (1550 m) ↔ Barrage du Chevril ↔ Tignes 1800 (Les Boisses)',
+    frequency: 'Régulier en journée (Gratuit)',
+    period: 'Saisons d\'hiver & d\'été',
+    stops: [
+      'Tignes Les Brévières (1550 m, Église / Télécabine)',
+      'Pied du Barrage (Lac du Chevril)',
+      'Tignes 1800 (Les Boisses)'
+    ],
+    color: '#14b8a6',
+    url: 'https://www.tignes.net',
+    coords: '6.9205,45.5085;6.9230,45.4980;6.9255,45.4910'
+  },
+  {
+    id: 'funiculaire-perce-neige',
+    ref: 'Perce-Neige',
+    name: 'Funiculaire Perce-Neige : Tignes Val Claret ↔ Glacier de la Grande Motte (3032 m)',
+    mode: 'funicular',
+    operator: 'STGM Tignes',
+    network: 'Tignes - Espace Killy',
+    route: 'Tignes Val Claret (2100 m) ↔ Glacier de la Grande Motte (3032 m) en 7 min (funiculaire souterrain)',
+    frequency: 'Toutes les 15 minutes en saison',
+    period: 'Ouvert été (ski d\'été & haute montagne) et hiver',
+    stops: [
+      'Tignes Val Claret (Gare Funiculaire 2100 m)',
+      'Gare d\'arrivée Glacier de la Grande Motte (3032 m)'
+    ],
+    color: '#ec4899',
+    url: 'https://www.tignes.net',
+    directCoordinates: [
+      [6.8985, 45.4545],
+      [6.9030, 45.4450],
+      [6.9065, 45.4350],
+      [6.9085, 45.4250],
+      [6.9095, 45.4200]
+    ]
+  },
+  {
+    id: 'tph-grande-motte',
+    ref: 'Grande Motte',
+    name: 'Téléphérique de la Grande Motte (Glacier 3032 m ↔ Sommet 3456 m)',
+    mode: 'cable_car',
+    operator: 'STGM Tignes',
+    network: 'Tignes - Espace Killy',
+    route: 'Glacier de la Grande Motte (3032 m) ↔ Belvédère Panoramic 3456 m (Terrasse "Roof Top" à 360°)',
+    frequency: 'En continu',
+    period: 'Été & Hiver (Panorama grandiose sur le Dôme de Chasseforêt, la Grande Casse et le Mont-Blanc)',
+    stops: [
+      'Gare du Glacier Grande Motte (3032 m)',
+      'Sommet Grande Motte (3456 m, Terrasse Panoramique)'
+    ],
+    color: '#ec4899',
+    url: 'https://www.tignes.net',
+    directCoordinates: [
+      [6.9095, 45.4200],
+      [6.8980, 45.4120],
+      [6.8850, 45.4050]
+    ]
   },
   {
     id: 'bus-s16',
@@ -3795,7 +3944,7 @@ const STATIONS = [
   { id: 'st-chambery', name: 'Gare de Chambéry - Challes-les-Eaux', mode: 'station', alt: 270, lat: 45.5714, lng: 5.9200, lines: ['TGV InOui / TGV Milan', 'TER Maurienne', 'TER Tarentaise', 'TER Annecy/Genève'] },
   { id: 'st-annecy', name: 'Gare d\'Annecy', mode: 'station', alt: 448, lat: 45.8992, lng: 6.1296, lines: ['TGV InOui', 'Léman Express', 'TER AURA', 'Cars Région Y51/Y62/Y91'] },
   { id: 'st-modane', name: 'Gare de Modane (Frontière Fr/It)', mode: 'station', alt: 1057, lat: 45.2020, lng: 6.6710, lines: ['TGV Paris-Milan', 'TER Maurienne', 'Cars Région S52/S53 (Val Cenis & Vanoise)'] },
-  { id: 'st-bsm', name: 'Gare de Bourg-Saint-Maurice', mode: 'station', alt: 810, lat: 45.6180, lng: 6.7700, lines: ['TGV des Neiges / Eurostar', 'TER Tarentaise', 'Funiculaire Arc-en-Ciel', 'Cars S14/S15/S16'] },
+  { id: 'st-bsm', name: 'Gare de Bourg-Saint-Maurice', mode: 'station', alt: 810, lat: 45.6180, lng: 6.7700, lines: ['TGV des Neiges / Eurostar', 'TER Tarentaise', 'Funiculaire Arc-en-Ciel', 'Cars Région S83 (Tignes)', 'Cars Région S82 (Val d\'Isère)', 'Cars S15 (Peisey)'] },
   { id: 'st-moutiers', name: 'Gare de Moûtiers - Salins - Brides-les-Bains', mode: 'station', alt: 480, lat: 45.4836, lng: 6.5317, lines: ['TGV des Neiges / Eurostar', 'TER Tarentaise', 'Cars S10 (Courchevel)', 'Cars S11 (Méribel)', 'Cars S12 (Val Thorens)', 'Cars S66 (Champagny & Pralognan)'] },
   { id: 'st-albertville', name: 'Gare d\'Albertville', mode: 'station', alt: 340, lat: 45.6756, lng: 6.3927, lines: ['TER Tarentaise', 'Cars Région Y51 (Annecy)', 'Cars S20 (Beaufort)'] },
   { id: 'st-briancon', name: 'Gare de Briançon (1204 m)', mode: 'station', alt: 1204, lat: 44.8980, lng: 6.6340, lines: ['Train de nuit Intercités Paris-Briançon', 'TER Val de Durance', 'ZOU! 54/55/57', 'Navette Clarée'] },
@@ -3819,6 +3968,11 @@ const STATIONS = [
   { id: 'hub-berarde', name: 'Pôle Navettes La Bérarde (Écrins)', mode: 'station', alt: 1727, lat: 44.9330, lng: 6.2940, lines: ['Navette Oisans Saint-Christophe / Bourg-d\'Oisans', 'Départ refuges Promontoire, Châtelleret, Carrelet'] },
   { id: 'hub-gioberney', name: 'Pôle Navettes Gioberney (Valgaudemar)', mode: 'station', alt: 1640, lat: 44.7680, lng: 6.2750, lines: ['Navette Valgaudemar', 'Départ refuges Xavier Blanc & Vallonpierre'] },
   { id: 'hub-notre-dame-gorge', name: 'Pôle Navettes Notre-Dame de la Gorge', mode: 'station', alt: 1210, lat: 45.7870, lng: 6.7130, lines: ['Navette Les Contamines', 'Départ Tour du Mont-Blanc & refuge Nant Borrant'] },
+  // Pôles et Gares de Tignes & Haute-Tarentaise
+  { id: 'hub-tignes-lac', name: 'Gare Routière de Tignes Le Lac (2100 m)', mode: 'station', alt: 2100, lat: 45.4695, lng: 6.9075, lines: ['Navette Gratuite 2100', 'Navette Gratuite 1800', 'Cars Région S83 (Bourg-St-Maurice)', 'Cars Région S82 (Val d\'Isère)'], color: '#06b6d4' },
+  { id: 'hub-tignes-val-claret', name: 'Pôle Tignes Val Claret - Grande Motte (2120 m)', mode: 'station', alt: 2120, lat: 45.4550, lng: 6.8985, lines: ['Funiculaire Perce-Neige (Glacier 3032 m)', 'Navette Gratuite 2100', 'Navette Gratuite 1800', 'Cars Région S83', 'Départ Tour des Glaciers de la Vanoise & Refuges Leisse / Palet'], color: '#06b6d4' },
+  { id: 'hub-tignes-1800', name: 'Pôle Tignes 1800 - Les Boisses', mode: 'station', alt: 1800, lat: 45.4910, lng: 6.9255, lines: ['Navette Gratuite 1800', 'Navette Les Brévières', 'Cars Région S83', 'Télécabine des Boisses'], color: '#06b6d4' },
+  { id: 'hub-tignes-brevieres', name: 'Pôle Tignes Les Brévières (1550 m)', mode: 'station', alt: 1550, lat: 45.5085, lng: 6.9205, lines: ['Navette Les Brévières', 'Cars Région S83', 'Télécabine des Brévières', 'Accès sentiers Dôme de la Sache'], color: '#06b6d4' },
   // Pôles et Arrêts Navettes de Val Thorens (Saison 2025-2026)
   { id: 'hub-val-thorens', name: 'Gare Routière de Val Thorens (P1, 2300 m)', mode: 'station', alt: 2300, lat: 45.2977, lng: 6.5800, lines: ['Circuit Intervillage (Boucle Station)', 'Navette Parkings P3/P4/P5', 'Cars Région S12 (Moûtiers)', 'Départ 3 Vallées & Cime Caron'], color: '#ea580c' },
   { id: 'stop-vt-montagnettes', name: 'Val Thorens - Les Montagnettes', mode: 'navette', alt: 2300, lat: 45.2966, lng: 6.5804, lines: ['Circuit Intervillage (Boucle Station)'], color: '#ea580c' },
