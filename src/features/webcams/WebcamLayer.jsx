@@ -73,15 +73,29 @@ export default function WebcamLayer({ active: propActive }) {
       const north = b.getNorth()
       const east = b.getEast()
 
-      const url = `https://api.windy.com/webcams/api/v3/webcams?bbox=${south},${west},${north},${east}&include=location,player`
+      const urlPrimary = `https://api.windy.com/webcams/api/v3/webcams?bbox=${south},${west},${north},${east}&include=location,player`
+      const urlFallback = `https://api.windy.com/webcams/api/v3/webcams?bbox=${north},${east},${south},${west}&include=location,player`
 
-      fetch(url, {
+      const headers = {
+        'x-windy-key': apiKey.trim(),
+        'x-windy-api-key': apiKey.trim(),
+      }
+
+      fetch(urlPrimary, {
         method: 'GET',
-        headers: {
-          'x-windy-key': apiKey.trim(),
-        },
+        headers,
         signal: ctrl.signal,
       })
+        .then((res) => {
+          if (!res.ok) {
+            return fetch(urlFallback, {
+              method: 'GET',
+              headers,
+              signal: ctrl.signal,
+            })
+          }
+          return res
+        })
         .then((res) => {
           if (!res.ok) {
             throw new Error(`Erreur API Windy Webcams: ${res.status} ${res.statusText}`)
