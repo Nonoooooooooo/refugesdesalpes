@@ -285,7 +285,19 @@ function computeAccurateStopPoints(stopsList, polylineCoords, customStationCoord
     });
   }
 
-  return stopPoints;
+  // Dédupliquer les arrêts ayant le même nom ou situés à moins de 5 mètres
+  const uniqueStopPoints = [];
+  for (const sp of stopPoints) {
+    const isDup = uniqueStopPoints.some(prev => 
+      prev.name.toLowerCase() === sp.name.toLowerCase() ||
+      (Math.hypot((prev.lng - sp.lng) * 78000, (prev.lat - sp.lat) * 111000) < 5)
+    );
+    if (!isDup) {
+      uniqueStopPoints.push(sp);
+    }
+  }
+
+  return uniqueStopPoints;
 }
 
 const BUS_ROUTES = [
@@ -888,9 +900,9 @@ const BUS_ROUTES = [
     coords: '6.8694,45.9237;6.7978,45.8899;6.7118,45.8920;6.6178,45.8568;6.5740,45.8370'
   },
   {
-    id: 'bus-y92',
-    ref: 'Y92/Y93',
-    name: 'Ligne Y92/Y93 : Cluses ↔ Samoëns ↔ Sixt-Fer-à-Cheval',
+    id: 'bus-y93-sixt',
+    ref: 'Y93',
+    name: 'Ligne Y93 : Cluses ↔ Samoëns ↔ Sixt-Fer-à-Cheval',
     mode: 'bus',
     operator: 'Cars Région Haute-Savoie',
     network: 'Cars Région',
@@ -2130,9 +2142,9 @@ const BUS_ROUTES = [
     coords: '6.5790,46.0601;6.5790,46.0870;6.5910,46.1080;6.6690,46.1540;6.7060,46.1770'
   },
   {
-    id: 'bus-y91',
-    ref: 'Y91',
-    name: 'Ligne Y91 : Annecy ↔ Talloires ↔ Col de la Forclaz (Parapente)',
+    id: 'bus-y21-talloires',
+    ref: 'Y21',
+    name: 'Ligne Y21 : Annecy ↔ Talloires ↔ Col de la Forclaz (Parapente)',
     mode: 'bus',
     operator: 'Cars Région Haute-Savoie',
     network: 'Cars Région',
@@ -3547,6 +3559,9 @@ const BUS_ROUTES = [
     ],
     color: '#06b6d4',
     url: 'https://www.cc-paysdesecrins.fr',
+    directCoordinates: fs.existsSync('scripts/data/estibus_madame_carle_full.json')
+      ? JSON.parse(fs.readFileSync('scripts/data/estibus_madame_carle_full.json', 'utf8'))
+      : null,
     coords: '6.4880,44.8640;6.4710,44.8640;6.4620,44.8710;6.4550,44.8780;6.4500,44.8820;6.4460,44.8860;6.4440,44.8870;6.4180,44.9180'
   },
   {
@@ -3798,7 +3813,7 @@ const STATIONS = [
   { id: 'st-nevache', name: 'Pôle Navettes de Névache (Vallée de la Clarée)', mode: 'station', alt: 1600, lat: 44.9720, lng: 6.5370, lines: ['Navette Vallée de la Clarée', 'Navette Haute Clarée (Fontcouverte)', 'Navette Vallée Étroite'] },
   { id: 'st-st-dalmas', name: 'Gare de Saint-Dalmas-de-Tende', mode: 'station', alt: 710, lat: 44.0520, lng: 7.5950, lines: ['Train des Merveilles (Ligne de Tende)', 'Navette Vallée des Merveilles'] },
   { id: 'st-barcelonnette', name: 'Gare Routière de Barcelonnette', mode: 'station', alt: 1132, lat: 44.3860, lng: 6.6510, lines: ['ZOU! 51 (Gap-Embrun)', 'ZOU! Digne', 'Navette Haute Ubaye (Maljasset/Fouillouse)'] },
-  { id: 'hub-madame-carle', name: 'Pôle Navettes Pré de Madame Carle', mode: 'station', alt: 1874, lat: 44.9180, lng: 6.4180, lines: ['Navette Écrins (Vallouise - Ailefroide - Madame Carle)', 'Départ direct refuges Glacier Blanc & Cézanne'] },
+  { id: 'hub-madame-carle', name: 'Pôle Navettes Pré de Madame Carle', mode: 'station', alt: 1874, lat: 44.9175, lng: 6.4160, lines: ['ESTIBUS A : Vallouise-Pelvoux ↔ Ailefroide ↔ Pré de Madame Carle (1874 m)', 'Navette Estibus Écrins', 'Départ direct refuges Glacier Blanc & Cézanne'] },
   { id: 'hub-champagny', name: 'Pôle Mobilité Champagny-en-Vanoise (1250 m)', mode: 'station', alt: 1250, lat: 45.4545, lng: 6.6940, lines: ['Cars Région S66 (Moûtiers TGV)', 'Navette Champagny-le-Haut & Le Laisonnay', 'Télécabine Champagny ↔ La Plagne Paradiski', 'Navette Vallée de Bozel'], color: '#10b981' },
   { id: 'hub-pralognan', name: 'Pôle Navettes Pralognan-la-Vanoise', mode: 'station', alt: 1410, lat: 45.3800, lng: 6.7210, lines: ['Cars Région S66 (Moûtiers TGV)', 'Navette Parc Vanoise Les Prioux', 'Navette Vallée de Bozel', 'Départ refuges Félix Faure, Péclet-Polset, Roc de la Pêche'] },
   { id: 'hub-berarde', name: 'Pôle Navettes La Bérarde (Écrins)', mode: 'station', alt: 1727, lat: 44.9330, lng: 6.2940, lines: ['Navette Oisans Saint-Christophe / Bourg-d\'Oisans', 'Départ refuges Promontoire, Châtelleret, Carrelet'] },

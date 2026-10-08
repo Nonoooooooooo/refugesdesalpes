@@ -12,6 +12,7 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
   const layersMapRef = useRef(new Map());
   const selectedTransportRef = useRef(selectedTransport);
   selectedTransportRef.current = selectedTransport;
+  const stopMarkersRef = useRef([]);
 
   // 1. Chargement unique du jeu de données haute fidélité
   useEffect(() => {
@@ -78,7 +79,72 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
     };
   };
 
-  // 2. Rendu Vectoriel Ultra-Fluide sur Canvas GPU
+  const UNIFORM_STOP_RADIUS = 4;
+  const HOVER_STOP_RADIUS = 5.5;
+
+  const stopMatches = (name1, name2) => {
+    if (!name1 || !name2) return false;
+    const n1 = name1.toLowerCase().trim();
+    const n2 = name2.toLowerCase().trim();
+    if (n1 === n2 || n1.includes(n2) || n2.includes(n1)) return true;
+    const w1 = n1.replace(/[^a-z0-9]/g, ' ').split(/\s+/).filter(w => w.length >= 3 && !['gare', 'arret', 'place', 'centre', 'station'].includes(w));
+    const w2 = n2.replace(/[^a-z0-9]/g, ' ').split(/\s+/).filter(w => w.length >= 3 && !['gare', 'arret', 'place', 'centre', 'station'].includes(w));
+    return w1.some(w => w2.includes(w));
+  };
+
+  const isStopAssociatedWithSelection = (entry, selected) => {
+    if (!selected) return false;
+    const selId = selected.id;
+    const selName = selected.name;
+    const selRef = selected.ref;
+
+    // Correspondance directe par ID ou Nom de ligne
+    if (entry.lineIds.has(selId)) return true;
+    if (entry.linesInfo.some(l => l.id === selId || l.name === selName || (selRef && l.ref === selRef))) return true;
+
+    // Correspondance par stopPoints
+    if (Array.isArray(selected.stopPoints)) {
+      if (selected.stopPoints.some(sp => entry.names.some(n => stopMatches(n, sp.name)))) return true;
+    }
+
+    // Correspondance par stops (noms d'arrêts textuels)
+    if (Array.isArray(selected.stops)) {
+      if (selected.stops.some(s => entry.names.some(n => stopMatches(n, s)))) return true;
+    }
+
+    // Si le transport sélectionné est une station/gare
+    if (entry.isStation && (entry.stationId === selId || entry.names.some(n => stopMatches(n, selName)))) {
+      return true;
+    }
+
+    return false;
+  };
+
+  const createStopTooltipContent = (entry) => {
+    const primaryName = entry.names[0] || 'Arrêt';
+    const badgesHtml = entry.linesInfo.map(line => `
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 3px; font-size: 11px;">
+        <span style="background: ${line.color || '#3b82f6'}; color: #fff; font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 4px; text-transform: uppercase; white-space: nowrap;">
+          ${line.ref || 'Ligne'}
+        </span>
+        <span style="color: rgba(255,255,255,0.85); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px;">
+          ${line.name || ''}
+        </span>
+        ${line.time ? `<span style="color: #38bdf8; font-size: 10px; font-weight: 600; white-space: nowrap;">🕒 ${line.time.split('|')[0].trim()}</span>` : ''}
+      </div>
+    `).join('');
+
+    return `
+      <div style="font-family: inherit; min-width: 160px; max-width: 280px; padding: 2px;">
+        <div style="font-weight: 700; font-size: 12px; color: #fff; line-height: 1.3; margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.15); padding-bottom: 3px;">
+          ${primaryName}
+        </div>
+        <div>${badgesHtml}</div>
+      </div>
+    `;
+  };
+
+  // 2. Rendu Vectoriel Ultra-Fluide sur Canvas GPU avec Déduplication & Taille Uniforme
   useEffect(() => {
     if (!active || !data) {
       if (layerGroupRef.current) {
@@ -86,20 +152,20 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
         layerGroupRef.current = null;
       }
       layersMapRef.current.clear();
+      stopMarkersRef.current = [];
       return;
     }
 
-    // Si la couche existe déjà, la retirer proprement avant de re-créer
     if (layerGroupRef.current) {
       map.removeLayer(layerGroupRef.current);
     }
     layersMapRef.current.clear();
+    stopMarkersRef.current = [];
 
-    // Moteur Canvas Leaflet dédié : 60 FPS, zéro DOM SVG lourd, tolérance de clic 10px
     const canvasRenderer = L.canvas({ padding: 0.5, tolerance: 10 });
     const group = L.featureGroup();
 
-    // Tooltip formaté
+    // Tooltip formaté pour les lignes
     const createTooltipContent = (props) => {
       const modeBadge =
         props.mode === 'train'
@@ -136,43 +202,14 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
       `;
     };
 
-    // Traitement des entités GeoJSON
+    const stopMarkersByLocation = new Map();
+
+    // 1. Ajouter d'abord les lignes
     data.features.forEach((feature) => {
       const props = feature.properties || {};
       const featId = props.id || feature.id;
 
-      if (feature.geometry.type === 'Point') {
-        const [lng, lat] = feature.geometry.coordinates;
-        const marker = L.circleMarker([lat, lng], {
-          renderer: canvasRenderer,
-          radius: 5,
-          fillColor: props.color || '#3b82f6',
-          stroke: false,
-          weight: 0,
-          fillOpacity: 0.95,
-        });
-
-        marker.bindTooltip(createTooltipContent(props), {
-          className: 'refuge-tooltip',
-          direction: 'top',
-          offset: [0, -8],
-        });
-
-        marker.on('click', (e) => {
-          L.DomEvent.stopPropagation(e);
-          if (onSelectTransport) {
-            onSelectTransport({ ...props, isTransport: true });
-          }
-        });
-
-        if (featId) {
-          layersMapRef.current.set(featId, { type: 'point', layer: marker, feature, props });
-        }
-        group.addLayer(marker);
-      } else if (
-        feature.geometry.type === 'LineString' ||
-        feature.geometry.type === 'MultiLineString'
-      ) {
+      if (feature.geometry.type === 'LineString' || feature.geometry.type === 'MultiLineString') {
         const initialStyle = {
           renderer: canvasRenderer,
           ...getFeatureStyle(feature, false, false),
@@ -200,11 +237,7 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
                 const hasSelection = Boolean(currentSelection);
                 const isSelected = hasSelection && (currentSelection.id === featId || currentSelection.name === props.name);
 
-                // Si une ligne est déjà sélectionnée dans la fenêtre de gauche :
-                // Les autres lignes NE DOIVENT PAS se ré-éclairer au survol.
-                if (hasSelection && !isSelected) {
-                  return;
-                }
+                if (hasSelection && !isSelected) return;
 
                 if (target.setStyle) {
                   const isCable = props.mode === 'cable_car' || props.mode === 'funicular';
@@ -220,7 +253,6 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
 
                 if (target.setStyle) {
                   target.setStyle(getFeatureStyle(feature, isSelected, hasSelection));
-                  // Si une ligne est sélectionnée et qu'on survolait autre chose, remettre la sélection au premier plan
                   if (hasSelection) {
                     const selObj = layersMapRef.current.get(currentSelection.id);
                     if (selObj?.layer) {
@@ -243,62 +275,145 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
         }
         group.addLayer(line);
 
-        // 2b. Afficher chaque arrêt sous forme d'un petit point pur sans contour blanc de la même couleur que le trait
+        // Agréger les arrêts de la ligne pour la déduplication spatiale
         if (Array.isArray(props.stopPoints) && props.stopPoints.length > 0) {
           props.stopPoints.forEach((sp) => {
             if (sp.lat == null || sp.lng == null) return;
-            const stopColor = props.color || '#3b82f6';
-            const stopMarker = L.circleMarker([sp.lat, sp.lng], {
-              renderer: canvasRenderer,
-              radius: 3.5,
-              fillColor: stopColor,
-              stroke: false,
-              weight: 0,
-              fillOpacity: 0.95,
-            });
+            const key = `${sp.lat.toFixed(4)}_${sp.lng.toFixed(4)}`;
+            const lineItem = {
+              id: featId,
+              name: props.name,
+              ref: props.ref,
+              color: props.color || '#3b82f6',
+              mode: props.mode,
+              time: sp.time,
+              stopName: sp.name
+            };
 
-            const stopTooltipHtml = `
-              <div style="font-family: inherit; min-width: 140px; padding: 2px;">
-                <div style="display: flex; align-items: center; gap: 5px; margin-bottom: 2px;">
-                  <span style="background: ${stopColor}; color: #fff; font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 4px; text-transform: uppercase;">
-                    ${props.ref || 'Arrêt'}
-                  </span>
-                  <span style="font-size: 10px; color: rgba(255,255,255,0.7);">${props.name}</span>
-                </div>
-                <div style="font-weight: 700; font-size: 12px; color: #fff; line-height: 1.3;">
-                  ${sp.name}
-                </div>
-                ${sp.time ? `<div style="font-size: 10px; color: #38bdf8; font-weight: 600; margin-top: 3px;">🕒 Horaires : ${sp.time}</div>` : ''}
-              </div>
-            `;
-
-            stopMarker.bindTooltip(stopTooltipHtml, {
-              className: 'refuge-tooltip',
-              direction: 'top',
-              offset: [0, -6],
-            });
-
-            stopMarker.on({
-              mouseover: (e) => {
-                if (e.target.setRadius) e.target.setRadius(5);
-              },
-              mouseout: (e) => {
-                if (e.target.setRadius) e.target.setRadius(3.5);
-              },
-              click: (e) => {
-                L.DomEvent.stopPropagation(e);
-                if (onSelectTransport) {
-                  onSelectTransport({ ...props, selectedStop: sp, isTransport: true });
-                }
-              },
-            });
-
-            group.addLayer(stopMarker);
+            if (stopMarkersByLocation.has(key)) {
+              const entry = stopMarkersByLocation.get(key);
+              entry.lineIds.add(featId);
+              if (!entry.names.includes(sp.name)) entry.names.push(sp.name);
+              entry.linesInfo.push(lineItem);
+            } else {
+              stopMarkersByLocation.set(key, {
+                lat: sp.lat,
+                lng: sp.lng,
+                names: [sp.name],
+                lineIds: new Set([featId]),
+                linesInfo: [lineItem],
+                color: props.color || '#3b82f6',
+                primaryProps: props,
+                primaryStop: sp
+              });
+            }
           });
         }
       }
     });
 
+    // 2. Traiter les gares et pôles (Points) et les fusionner/dédupliquer avec les arrêts
+    data.features.forEach((feature) => {
+      const props = feature.properties || {};
+      const featId = props.id || feature.id;
+
+      if (feature.geometry.type === 'Point') {
+        const [lng, lat] = feature.geometry.coordinates;
+        const key = `${lat.toFixed(4)}_${lng.toFixed(4)}`;
+        const lineItem = {
+          id: featId,
+          name: props.name,
+          ref: props.ref || 'Pôle',
+          color: props.color || '#3b82f6',
+          mode: props.mode || 'station',
+          stops: props.stops || props.lines
+        };
+
+        if (stopMarkersByLocation.has(key)) {
+          const entry = stopMarkersByLocation.get(key);
+          entry.isStation = true;
+          entry.stationId = featId;
+          entry.lineIds.add(featId);
+          if (!entry.names.includes(props.name)) entry.names.unshift(props.name);
+          entry.linesInfo.push(lineItem);
+        } else {
+          stopMarkersByLocation.set(key, {
+            lat,
+            lng,
+            isStation: true,
+            stationId: featId,
+            names: [props.name],
+            lineIds: new Set([featId]),
+            linesInfo: [lineItem],
+            color: props.color || '#3b82f6',
+            primaryProps: props
+          });
+        }
+      }
+    });
+
+    // 3. Créer un unique marqueur géométrique uniforme pour chaque arrêt dédupliqué
+    const stopMarkersList = [];
+    stopMarkersByLocation.forEach((entry) => {
+      const stopMarker = L.circleMarker([entry.lat, entry.lng], {
+        renderer: canvasRenderer,
+        radius: UNIFORM_STOP_RADIUS,
+        fillColor: entry.color,
+        stroke: false,
+        weight: 0,
+        fillOpacity: 0.95,
+      });
+
+      stopMarker._stopEntry = entry;
+
+      stopMarker.bindTooltip(createStopTooltipContent(entry), {
+        className: 'refuge-tooltip',
+        direction: 'top',
+        offset: [0, -6],
+      });
+
+      stopMarker.on({
+        mouseover: (e) => {
+          const currentSel = selectedTransportRef.current;
+          const isAssoc = currentSel ? isStopAssociatedWithSelection(entry, currentSel) : true;
+          e.target.setRadius(HOVER_STOP_RADIUS);
+          if (currentSel && !isAssoc) {
+            e.target.setStyle({ fillOpacity: 0.8 });
+          }
+          if (e.target.bringToFront) e.target.bringToFront();
+        },
+        mouseout: (e) => {
+          const currentSel = selectedTransportRef.current;
+          if (currentSel) {
+            const isAssoc = isStopAssociatedWithSelection(entry, currentSel);
+            e.target.setRadius(isAssoc ? UNIFORM_STOP_RADIUS + 0.5 : UNIFORM_STOP_RADIUS);
+            e.target.setStyle({ fillOpacity: isAssoc ? 1 : 0.15 });
+          } else {
+            e.target.setRadius(UNIFORM_STOP_RADIUS);
+            e.target.setStyle({ fillOpacity: 0.95 });
+          }
+        },
+        click: (e) => {
+          L.DomEvent.stopPropagation(e);
+          if (onSelectTransport) {
+            const currentSel = selectedTransportRef.current;
+            const matchingLine = entry.linesInfo.find(l => currentSel && (l.id === currentSel.id || l.name === currentSel.name));
+            const targetInfo = matchingLine || entry.linesInfo[0] || entry.primaryProps;
+            onSelectTransport({
+              ...entry.primaryProps,
+              ...targetInfo,
+              selectedStop: { name: entry.names[0], lat: entry.lat, lng: entry.lng, time: targetInfo.time },
+              isTransport: true
+            });
+          }
+        },
+      });
+
+      group.addLayer(stopMarker);
+      stopMarkersList.push(stopMarker);
+    });
+
+    stopMarkersRef.current = stopMarkersList;
     group.addTo(map);
     layerGroupRef.current = group;
 
@@ -308,12 +423,13 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
         layerGroupRef.current = null;
       }
       layersMapRef.current.clear();
+      stopMarkersRef.current = [];
     };
   }, [active, data, map, onSelectTransport]);
 
   // 3. Mise à jour instantanée du style lors de la sélection / désélection d'une ligne
   useEffect(() => {
-    if (!layerGroupRef.current || layersMapRef.current.size === 0) return;
+    if (!layerGroupRef.current) return;
 
     const hasSelection = Boolean(selectedTransport);
     const selectedId = selectedTransport?.id;
@@ -321,37 +437,54 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
 
     let selectedLayersToFront = [];
 
+    // Lignes : sélectionnée en relief, autres en sous-brillance
     layersMapRef.current.forEach(({ type, layer, feature, props }) => {
-      const isSelected = hasSelection && (props.id === selectedId || props.name === selectedName);
-
       if (type === 'line') {
+        const isSelected = hasSelection && (props.id === selectedId || props.name === selectedName);
         const newStyle = getFeatureStyle(feature, isSelected, hasSelection);
         layer.setStyle(newStyle);
 
         if (isSelected) {
           selectedLayersToFront.push(layer);
         }
-      } else if (type === 'point') {
-        if (hasSelection) {
-          layer.setStyle({
-            fillOpacity: isSelected ? 1 : 0.25,
-            opacity: isSelected ? 1 : 0.25,
-            radius: isSelected ? 7 : 4.5,
-          });
-          if (isSelected) {
-            selectedLayersToFront.push(layer);
-          }
-        } else {
-          layer.setStyle({
-            fillOpacity: 1,
-            opacity: 1,
-            radius: 5.5,
-          });
-        }
       }
     });
 
-    // Passer la ligne sélectionnée impérativement AU-DESSUS de toutes les autres lignes
+    // Arrêts : sous-brillance synchronisée avec les traits
+    if (stopMarkersRef.current && stopMarkersRef.current.length > 0) {
+      stopMarkersRef.current.forEach((marker) => {
+        const entry = marker._stopEntry;
+        if (!entry) return;
+
+        if (hasSelection) {
+          const isAssociated = isStopAssociatedWithSelection(entry, selectedTransport);
+          if (isAssociated) {
+            marker.setStyle({
+              radius: UNIFORM_STOP_RADIUS + 0.5,
+              fillOpacity: 1,
+              opacity: 1,
+            });
+            selectedLayersToFront.push(marker);
+          } else {
+            // Sous-brillance (estompé identique aux traits non sélectionnés)
+            marker.setStyle({
+              radius: UNIFORM_STOP_RADIUS,
+              fillOpacity: 0.15,
+              opacity: 0.15,
+            });
+          }
+        } else {
+          // Aucun transport sélectionné : opacité et taille uniforme normales
+          marker.setStyle({
+            radius: UNIFORM_STOP_RADIUS,
+            fillOpacity: 0.95,
+            opacity: 1,
+          });
+        }
+      });
+    }
+
+    // Passer la ligne et les arrêts sélectionnés impérativement AU-DESSUS de toutes les autres couches
     if (selectedLayersToFront.length > 0) {
       selectedLayersToFront.forEach((l) => {
         if (l.eachLayer) {
