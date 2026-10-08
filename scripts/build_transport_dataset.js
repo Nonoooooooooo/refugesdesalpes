@@ -9,6 +9,12 @@ const CARS_REGION_EXPRESS_ROUTES = fs.existsSync('scripts/data/cars_region_expre
   ? JSON.parse(fs.readFileSync('scripts/data/cars_region_express_final.json', 'utf8'))
   : [];
 
+const HAUTE_SAVOIE_DATA = fs.existsSync('scripts/data/haute_savoie_final.json')
+  ? JSON.parse(fs.readFileSync('scripts/data/haute_savoie_final.json', 'utf8'))
+  : { routes: [], aravisShapes: {} };
+const HAUTE_SAVOIE_ROUTES = HAUTE_SAVOIE_DATA.routes || [];
+const ARAVIS_SHAPES = HAUTE_SAVOIE_DATA.aravisShapes || {};
+
 const OSRM_URL = 'https://router.project-osrm.org/route/v1/driving/';
 
 function fetchRoute(coords) {
@@ -305,98 +311,9 @@ function computeAccurateStopPoints(stopsList, polylineCoords, customStationCoord
 }
 
 const BUS_ROUTES = [
-  // HAUTE-SAVOIE & MONT-BLANC
-  {
-    id: 'bus-y51',
-    ref: 'Y51',
-    name: 'Ligne Y51 : Annecy ↔ Albertville',
-    mode: 'bus',
-    operator: 'Cars Région Haute-Savoie',
-    network: 'Cars Région',
-    route: 'Annecy ↔ Faverges ↔ Ugine ↔ Albertville',
-    frequency: 'Toutes les 30 à 60 min (Tous les jours)',
-    period: 'Toute l\'année',
-    stops: ['Annecy Gare Routière', 'Sévrier', 'Saint-Jorioz', 'Doussard', 'Faverges', 'Ugine', 'Albertville Gare'],
-    color: '#10b981',
-    url: 'https://www.laregionvoustransporte.fr',
-    coords: '6.1296,45.8992;6.2215,45.7820;6.3150,45.7480;6.3927,45.6756'
-  },
   // ─────────────────────────────────────────────────────────
   // CHABLAIS & PORTES DU SOLEIL : AVORIAZ 1800, MORZINE, LES GETS
   // ─────────────────────────────────────────────────────────
-  {
-    id: 'bus-y91',
-    ref: 'Y91',
-    name: 'Ligne Y91 : Thonon-les-Bains ↔ Morzine ↔ Les Prodains (Avoriaz)',
-    mode: 'bus',
-    operator: 'Cars Région Haute-Savoie',
-    network: 'Cars Région',
-    route: 'Thonon Gare ↔ Bioge ↔ Saint-Jean-d\'Aulps ↔ Montriond ↔ Morzine Gare ↔ Les Prodains',
-    frequency: 'Quotidien (Toute l\'année, renforts été/hiver)',
-    period: 'Toute l\'année',
-    stops: [
-      'Thonon-les-Bains Gare SNCF / Léman Express',
-      'Allinges',
-      'Le Jotty (Gorges du Pont du Diable)',
-      'Bioge',
-      'Saint-Jean-d\'Aulps Abbaye / Chef-lieu',
-      'Montriond Chef-lieu',
-      'Morzine Gare Routière',
-      'Les Prodains (Téléphérique 3S Avoriaz 1800)'
-    ],
-    color: '#0284c7',
-    url: 'https://www.laregionvoustransporte.fr',
-    coords: '6.4797,46.3686;6.5873,46.3243;6.6160,46.3038;6.6476,46.2434;6.6944,46.1968;6.7083,46.1793;6.7533,46.1897',
-    timetable: {
-      headers: ['Matin (06h)', 'Matin (08h)', 'Midi (11h)', 'Après-midi (14h)', 'Soir (17h)'],
-      rows: [
-        { stop: 'Thonon-les-Bains Gare SNCF / Léman Express', times: ['06:45', '08:45', '11:45', '14:45', '17:45'] },
-        { stop: 'Bioge', times: ['07:05', '09:05', '12:05', '15:05', '18:05'] },
-        { stop: 'Saint-Jean-d\'Aulps Abbaye / Chef-lieu', times: ['07:20', '09:20', '12:20', '15:20', '18:20'] },
-        { stop: 'Montriond Chef-lieu', times: ['07:35', '09:35', '12:35', '15:35', '18:35'] },
-        { stop: 'Morzine Gare Routière', times: ['07:45', '09:45', '12:45', '15:45', '18:45'] },
-        { stop: 'Les Prodains (Téléphérique 3S Avoriaz 1800)', times: ['08:00', '10:00', '13:00', '16:00', '19:00'] }
-      ],
-      note: 'Horaires officiels Cars Région Haute-Savoie (Liaisons quotidiennes cadencées)'
-    }
-  },
-  {
-    id: 'bus-y92',
-    ref: 'Y92',
-    name: 'Ligne Y92 : Cluses ↔ Taninges ↔ Les Gets ↔ Morzine ↔ Les Prodains',
-    mode: 'bus',
-    operator: 'Cars Région Haute-Savoie',
-    network: 'Cars Région',
-    route: 'Cluses Gare TGV ↔ Taninges ↔ Les Gets ↔ Morzine Gare ↔ Les Prodains (Avoriaz)',
-    frequency: 'Quotidien (Correspondances TGV & Léman Express)',
-    period: 'Toute l\'année',
-    stops: [
-      'Cluses Gare SNCF / TGV',
-      'Marignier',
-      'Châtillon-sur-Cluses',
-      'Taninges Chef-lieu',
-      'Pont des Gets',
-      'Les Gets Gare Routière',
-      'Les Perrières',
-      'Morzine Rond-Point Passerelle',
-      'Morzine Gare Routière',
-      'Les Prodains (Téléphérique 3S Avoriaz 1800)'
-    ],
-    color: '#0284c7',
-    url: 'https://www.laregionvoustransporte.fr',
-    coords: '6.5824,46.0618;6.5921,46.1077;6.6284,46.1343;6.6686,46.1598;6.7083,46.1793;6.7533,46.1897',
-    timetable: {
-      headers: ['Départ 1', 'Départ 2', 'Départ 3', 'Départ 4', 'Départ 5'],
-      rows: [
-        { stop: 'Cluses Gare SNCF / TGV', times: ['05:40', '08:40', '11:30', '13:35', '17:00'] },
-        { stop: 'Taninges Chef-lieu', times: ['05:54', '08:54', '12:03', '14:08', '17:33'] },
-        { stop: 'Les Gets Gare Routière', times: ['06:15', '09:15', '11:40', '13:45', '17:10'] },
-        { stop: 'Morzine Gare Routière', times: ['06:30', '09:30', '12:15', '14:00', '17:30'] },
-        { stop: 'Les Prodains (Téléphérique 3S Avoriaz 1800)', times: ['06:45', '09:45', '12:30', '14:15', '17:45'] }
-      ],
-      note: 'Horaires officiels Cars Région Haute-Savoie (Correspondances TGV & Léman Express)'
-    }
-  },
   {
     id: 'cable-prodains-express',
     ref: '3S Prodains',
@@ -507,83 +424,6 @@ const BUS_ROUTES = [
   // ─────────────────────────────────────────────────────────
   // MASSIF DES ARAVIS : LE GRAND-BORNAND, LA CLUSAZ, THÔNES
   // ─────────────────────────────────────────────────────────
-  {
-    id: 'bus-y62',
-    ref: 'Y62',
-    name: 'Ligne Y62 : Annecy ↔ Veyrier ↔ Alex ↔ Thônes ↔ La Clusaz / Le Grand-Bornand',
-    mode: 'bus',
-    operator: 'Cars Région Haute-Savoie',
-    network: 'Cars Région Aravis',
-    route: 'Annecy Gare Routière ↔ Veyrier-du-Lac ↔ Menthon (Col de Bluffy) ↔ Alex ↔ Thônes ↔ Les Villards-sur-Thônes ↔ Saint-Jean-de-Sixt ↔ La Clusaz / Le Grand-Bornand',
-    frequency: 'Toutes les heures toute l\'année, renforts été/hiver (équipée porte-vélos)',
-    period: 'Toute l\'année (Liaison structurante du Massif des Aravis)',
-    stops: [
-      'Annecy (Gare Routière SNCF)',
-      'Annecy (Parmelan bd de Menthon)',
-      'Annecy (Albigny / Petit Port Chavoires)',
-      'Veyrier-du-Lac (Chavoires / Téléphérique / Chef-Lieu / Charmettes / Buvette)',
-      'Menthon-Saint-Bernard (Col de Bluffy)',
-      'Alex (Rond-Point / Le Pont)',
-      'Thônes (Morette / Thuy / Les Perrasses / Gare Routière 625 m / La Vacherie)',
-      'Les Villards-sur-Thônes (Luidefour / Les Perrils / La Villaz / Le Bourgeal)',
-      'Saint-Jean-de-Sixt (Forgeassoud / Chef-Lieu 960 m)',
-      'La Clusaz (Gare Routière 1040 m)',
-      'Le Grand-Bornand (Gare Routière 930 m)'
-    ],
-    color: '#0284c7',
-    url: 'https://www.laregionvoustransporte.fr',
-    timetable: {
-      headers: ['08:00', '09:25', '12:25', '15:25', '17:25', '18:25'],
-      rows: [
-        { stop: 'Annecy Gare Routière', times: ['08:00', '09:25', '12:25', '15:25', '17:25', '18:25'] },
-        { stop: 'Veyrier Chef-Lieu', times: ['08:20', '09:45', '12:45', '15:45', '17:45', '18:45'] },
-        { stop: 'Col de Bluffy', times: ['08:25', '09:50', '12:50', '15:50', '17:50', '18:50'] },
-        { stop: 'Thônes Gare Routière', times: ['08:50', '10:05', '13:05', '16:05', '18:05', '19:05'] },
-        { stop: 'St-Jean-de-Sixt Chef-Lieu', times: ['09:15', '10:30', '13:30', '16:15', '18:15', '19:15'] },
-        { stop: 'La Clusaz Gare Routière', times: ['09:25', '10:25', '13:25', '16:25', '18:25', '19:25'] },
-        { stop: 'Gd-Bornand Gare Routière', times: ['09:45', '10:35', '13:35', '16:35', '18:45', '19:45'] }
-      ],
-      note: 'Ligne régulière cadencée reliant la gare TGV d\'Annecy aux stations des Aravis. Correspondance avec le réseau Aravis Bus à Thônes, St-Jean-de-Sixt, La Clusaz et Le Grand-Bornand.'
-    },
-    coords: '6.1296,45.8992;6.1770,45.8820;6.2200,45.8670;6.2380,45.8890;6.3250,45.8820;6.3820,45.9080;6.4110,45.9220;6.4250,45.9050;6.4280,45.9420'
-  },
-  {
-    id: 'bus-y63',
-    ref: 'Y63',
-    name: 'Ligne Y63 : Annecy ↔ Dingy-Saint-Clair ↔ Thônes ↔ La Clusaz / Le Grand-Bornand',
-    mode: 'bus',
-    operator: 'Cars Région Haute-Savoie',
-    network: 'Cars Région Aravis',
-    route: 'Annecy Gare Routière ↔ Annecy-le-Vieux ↔ Dingy-Saint-Clair ↔ La Balme-de-Thuy ↔ Thônes ↔ Les Villards-sur-Thônes ↔ Saint-Jean-de-Sixt ↔ La Clusaz / Le Grand-Bornand',
-    frequency: 'Plusieurs liaisons quotidiennes en semaine et week-end',
-    period: 'Toute l\'année (Desserte de la vallée du Fier et du pied du Parmelan)',
-    stops: [
-      'Annecy (Gare Routière SNCF)',
-      'Annecy (Parmelan av. du Parmelan)',
-      'Annecy-le-Vieux (Buisson / Tilleuls / Entrée Parc)',
-      'Dingy-Saint-Clair (Glandon / Village / Provenat / Chessenay)',
-      'La Balme-de-Thuy (Charvex / Salignon / Chef-Lieu)',
-      'Thônes (Morette / Thuy / Gare Routière 625 m)',
-      'Les Villards-sur-Thônes (Le Bourgeal / La Villaz)',
-      'Saint-Jean-de-Sixt (Forgeassoud / Chef-Lieu 960 m)',
-      'La Clusaz (Gare Routière 1040 m)',
-      'Le Grand-Bornand (Gare Routière 930 m)'
-    ],
-    color: '#0369a1',
-    url: 'https://www.laregionvoustransporte.fr',
-    timetable: {
-      headers: ['06:50', '13:35', '16:25', '16:55', '18:10', '18:55'],
-      rows: [
-        { stop: 'Annecy Gare Routière', times: ['06:50', '13:35', '16:25', '16:55', '18:10', '18:55'] },
-        { stop: 'Dingy-St-Clair Village', times: ['07:39', '14:25', '17:15', '17:45', '19:00', '19:45'] },
-        { stop: 'La Balme-de-Thuy Chef-Lieu', times: ['07:45', '14:30', '17:20', '17:50', '19:06', '19:50'] },
-        { stop: 'Thônes Gare Routière', times: ['07:54', '14:50', '17:40', '18:10', '19:26', '20:10'] },
-        { stop: 'La Clusaz / Gd-Bornand', times: ['08:14', '15:05', '18:25', '18:55', '19:30', '20:35'] }
-      ],
-      note: 'Desserte alternative de la vallée des Aravis par Dingy-Saint-Clair et La Balme-de-Thuy au pied du plateau des Glières.'
-    },
-    coords: '6.1296,45.8992;6.1550,45.9200;6.2230,45.9120;6.2780,45.8990;6.3250,45.8820;6.4110,45.9220;6.4250,45.9050;6.4280,45.9420'
-  },
   {
     id: 'bus-proximiti-460',
     ref: 'Ligne 460',
@@ -873,51 +713,6 @@ const BUS_ROUTES = [
     url: 'https://www.aravisbus.fr',
     coords: '6.4280,45.9420;6.4480,45.9350;6.4720,45.9450;6.5120,45.9620'
   },
-  {
-    id: 'bus-y81',
-    ref: 'Y81',
-    name: 'Ligne Y81 : Cluses ↔ Chamonix-Mont-Blanc',
-    mode: 'bus',
-    operator: 'Cars Région Haute-Savoie',
-    network: 'Cars Région',
-    route: 'Cluses ↔ Sallanches ↔ Saint-Gervais ↔ Les Houches ↔ Chamonix',
-    frequency: 'Plusieurs liaisons par jour',
-    period: 'Toute l\'année',
-    stops: ['Cluses Gare', 'Sallanches', 'Le Fayet', 'Les Houches', 'Chamonix Sud'],
-    color: '#10b981',
-    url: 'https://www.laregionvoustransporte.fr',
-    coords: '6.5790,46.0601;6.6300,45.9380;6.7118,45.9080;6.8694,45.9237'
-  },
-  {
-    id: 'bus-y82',
-    ref: 'Y82',
-    name: 'Ligne Y82 : Chamonix ↔ Megève ↔ Praz-sur-Arly',
-    mode: 'bus',
-    operator: 'Cars Région Haute-Savoie',
-    network: 'Cars Région',
-    route: 'Chamonix ↔ Les Houches ↔ Saint-Gervais ↔ Megève ↔ Praz-sur-Arly',
-    frequency: 'Quotidien été & hiver',
-    period: 'Toute l\'année',
-    stops: ['Chamonix Sud', 'Les Houches', 'Saint-Gervais', 'Demi-Quartier', 'Megève Autogare', 'Praz-sur-Arly'],
-    color: '#10b981',
-    url: 'https://www.laregionvoustransporte.fr',
-    coords: '6.8694,45.9237;6.7978,45.8899;6.7118,45.8920;6.6178,45.8568;6.5740,45.8370'
-  },
-  {
-    id: 'bus-y93-sixt',
-    ref: 'Y93',
-    name: 'Ligne Y93 : Cluses ↔ Samoëns ↔ Sixt-Fer-à-Cheval',
-    mode: 'bus',
-    operator: 'Cars Région Haute-Savoie',
-    network: 'Cars Région',
-    route: 'Cluses ↔ Taninges ↔ Samoëns ↔ Sixt-Fer-à-Cheval (Vallée du Giffre)',
-    frequency: 'Quotidien',
-    period: 'Toute l\'année',
-    stops: ['Cluses Gare', 'Taninges', 'Morillon', 'Samoëns Gare Routière', 'Sixt-Fer-à-Cheval'],
-    color: '#10b981',
-    url: 'https://www.laregionvoustransporte.fr',
-    coords: '6.5790,46.0601;6.5910,46.1080;6.7275,46.0838;6.7770,46.0560'
-  },
   // ═══════════════════════════════════════════════════════
   // RÉSEAU OFFICIEL CHAMONIX MOBILITÉ / PYSAE (18 LIGNES DE BUS DE LA VALLÉE)
   // ═══════════════════════════════════════════════════════
@@ -927,6 +722,11 @@ const BUS_ROUTES = [
   // RÉSEAU INTERURBAIN CARS RÉGION EXPRESS (AURA) - 13 LIGNES OFFICIELLES GTFS
   // ═══════════════════════════════════════════════════════
   ...CARS_REGION_EXPRESS_ROUTES,
+
+  // ═══════════════════════════════════════════════════════
+  // RÉSEAU INTERURBAIN CARS RÉGION HAUTE-SAVOIE - 23 LIGNES OFFICIELLES GTFS
+  // ═══════════════════════════════════════════════════════
+  ...HAUTE_SAVOIE_ROUTES,
   {
     id: 'navette-sixt-lignon',
     ref: 'Navette Giffre',
@@ -2266,54 +2066,6 @@ const BUS_ROUTES = [
     coords: '6.3440,45.2760;6.2420,45.2360;6.2230,45.2110;6.2290,45.2270'
   },
 
-  // ═══════════════════════════════════════════════════════
-  // NAVETTES MANQUANTES - HAUTE-SAVOIE (CONTAMINES, MORZINE, VALLORCINE)
-  // ═══════════════════════════════════════════════════════
-  {
-    id: 'bus-y71',
-    ref: 'Y71',
-    name: 'Ligne Y71 : Thonon-les-Bains ↔ Morzine ↔ Avoriaz',
-    mode: 'bus',
-    operator: 'Cars Région Haute-Savoie',
-    network: 'Cars Région',
-    route: 'Thonon-les-Bains ↔ Bioge ↔ Saint-Jean-d\'Aulps ↔ Morzine ↔ Avoriaz (1800 m)',
-    frequency: 'Plusieurs allers-retours quotidiens',
-    period: 'Toute l\'année',
-    stops: ['Thonon-les-Bains Gare Routière', 'Bioge', 'Saint-Jean-d\'Aulps', 'Morzine Office de Tourisme', 'Avoriaz Station (1800 m)'],
-    color: '#10b981',
-    url: 'https://www.laregionvoustransporte.fr',
-    coords: '6.4770,46.3720;6.5810,46.2430;6.7060,46.1770;6.7720,46.1810;6.7740,46.1940'
-  },
-  {
-    id: 'bus-y72',
-    ref: 'Y72',
-    name: 'Ligne Y72 : Cluses ↔ Taninges ↔ Les Gets ↔ Morzine',
-    mode: 'bus',
-    operator: 'Cars Région Haute-Savoie',
-    network: 'Cars Région',
-    route: 'Cluses ↔ Châtillon-sur-Cluses ↔ Taninges ↔ Les Gets ↔ Morzine',
-    frequency: 'Quotidien',
-    period: 'Toute l\'année',
-    stops: ['Cluses Gare', 'Châtillon-sur-Cluses', 'Taninges Centre', 'Les Gets Village (1172 m)', 'Morzine Office de Tourisme'],
-    color: '#10b981',
-    url: 'https://www.laregionvoustransporte.fr',
-    coords: '6.5790,46.0601;6.5790,46.0870;6.5910,46.1080;6.6690,46.1540;6.7060,46.1770'
-  },
-  {
-    id: 'bus-y21-talloires',
-    ref: 'Y21',
-    name: 'Ligne Y21 : Annecy ↔ Talloires ↔ Col de la Forclaz (Parapente)',
-    mode: 'bus',
-    operator: 'Cars Région Haute-Savoie',
-    network: 'Cars Région',
-    route: 'Annecy ↔ Veyrier-du-Lac ↔ Menthon-Saint-Bernard ↔ Talloires ↔ Col de la Forclaz',
-    frequency: 'Quotidien',
-    period: 'Toute l\'année (Accès site de parapente emblématique)',
-    stops: ['Annecy Gare', 'Veyrier-du-Lac', 'Menthon-Saint-Bernard (Château)', 'Talloires-Montmin', 'Col de la Forclaz (1150 m, envol parapente)'],
-    color: '#10b981',
-    url: 'https://www.laregionvoustransporte.fr',
-    coords: '6.1296,45.8992;6.1630,45.8780;6.1930,45.8580;6.2090,45.8420;6.2150,45.8240'
-  },
   {
     id: 'navette-sat-courmayeur',
     ref: 'SAT Courmayeur',
@@ -3977,7 +3729,8 @@ const STATIONS = [
   { id: 'hub-berarde', name: 'Pôle Navettes La Bérarde (Écrins)', mode: 'station', alt: 1727, lat: 44.9330, lng: 6.2940, lines: ['Navette Oisans Saint-Christophe / Bourg-d\'Oisans', 'Départ refuges Promontoire, Châtelleret, Carrelet'] },
   { id: 'hub-gioberney', name: 'Pôle Navettes Gioberney (Valgaudemar)', mode: 'station', alt: 1640, lat: 44.7680, lng: 6.2750, lines: ['Navette Valgaudemar', 'Départ refuges Xavier Blanc & Vallonpierre'] },
   { id: 'hub-notre-dame-gorge', name: 'Pôle Navettes Notre-Dame de la Gorge', mode: 'station', alt: 1210, lat: 45.7870, lng: 6.7130, lines: ['Navette Les Contamines', 'Départ Tour du Mont-Blanc & refuge Nant Borrant'] },
-  // Pôles et Gares Cars Région Express
+  // Pôles et Gares Cars Région Express & Haute-Savoie
+  { id: 'st-annemasse', name: 'Gare d\'Annemasse (Léman Express & TGV)', mode: 'station', alt: 435, lat: 46.1996, lng: 6.2381, lines: ['Léman Express L1/L2/L3/L4', 'TER AURA', 'Cars Région Y02/Y04'] },
   { id: 'st-bellegarde', name: 'Gare de Bellegarde-sur-Valserine (TGV)', mode: 'station', alt: 350, lat: 46.1106, lng: 5.8250, lines: ['TGV Lyria (Paris-Genève)', 'Léman Express', 'Cars Express X33 (Ferney/Divonne)', 'Cars Express X36 (Nurieux/Bourg)'] },
   { id: 'st-valence-tgv', name: 'Gare de Valence TGV Rhône-Alpes Sud', mode: 'station', alt: 160, lat: 44.9919, lng: 4.9786, lines: ['TGV Méditerranée', 'Cars Express X73 (Aubenas)', 'Cars Express X74 (Les Vans)', 'Cars Express X76 (Vallon-Pont-d\'Arc)'] },
   // Pôles et Gares de Tignes & Haute-Tarentaise
@@ -4707,6 +4460,9 @@ async function main() {
     const routeDef = BUS_ROUTES[i];
     process.stdout.write(`[${i+1}/${BUS_ROUTES.length}] ${routeDef.ref} : ${routeDef.name.slice(0, 30)}... `);
     let coords = null;
+    if (ARAVIS_SHAPES[routeDef.id]) {
+      routeDef.directCoordinates = ARAVIS_SHAPES[routeDef.id];
+    }
     if (routeDef.directCoordinates && routeDef.directCoordinates.length > 0) {
       coords = routeDef.directCoordinates;
       console.log(`OK (Tracé officiel GTFS ${coords.length} points)`);
