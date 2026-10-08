@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { X, Loader2, TriangleAlert, Mountain, BedDouble, ExternalLink, RefreshCw, MessageSquare, Box } from 'lucide-react'
+import { X, Loader2, TriangleAlert, Mountain, BedDouble, ExternalLink, RefreshCw, MessageSquare } from 'lucide-react'
 import { fetchPoint } from '../lib/api'
 import { fetchCommonsPhotos } from '../lib/wikimedia'
 import { fetchGooglePlacesPhotos } from '../lib/google-places'
@@ -89,13 +89,12 @@ export default function Sidebar({ point, onClose }) {
             {(d?.etat ?? point.etat) && <Chip>{d?.etat ?? point.etat}</Chip>}
           </div>
 
-          {/* Bouton Vue 3D immersive */}
+          {/* Bouton Vue 3D */}
           <button
             onClick={() => setShow3D(true)}
-            className="glass-btn flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-600/30 via-teal-600/30 to-sky-600/30 hover:from-emerald-600/45 hover:to-sky-600/45 border border-emerald-400/40 py-2.5 px-4 text-sm font-semibold text-emerald-100 shadow-[0_0_15px_rgba(16,185,129,0.25)] transition-all hover:scale-[1.02] active:scale-[0.98]"
+            className="self-start rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 text-xs font-medium text-white/75 hover:text-white transition-all active:scale-95"
           >
-            <Box size={16} className="text-emerald-300" />
-            <span>Vue 3D immersive</span>
+            Vue 3D
           </button>
 
           {state.loading && (
