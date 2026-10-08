@@ -167,6 +167,7 @@ routes.push({
   directCoordinates: trData.polyline,
   timetable: {
     title: 'Horaires indicatifs - Train Rouge (Val d\'Isère)',
+    headers: trTimes.map((_, i) => `Dép. ${i + 1}`),
     rows: trRows
   }
 });
@@ -206,6 +207,7 @@ routes.push({
   directCoordinates: s82Data.polyline,
   timetable: {
     title: 'Horaires officiels - Ligne S82 (Cars Région Savoie)',
+    headers: s82Times.map((_, i) => `Dép. ${i + 1}`),
     rows: s82Rows
   }
 });
@@ -243,6 +245,7 @@ routes.push({
   directCoordinates: t76Data.polyline,
   timetable: {
     title: 'Horaires officiels - Ligne T76 (Cars Région Isère)',
+    headers: t76Times.map((_, i) => `Dép. ${i + 1}`),
     rows: t76Rows
   }
 });
@@ -280,6 +283,7 @@ routes.push({
   directCoordinates: citronData.polyline,
   timetable: {
     title: 'Horaires Navette Citron - Alpe d\'Huez',
+    headers: citronTimes.slice(0, 5).map((_, i) => `Dép. ${i + 1}`),
     rows: citronRows
   }
 });
@@ -317,6 +321,7 @@ routes.push({
   directCoordinates: pommeData.polyline,
   timetable: {
     title: 'Horaires Navette Pomme - Alpe d\'Huez',
+    headers: pommeTimes.slice(0, 5).map((_, i) => `Dép. ${i + 1}`),
     rows: pommeRows
   }
 });
@@ -347,6 +352,7 @@ routes.push({
   directCoordinates: fraiseData.polyline,
   timetable: {
     title: 'Horaires Navette Fraise - Alpe d\'Huez',
+    headers: fraiseTimes.slice(0, 5).map((_, i) => `Dép. ${i + 1}`),
     rows: fraiseRows
   }
 });
@@ -376,6 +382,7 @@ routes.push({
   directCoordinates: myrtilleData.polyline,
   timetable: {
     title: 'Horaires Navette Myrtille - Alpe d\'Huez',
+    headers: myrtilleTimes.slice(0, 5).map((_, i) => `Dép. ${i + 1}`),
     rows: myrtilleRows
   }
 });
@@ -413,6 +420,7 @@ routes.push({
   directCoordinates: s62Data.polyline,
   timetable: {
     title: 'Horaires officiels - Ligne S62 (Cars Région Savoie)',
+    headers: s62Times.map((_, i) => `Dép. ${i + 1}`),
     rows: s62Rows
   }
 });
@@ -450,6 +458,7 @@ routes.push({
   directCoordinates: s61Data.polyline,
   timetable: {
     title: 'Horaires officiels - Ligne S61 (Cars Région Savoie)',
+    headers: s61Times.map((_, i) => `Dép. ${i + 1}`),
     rows: s61Rows
   }
 });
@@ -487,6 +496,7 @@ routes.push({
   directCoordinates: valleeData.polyline,
   timetable: {
     title: 'Horaires officiels - Vallée\'BUS (Valmobus)',
+    headers: valleeTimes.map((_, i) => `Dép. ${i + 1}`),
     rows: valleeRows
   }
 });

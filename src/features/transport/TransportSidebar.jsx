@@ -119,6 +119,26 @@ export default function TransportSidebar({ transport, onClose }) {
           )}
         </div>
 
+        {/* Arrêt sélectionné (si clic sur un arrêt spécifique) */}
+        {transport.selectedStop && (
+          <div className="flex items-start gap-3 rounded-2xl bg-amber-500/15 p-3.5 ring-1 ring-amber-400/30">
+            <MapPin size={18} className="mt-0.5 shrink-0 text-amber-400" />
+            <div className="min-w-0 flex-1">
+              <div className="text-[11px] font-bold uppercase tracking-wider text-amber-300">
+                Arrêt sélectionné
+              </div>
+              <div className="text-sm font-semibold text-white mt-0.5">
+                {transport.selectedStop.name}
+              </div>
+              {transport.selectedStop.time && (
+                <div className="mt-1 text-xs font-mono text-amber-200/90">
+                  Départs : {transport.selectedStop.time}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Section Parcours / Liaison */}
         {transport.route && (
           <Section title="Liaison & Itinéraire">
@@ -144,39 +164,64 @@ export default function TransportSidebar({ transport, onClose }) {
         )}
 
         {/* Section Grille Horaires Officiels */}
-        {transport.timetable && (
-          <Section title="Horaires et départs réguliers">
-            <div className="rounded-2xl bg-white/[0.05] p-3 ring-1 ring-white/10">
-              <div className="overflow-x-auto scroll-thin">
-                <table className="w-full min-w-[340px] text-left text-xs">
-                  <thead>
-                    <tr className="border-b border-white/15 text-[10px] uppercase tracking-wider text-white/60">
-                      <th className="pb-2 pr-2 font-semibold">Arrêt</th>
-                      {transport.timetable.headers.map((h, i) => (
-                        <th key={i} className="pb-2 px-1 text-center font-semibold text-white/90">{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/5">
-                    {transport.timetable.rows.map((row, i) => (
-                      <tr key={i} className="hover:bg-white/5 transition-colors">
-                        <td className="py-1.5 pr-2 font-medium text-white/90 whitespace-nowrap">{row.stop}</td>
-                        {row.times.map((t, j) => (
-                          <td key={j} className="py-1.5 px-1 text-center font-mono text-[11px] text-white/80 whitespace-nowrap">{t}</td>
+        {transport.timetable && Array.isArray(transport.timetable.rows) && transport.timetable.rows.length > 0 && (() => {
+          const rows = transport.timetable.rows;
+          const maxCols = Math.max(...rows.map(r => (Array.isArray(r.times) ? r.times.length : 0)), 0);
+          const rawHeaders = Array.isArray(transport.timetable.headers) ? transport.timetable.headers : [];
+          const headers = rawHeaders.length > 0
+            ? rawHeaders
+            : Array.from({ length: maxCols }, (_, idx) => `Dép. ${idx + 1}`);
+
+          return (
+            <Section title={transport.timetable.title || "Horaires et départs réguliers"}>
+              <div className="rounded-2xl bg-white/[0.05] p-3 ring-1 ring-white/10">
+                <div className="overflow-x-auto scroll-thin">
+                  <table className="w-full min-w-[340px] text-left text-xs">
+                    <thead>
+                      <tr className="border-b border-white/15 text-[10px] uppercase tracking-wider text-white/60">
+                        <th className="pb-2 pr-2 font-semibold">Arrêt</th>
+                        {headers.map((h, i) => (
+                          <th key={i} className="pb-2 px-1 text-center font-semibold text-white/90">{h}</th>
                         ))}
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              {transport.timetable.note && (
-                <div className="mt-2.5 border-t border-white/10 pt-2 text-[11px] leading-relaxed italic text-white/70">
-                  {transport.timetable.note}
+                    </thead>
+                    <tbody className="divide-y divide-white/5">
+                      {rows.map((row, i) => {
+                        const stopName = typeof row.stop === 'string' ? row.stop : (row.stop?.name || row.name || 'Arrêt');
+                        const times = Array.isArray(row.times) ? row.times : [];
+                        const isSelectedStop = transport.selectedStop && (
+                          transport.selectedStop.name === stopName ||
+                          stopName.toLowerCase().includes(transport.selectedStop.name.toLowerCase())
+                        );
+
+                        return (
+                          <tr key={i} className={`transition-colors ${isSelectedStop ? 'bg-amber-500/20 font-semibold' : 'hover:bg-white/5'}`}>
+                            <td className="py-1.5 pr-2 font-medium text-white/90 whitespace-nowrap">
+                              <span className="flex items-center gap-1.5">
+                                {isSelectedStop && <MapPin size={12} className="text-amber-400 shrink-0" />}
+                                {stopName}
+                              </span>
+                            </td>
+                            {times.map((t, j) => (
+                              <td key={j} className={`py-1.5 px-1 text-center font-mono text-[11px] whitespace-nowrap ${isSelectedStop ? 'text-amber-200' : 'text-white/80'}`}>
+                                {t || '-'}
+                              </td>
+                            ))}
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
-              )}
-            </div>
-          </Section>
-        )}
+                {transport.timetable.note && (
+                  <div className="mt-2.5 border-t border-white/10 pt-2 text-[11px] leading-relaxed italic text-white/70">
+                    {transport.timetable.note}
+                  </div>
+                )}
+              </div>
+            </Section>
+          );
+        })()}
 
         {/* Section Arrêts & Gares desservis */}
         {Array.isArray(transport.stops) && transport.stops.length > 0 && (
@@ -194,15 +239,21 @@ export default function TransportSidebar({ transport, onClose }) {
                   className="absolute bottom-2 left-[17px] top-2 w-[2px] rounded-full opacity-30"
                   style={{ background: displayColor }}
                 />
-                {transport.stops.map((stop, idx) => (
-                  <li key={idx} className="relative flex items-center gap-3">
-                    <span
-                      className="relative z-10 flex h-2.5 w-2.5 shrink-0 rounded-full ring-2 ring-black/40"
-                      style={{ background: displayColor }}
-                    />
-                    <span className="text-xs font-medium text-white/90">{stop}</span>
-                  </li>
-                ))}
+                {transport.stops.map((stop, idx) => {
+                  const stopLabel = typeof stop === 'string' ? stop : (stop?.name || '');
+                  const isSelectedStop = transport.selectedStop && transport.selectedStop.name === stopLabel;
+                  return (
+                    <li key={idx} className="relative flex items-center gap-3">
+                      <span
+                        className={`relative z-10 flex shrink-0 rounded-full ring-2 ring-black/40 ${isSelectedStop ? 'h-3.5 w-3.5 ring-amber-400' : 'h-2.5 w-2.5'}`}
+                        style={{ background: isSelectedStop ? '#f59e0b' : displayColor }}
+                      />
+                      <span className={`text-xs font-medium ${isSelectedStop ? 'text-amber-300 font-bold' : 'text-white/90'}`}>
+                        {stopLabel}
+                      </span>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           </Section>

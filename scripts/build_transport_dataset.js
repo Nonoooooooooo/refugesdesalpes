@@ -4481,6 +4481,10 @@ async function main() {
     if (!routeDef.timetable && GTFS_TIMETABLES[routeDef.ref]) {
       routeDef.timetable = GTFS_TIMETABLES[routeDef.ref];
     }
+    if (routeDef.timetable && !routeDef.timetable.headers && Array.isArray(routeDef.timetable.rows) && routeDef.timetable.rows.length > 0) {
+      const maxCols = Math.max(...routeDef.timetable.rows.map(r => (Array.isArray(r.times) ? r.times.length : 0)), 0);
+      routeDef.timetable.headers = Array.from({ length: maxCols }, (_, idx) => `Dép. ${idx + 1}`);
+    }
 
     // Calcul des stopPoints géolocalisés avec snapping strict sur la ligne et interpolation d'arc
     const activeLinePoly = coords || (routeDef.coords ? routeDef.coords.split(';').map(pt => pt.split(',').map(Number)) : []);

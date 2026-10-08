@@ -1275,6 +1275,23 @@
     ],
     "timetable": {
       "title": "Horaires indicatifs - Train Rouge (Val d'Isère)",
+      "headers": [
+        "Dép. 1",
+        "Dép. 2",
+        "Dép. 3",
+        "Dép. 4",
+        "Dép. 5",
+        "Dép. 6",
+        "Dép. 7",
+        "Dép. 8",
+        "Dép. 9",
+        "Dép. 10",
+        "Dép. 11",
+        "Dép. 12",
+        "Dép. 13",
+        "Dép. 14",
+        "Dép. 15"
+      ],
       "rows": [
         {
           "stop": "La Daille",
@@ -7189,6 +7206,15 @@
     ],
     "timetable": {
       "title": "Horaires officiels - Ligne S82 (Cars Région Savoie)",
+      "headers": [
+        "Dép. 1",
+        "Dép. 2",
+        "Dép. 3",
+        "Dép. 4",
+        "Dép. 5",
+        "Dép. 6",
+        "Dép. 7"
+      ],
       "rows": [
         {
           "stop": "Bourg-Saint-Maurice - Gare Routière",
@@ -18217,6 +18243,16 @@
     ],
     "timetable": {
       "title": "Horaires officiels - Ligne T76 (Cars Région Isère)",
+      "headers": [
+        "Dép. 1",
+        "Dép. 2",
+        "Dép. 3",
+        "Dép. 4",
+        "Dép. 5",
+        "Dép. 6",
+        "Dép. 7",
+        "Dép. 8"
+      ],
       "rows": [
         {
           "stop": "Agence Cars Region VFD",
@@ -20185,6 +20221,13 @@
     ],
     "timetable": {
       "title": "Horaires Navette Citron - Alpe d'Huez",
+      "headers": [
+        "Dép. 1",
+        "Dép. 2",
+        "Dép. 3",
+        "Dép. 4",
+        "Dép. 5"
+      ],
       "rows": [
         {
           "stop": "Altiport",
@@ -23961,6 +24004,13 @@
     ],
     "timetable": {
       "title": "Horaires Navette Pomme - Alpe d'Huez",
+      "headers": [
+        "Dép. 1",
+        "Dép. 2",
+        "Dép. 3",
+        "Dép. 4",
+        "Dép. 5"
+      ],
       "rows": [
         {
           "stop": "Huez Bas - Le Village",
@@ -25789,6 +25839,13 @@
     ],
     "timetable": {
       "title": "Horaires Navette Fraise - Alpe d'Huez",
+      "headers": [
+        "Dép. 1",
+        "Dép. 2",
+        "Dép. 3",
+        "Dép. 4",
+        "Dép. 5"
+      ],
       "rows": [
         {
           "stop": "Ours Blanc",
@@ -27552,6 +27609,13 @@
     ],
     "timetable": {
       "title": "Horaires Navette Myrtille - Alpe d'Huez",
+      "headers": [
+        "Dép. 1",
+        "Dép. 2",
+        "Dép. 3",
+        "Dép. 4",
+        "Dép. 5"
+      ],
       "rows": [
         {
           "stop": "Paganon",
@@ -32484,6 +32548,15 @@
     ],
     "timetable": {
       "title": "Horaires officiels - Ligne S62 (Cars Région Savoie)",
+      "headers": [
+        "Dép. 1",
+        "Dép. 2",
+        "Dép. 3",
+        "Dép. 4",
+        "Dép. 5",
+        "Dép. 6",
+        "Dép. 7"
+      ],
       "rows": [
         {
           "stop": "Moûtiers Gare Routière",
@@ -40085,6 +40158,13 @@
     ],
     "timetable": {
       "title": "Horaires officiels - Ligne S61 (Cars Région Savoie)",
+      "headers": [
+        "Dép. 1",
+        "Dép. 2",
+        "Dép. 3",
+        "Dép. 4",
+        "Dép. 5"
+      ],
       "rows": [
         {
           "stop": "Moûtiers Gare Routière",
@@ -46485,6 +46565,13 @@
     ],
     "timetable": {
       "title": "Horaires officiels - Vallée'BUS (Valmobus)",
+      "headers": [
+        "Dép. 1",
+        "Dép. 2",
+        "Dép. 3",
+        "Dép. 4",
+        "Dép. 5"
+      ],
       "rows": [
         {
           "stop": "Crève Cœur",
