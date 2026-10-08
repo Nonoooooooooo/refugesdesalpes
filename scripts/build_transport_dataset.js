@@ -52,6 +52,166 @@ const BUS_ROUTES = [
     coords: '6.1296,45.8992;6.2215,45.7820;6.3150,45.7480;6.3927,45.6756'
   },
   // ─────────────────────────────────────────────────────────
+  // CHABLAIS & PORTES DU SOLEIL : AVORIAZ 1800, MORZINE, LES GETS
+  // ─────────────────────────────────────────────────────────
+  {
+    id: 'bus-y91',
+    ref: 'Y91',
+    name: 'Ligne Y91 : Thonon-les-Bains ↔ Morzine ↔ Les Prodains (Avoriaz)',
+    mode: 'bus',
+    operator: 'Cars Région Haute-Savoie',
+    network: 'Cars Région',
+    route: 'Thonon Gare ↔ Bioge ↔ Saint-Jean-d\'Aulps ↔ Montriond ↔ Morzine Gare ↔ Les Prodains',
+    frequency: 'Quotidien (Toute l\'année, renforts été/hiver)',
+    period: 'Toute l\'année',
+    stops: [
+      'Thonon-les-Bains Gare SNCF / Léman Express',
+      'Allinges',
+      'Le Jotty (Gorges du Pont du Diable)',
+      'Bioge',
+      'Saint-Jean-d\'Aulps Abbaye / Chef-lieu',
+      'Montriond Chef-lieu',
+      'Morzine Gare Routière',
+      'Les Prodains (Téléphérique 3S Avoriaz 1800)'
+    ],
+    color: '#0284c7',
+    url: 'https://www.laregionvoustransporte.fr',
+    coords: '6.4797,46.3686;6.5873,46.3243;6.6160,46.3038;6.6476,46.2434;6.6944,46.1968;6.7083,46.1793;6.7533,46.1897'
+  },
+  {
+    id: 'bus-y92',
+    ref: 'Y92',
+    name: 'Ligne Y92 : Cluses ↔ Taninges ↔ Les Gets ↔ Morzine ↔ Les Prodains',
+    mode: 'bus',
+    operator: 'Cars Région Haute-Savoie',
+    network: 'Cars Région',
+    route: 'Cluses Gare TGV ↔ Taninges ↔ Les Gets ↔ Morzine Gare ↔ Les Prodains (Avoriaz)',
+    frequency: 'Quotidien (Correspondances TGV & Léman Express)',
+    period: 'Toute l\'année',
+    stops: [
+      'Cluses Gare SNCF / TGV',
+      'Marignier',
+      'Châtillon-sur-Cluses',
+      'Taninges Chef-lieu',
+      'Pont des Gets',
+      'Les Gets Gare Routière',
+      'Les Perrières',
+      'Morzine Rond-Point Passerelle',
+      'Morzine Gare Routière',
+      'Les Prodains (Téléphérique 3S Avoriaz 1800)'
+    ],
+    color: '#0284c7',
+    url: 'https://www.laregionvoustransporte.fr',
+    coords: '6.5824,46.0618;6.5921,46.1077;6.6284,46.1343;6.6686,46.1598;6.7083,46.1793;6.7533,46.1897'
+  },
+  {
+    id: 'cable-prodains-express',
+    ref: '3S Prodains',
+    name: 'Téléphérique 3S Prodains Express : Les Prodains ↔ Avoriaz 1800',
+    mode: 'cable',
+    operator: 'SERMA Avoriaz / Portes du Soleil',
+    network: 'Avoriaz 1800',
+    route: 'Les Prodains (1180 m) ↔ Avoriaz 1800 (1795 m, Place Jean Vuarnet)',
+    frequency: 'En continu toutes les 5 min (durée 4 min)',
+    period: 'Saisons d\'hiver & d\'été (Liaison piétons & bagages)',
+    stops: ['Les Prodains (1180 m)', 'Avoriaz 1800 (1795 m)'],
+    color: '#ec4899',
+    url: 'https://www.avoriaz.com',
+    directCoordinates: [
+      [6.7533635, 46.189763],
+      [6.7580, 46.1915],
+      [6.7635, 46.1940],
+      [6.767705, 46.196083]
+    ]
+  },
+  {
+    id: 'navette-morzine-prodains',
+    ref: 'Ligne A / AU',
+    name: 'Navette Morzine : Centre / Pléney ↔ Téléphérique Prodains (Avoriaz)',
+    mode: 'navette',
+    operator: 'Morzine Mobilité / PYSAE',
+    network: 'Navettes Morzine-Avoriaz',
+    route: 'Morzine Pléney ↔ Office de Tourisme ↔ Rond-Point Passerelle ↔ Les Prodains',
+    frequency: 'Toutes les 10 à 15 min (Gratuit)',
+    period: 'Saisons d\'été & d\'hiver',
+    stops: [
+      'Morzine Pléney / Mairie',
+      'Office de Tourisme',
+      'Rond-Point Passerelle',
+      'Pied de la Plagne',
+      'Les Prodains (Téléphérique 3S Avoriaz 1800)'
+    ],
+    color: '#ea580c',
+    url: 'https://www.morzine-avoriaz.com',
+    coords: '6.7083,46.1793;6.7150,46.1810;6.7320,46.1840;6.7533,46.1897'
+  },
+  {
+    id: 'navette-morzine-ardent',
+    ref: 'Ligne M',
+    name: 'Navette Morzine : Pléney ↔ Lac de Montriond ↔ Ardent (Télécabine Avoriaz)',
+    mode: 'navette',
+    operator: 'Morzine Mobilité / PYSAE',
+    network: 'Navettes Morzine-Avoriaz',
+    route: 'Morzine Pléney ↔ Montriond Village ↔ Lac de Montriond ↔ Ardent Téléphérique',
+    frequency: 'Toutes les 30 min (Gratuit)',
+    period: 'Saisons d\'été & d\'hiver',
+    stops: [
+      'Morzine Pléney',
+      'Montriond Chef-lieu',
+      'Lac de Montriond',
+      'Les Albertans',
+      'Ardent Téléphérique (Accès Lindarets & Avoriaz)'
+    ],
+    color: '#ea580c',
+    url: 'https://www.morzine-avoriaz.com',
+    coords: '6.7083,46.1793;6.6944,46.1968;6.7300,46.2050;6.7445,46.2160'
+  },
+  {
+    id: 'navette-morzine-manche',
+    ref: 'Ligne E',
+    name: 'Navette Vallée de la Manche : Morzine ↔ Nyon ↔ Lac des Mines d\'Or',
+    mode: 'navette',
+    operator: 'Morzine Mobilité / PYSAE',
+    network: 'Navettes Morzine-Avoriaz',
+    route: 'Morzine Pléney ↔ Téléphérique de Nyon ↔ L\'Érigné ↔ Lac des Mines d\'Or',
+    frequency: 'Toutes les 30 min (Gratuit)',
+    period: 'Saisons d\'été & d\'hiver',
+    stops: [
+      'Morzine Pléney',
+      'Téléphérique de Nyon',
+      'Les Meuniers',
+      'L\'Érigné',
+      'Lac des Mines d\'Or (Départ Randonnées Hauts-Forts & Col de Cou)'
+    ],
+    color: '#ea580c',
+    url: 'https://www.morzine-avoriaz.com',
+    coords: '6.7083,46.1793;6.7200,46.1650;6.7380,46.1480;6.7620,46.1340'
+  },
+  {
+    id: 'bus-baladaulps',
+    ref: 'Balad\'Aulps',
+    name: 'Balad\'Aulps Bus : Les Gets ↔ Morzine ↔ St-Jean-d\'Aulps ↔ Le Jotty / Bioge',
+    mode: 'bus',
+    operator: 'CC Vallée d\'Aulps / Cars Région',
+    network: 'Balad\'Aulps Bus',
+    route: 'Les Gets (Les Perrières) ↔ Morzine ↔ Montriond ↔ Saint-Jean-d\'Aulps ↔ Le Biot ↔ Seytroux ↔ Le Jotty',
+    frequency: 'Liaisons régulières toute la journée',
+    period: 'Toute l\'année (Renfort saisonnier)',
+    stops: [
+      'Les Gets Les Perrières',
+      'Morzine Rond-Point Passerelle',
+      'Montriond Chef-lieu',
+      'Saint-Jean-d\'Aulps Abbaye',
+      'Le Biot Chef-lieu',
+      'Seytroux Pont Molliet',
+      'Le Jotty (Gorges du Pont du Diable)',
+      'Bioge (Liaison Thonon / Evian)'
+    ],
+    color: '#10b981',
+    url: 'https://www.valleedaulps.com',
+    coords: '6.6560,46.1488;6.6709,46.1609;6.7083,46.1793;6.6944,46.1968;6.6561,46.2325;6.6476,46.2434;6.6313,46.2638;6.6160,46.3038'
+  },
+  // ─────────────────────────────────────────────────────────
   // MASSIF DES ARAVIS : LE GRAND-BORNAND, LA CLUSAZ, THÔNES
   // ─────────────────────────────────────────────────────────
   {
@@ -3417,6 +3577,58 @@ const STATIONS = [
     lng: 6.3730, 
     lines: ['Léman Express L3', 'TER Auvergne-Rhône-Alpes', 'Proxim\'iTi 460/461 (Glières ↔ St-Jean ↔ Grand-Bornand)'], 
     color: '#6366f1' 
+  },
+
+  // Pôles et Gares du Chablais, Morzine & Avoriaz
+  {
+    id: 'hub-avoriaz',
+    name: 'Avoriaz 1800 - Place Jean Vuarnet & Accueil Station (1800 m)',
+    mode: 'station',
+    alt: 1800,
+    lat: 46.1961,
+    lng: 6.7677,
+    lines: ['Téléphérique 3S Prodains Express', 'Cars Région Y91/Y92 (Saison)', 'Domaine Portes du Soleil', 'Accès Hauts-Forts (2466 m)'],
+    color: '#0284c7'
+  },
+  {
+    id: 'hub-prodains',
+    name: 'Gare Inférieure des Prodains (1180 m)',
+    mode: 'station',
+    alt: 1180,
+    lat: 46.1898,
+    lng: 6.7534,
+    lines: ['Téléphérique 3S Prodains Express (Avoriaz)', 'Navette Ligne A / AU (Morzine Pléney)', 'Cars Région Y91 (Thonon)', 'Cars Région Y92 (Cluses)'],
+    color: '#0284c7'
+  },
+  {
+    id: 'hub-morzine',
+    name: 'Gare Routière de Morzine (1000 m)',
+    mode: 'station',
+    alt: 1000,
+    lat: 46.1793,
+    lng: 6.7083,
+    lines: ['Cars Région Y91 (Thonon)', 'Cars Région Y92 (Cluses)', 'Navette A (Prodains/Avoriaz)', 'Navette M (Montriond/Ardent)', 'Navette E (Mines d\'Or)', 'Balad\'Aulps Bus'],
+    color: '#0284c7'
+  },
+  {
+    id: 'hub-les-gets',
+    name: 'Gare Routière des Gets (1172 m)',
+    mode: 'station',
+    alt: 1172,
+    lat: 46.1598,
+    lng: 6.6686,
+    lines: ['Cars Région Y92 (Cluses ↔ Morzine)', 'Balad\'Aulps Bus', 'Télécabine des Chavannes', 'Télécabine du Mont Chéry'],
+    color: '#0284c7'
+  },
+  {
+    id: 'hub-ardent',
+    name: 'Pôle Lac de Montriond / Ardent (1060 m)',
+    mode: 'station',
+    alt: 1060,
+    lat: 46.2160,
+    lng: 6.7445,
+    lines: ['Télécabine d\'Ardent (Avoriaz / Lindarets)', 'Navette M (Morzine Pléney)', 'Accès Lac de Montriond & Cascade d\'Ardent'],
+    color: '#10b981'
   }
 ];
 
