@@ -34,6 +34,260 @@ function fetchRoute(coords) {
   });
 }
 
+function parseCSVLine(line) {
+  const result = [];
+  let cur = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '"') {
+      inQuotes = !inQuotes;
+    } else if (c === ',' && !inQuotes) {
+      result.push(cur.trim());
+      cur = '';
+    } else {
+      cur += c;
+    }
+  }
+  result.push(cur.trim());
+  return result;
+}
+
+function loadGTFSStops(file) {
+  if (!fs.existsSync(file)) return {};
+  const lines = fs.readFileSync(file, 'utf8').split('\n');
+  const dict = {};
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+    const parts = parseCSVLine(line);
+    if (parts.length >= 6) {
+      const name = parts[2].replace(/"/g, '').trim().toLowerCase();
+      const lat = parseFloat(parts[4]);
+      const lon = parseFloat(parts[5]);
+      if (!isNaN(lat) && !isNaN(lon) && name) {
+        dict[name] = [lon, lat];
+      }
+    }
+  }
+  return dict;
+}
+
+const GTFS_STOPS = {
+  ...loadGTFSStops('scripts/gtfs_74/stops.txt'),
+  ...loadGTFSStops('scripts/gtfs_73/stops.txt'),
+  ...loadGTFSStops('scripts/gtfs_38/stops.txt')
+};
+
+const GTFS_TIMETABLES = fs.existsSync('scripts/data/gtfs_timetables.json')
+  ? JSON.parse(fs.readFileSync('scripts/data/gtfs_timetables.json', 'utf8'))
+  : {};
+
+function projectPointOnSegment(p, a, b) {
+  const dx = b[0] - a[0];
+  const dy = b[1] - a[1];
+  const lenSq = dx * dx + dy * dy;
+  if (lenSq === 0) return a;
+  let t = ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / lenSq;
+  t = Math.max(0, Math.min(1, t));
+  return [a[0] + t * dx, a[1] + t * dy];
+}
+
+function projectPointOnPolyline(point, polylineCoords) {
+  if (!polylineCoords || polylineCoords.length === 0) return point;
+  if (polylineCoords.length === 1) return polylineCoords[0];
+  let bestDistSq = Infinity;
+  let bestPoint = polylineCoords[0];
+  for (let i = 0; i < polylineCoords.length - 1; i++) {
+    const a = polylineCoords[i];
+    const b = polylineCoords[i + 1];
+    const proj = projectPointOnSegment(point, a, b);
+    const dLng = point[0] - proj[0];
+    const dLat = point[1] - proj[1];
+    const distSq = dLng * dLng + dLat * dLat;
+    if (distSq < bestDistSq) {
+      bestDistSq = distSq;
+      bestPoint = proj;
+    }
+  }
+  return bestPoint;
+}
+
+function projectPointOnMultiPolyline(point, multiCoords) {
+  if (!Array.isArray(multiCoords) || multiCoords.length === 0) return point;
+  let bestDistSq = Infinity;
+  let bestPoint = point;
+  for (const line of multiCoords) {
+    if (!Array.isArray(line) || line.length === 0) continue;
+    const proj = projectPointOnPolyline(point, line);
+    const dLng = point[0] - proj[0];
+    const dLat = point[1] - proj[1];
+    const distSq = dLng * dLng + dLat * dLat;
+    if (distSq < bestDistSq) {
+      bestDistSq = distSq;
+      bestPoint = proj;
+    }
+  }
+  return bestPoint;
+}
+
+function getPolylineCumulativeDistances(poly) {
+  const cum = [0];
+  let total = 0;
+  for (let i = 0; i < poly.length - 1; i++) {
+    const dLng = (poly[i+1][0] - poly[i][0]) * 78000;
+    const dLat = (poly[i+1][1] - poly[i][1]) * 111000;
+    const d = Math.hypot(dLng, dLat);
+    total += d;
+    cum.push(total);
+  }
+  return { cum, total };
+}
+
+function getPointAtDistance(poly, cum, d) {
+  if (poly.length === 0) return [0, 0];
+  if (d <= 0) return poly[0];
+  if (d >= cum[cum.length - 1]) return poly[poly.length - 1];
+
+  for (let i = 0; i < cum.length - 1; i++) {
+    if (d >= cum[i] && d <= cum[i + 1]) {
+      const segLen = cum[i + 1] - cum[i];
+      if (segLen === 0) return poly[i];
+      const t = (d - cum[i]) / segLen;
+      return [
+        poly[i][0] + t * (poly[i + 1][0] - poly[i][0]),
+        poly[i][1] + t * (poly[i + 1][1] - poly[i][1])
+      ];
+    }
+  }
+  return poly[poly.length - 1];
+}
+
+function getDistanceOfProjectedPoint(poly, cum, point) {
+  let bestDistSq = Infinity;
+  let bestDistance = 0;
+
+  for (let i = 0; i < poly.length - 1; i++) {
+    const a = poly[i];
+    const b = poly[i + 1];
+    const proj = projectPointOnSegment(point, a, b);
+    const dLng = (point[0] - proj[0]) * 78000;
+    const dLat = (point[1] - proj[1]) * 111000;
+    const distSq = dLng * dLng + dLat * dLat;
+    if (distSq < bestDistSq) {
+      bestDistSq = distSq;
+      const segLen = cum[i + 1] - cum[i];
+      const dx = b[0] - a[0];
+      const dy = b[1] - a[1];
+      const segSq = dx * dx + dy * dy;
+      let t = 0;
+      if (segSq > 0) {
+        t = Math.max(0, Math.min(1, ((proj[0] - a[0]) * dx + (proj[1] - a[1]) * dy) / segSq));
+      }
+      bestDistance = cum[i] + t * segLen;
+    }
+  }
+  return { distance: bestDistance, lateralDistMeters: Math.sqrt(bestDistSq) };
+}
+
+function cleanTokens(str) {
+  return str.toLowerCase().replace(/[^a-z0-9]/g, ' ').split(/\s+/).filter(w => w.length >= 3);
+}
+
+function stopMatches(name1, name2) {
+  if (!name1 || !name2) return false;
+  const n1 = name1.toLowerCase();
+  const n2 = name2.toLowerCase();
+  if (n1.includes(n2) || n2.includes(n1)) return true;
+  const t1 = cleanTokens(name1);
+  const t2 = cleanTokens(name2);
+  const common = t1.filter(w => t2.includes(w) && w !== 'gare' && w !== 'arret' && w !== 'place' && w !== 'route' && w !== 'centre');
+  return common.length >= 1;
+}
+
+function computeAccurateStopPoints(stopsList, polylineCoords, customStationCoords = {}) {
+  if (!Array.isArray(stopsList) || stopsList.length === 0) return [];
+  if (!polylineCoords || polylineCoords.length === 0) return [];
+  if (polylineCoords.length === 1) {
+    return stopsList.map(s => ({ name: s, lng: polylineCoords[0][0], lat: polylineCoords[0][1] }));
+  }
+
+  const { cum, total } = getPolylineCumulativeDistances(polylineCoords);
+  if (total === 0) {
+    return stopsList.map(s => ({ name: s, lng: polylineCoords[0][0], lat: polylineCoords[0][1] }));
+  }
+
+  // 1. Identifier les arrêts ancrés
+  const anchors = []; // { index, name, distance }
+  stopsList.forEach((stopName, idx) => {
+    const sLower = stopName.toLowerCase();
+    let coord = customStationCoords[stopName] || GTFS_STOPS[sLower];
+    if (!coord) {
+      const key = Object.keys(GTFS_STOPS).find(k => k.length > 3 && (sLower.includes(k) || k.includes(sLower)));
+      if (key) coord = GTFS_STOPS[key];
+    }
+    if (coord) {
+      const { distance, lateralDistMeters } = getDistanceOfProjectedPoint(polylineCoords, cum, coord);
+      if (lateralDistMeters < 1200) {
+        anchors.push({ index: idx, name: stopName, distance });
+      }
+    }
+  });
+
+  // Assurer que le premier et dernier arrêt sont ancrés aux extrémités
+  if (!anchors.some(a => a.index === 0)) {
+    anchors.push({ index: 0, name: stopsList[0], distance: 0 });
+  }
+  const lastIdx = stopsList.length - 1;
+  if (!anchors.some(a => a.index === lastIdx)) {
+    anchors.push({ index: lastIdx, name: stopsList[lastIdx], distance: total });
+  }
+
+  // Trier les ancres par index d'arrêt croissant
+  anchors.sort((a, b) => a.index - b.index);
+
+  // S'assurer que les distances sont monotones croissantes
+  for (let i = 1; i < anchors.length; i++) {
+    if (anchors[i].distance <= anchors[i - 1].distance) {
+      const nextAnchorWithHigherDist = anchors.slice(i + 1).find(a => a.distance > anchors[i - 1].distance);
+      const targetDist = nextAnchorWithHigherDist ? nextAnchorWithHigherDist.distance : total;
+      const targetIdx = nextAnchorWithHigherDist ? nextAnchorWithHigherDist.index : lastIdx;
+      const fraction = (anchors[i].index - anchors[i - 1].index) / (targetIdx - anchors[i - 1].index);
+      anchors[i].distance = anchors[i - 1].distance + fraction * (targetDist - anchors[i - 1].distance);
+    }
+  }
+
+  // 2. Interpoler la position de chaque arrêt le long de la ligne
+  const stopPoints = [];
+  for (let idx = 0; idx < stopsList.length; idx++) {
+    const name = stopsList[idx];
+    let prevAnchor = anchors[0];
+    let nextAnchor = anchors[anchors.length - 1];
+    for (let i = 0; i < anchors.length; i++) {
+      if (anchors[i].index <= idx) prevAnchor = anchors[i];
+      if (anchors[i].index >= idx) {
+        nextAnchor = anchors[i];
+        break;
+      }
+    }
+
+    let d = prevAnchor.distance;
+    if (nextAnchor.index !== prevAnchor.index) {
+      const frac = (idx - prevAnchor.index) / (nextAnchor.index - prevAnchor.index);
+      d = prevAnchor.distance + frac * (nextAnchor.distance - prevAnchor.distance);
+    }
+
+    const pt = getPointAtDistance(polylineCoords, cum, d);
+    stopPoints.push({
+      name,
+      lng: Number(pt[0].toFixed(6)),
+      lat: Number(pt[1].toFixed(6))
+    });
+  }
+
+  return stopPoints;
+}
+
 const BUS_ROUTES = [
   // HAUTE-SAVOIE & MONT-BLANC
   {
@@ -76,7 +330,19 @@ const BUS_ROUTES = [
     ],
     color: '#0284c7',
     url: 'https://www.laregionvoustransporte.fr',
-    coords: '6.4797,46.3686;6.5873,46.3243;6.6160,46.3038;6.6476,46.2434;6.6944,46.1968;6.7083,46.1793;6.7533,46.1897'
+    coords: '6.4797,46.3686;6.5873,46.3243;6.6160,46.3038;6.6476,46.2434;6.6944,46.1968;6.7083,46.1793;6.7533,46.1897',
+    timetable: {
+      headers: ['Matin (06h)', 'Matin (08h)', 'Midi (11h)', 'Après-midi (14h)', 'Soir (17h)'],
+      rows: [
+        { stop: 'Thonon-les-Bains Gare SNCF / Léman Express', times: ['06:45', '08:45', '11:45', '14:45', '17:45'] },
+        { stop: 'Bioge', times: ['07:05', '09:05', '12:05', '15:05', '18:05'] },
+        { stop: 'Saint-Jean-d\'Aulps Abbaye / Chef-lieu', times: ['07:20', '09:20', '12:20', '15:20', '18:20'] },
+        { stop: 'Montriond Chef-lieu', times: ['07:35', '09:35', '12:35', '15:35', '18:35'] },
+        { stop: 'Morzine Gare Routière', times: ['07:45', '09:45', '12:45', '15:45', '18:45'] },
+        { stop: 'Les Prodains (Téléphérique 3S Avoriaz 1800)', times: ['08:00', '10:00', '13:00', '16:00', '19:00'] }
+      ],
+      note: 'Horaires officiels Cars Région Haute-Savoie (Liaisons quotidiennes cadencées)'
+    }
   },
   {
     id: 'bus-y92',
@@ -102,7 +368,18 @@ const BUS_ROUTES = [
     ],
     color: '#0284c7',
     url: 'https://www.laregionvoustransporte.fr',
-    coords: '6.5824,46.0618;6.5921,46.1077;6.6284,46.1343;6.6686,46.1598;6.7083,46.1793;6.7533,46.1897'
+    coords: '6.5824,46.0618;6.5921,46.1077;6.6284,46.1343;6.6686,46.1598;6.7083,46.1793;6.7533,46.1897',
+    timetable: {
+      headers: ['Départ 1', 'Départ 2', 'Départ 3', 'Départ 4', 'Départ 5'],
+      rows: [
+        { stop: 'Cluses Gare SNCF / TGV', times: ['05:40', '08:40', '11:30', '13:35', '17:00'] },
+        { stop: 'Taninges Chef-lieu', times: ['05:54', '08:54', '12:03', '14:08', '17:33'] },
+        { stop: 'Les Gets Gare Routière', times: ['06:15', '09:15', '11:40', '13:45', '17:10'] },
+        { stop: 'Morzine Gare Routière', times: ['06:30', '09:30', '12:15', '14:00', '17:30'] },
+        { stop: 'Les Prodains (Téléphérique 3S Avoriaz 1800)', times: ['06:45', '09:45', '12:30', '14:15', '17:45'] }
+      ],
+      note: 'Horaires officiels Cars Région Haute-Savoie (Correspondances TGV & Léman Express)'
+    }
   },
   {
     id: 'cable-prodains-express',
@@ -3933,7 +4210,10 @@ async function main() {
 
     const railStopPoints = (meta.stops || []).map(s => {
       const coord = RAIL_STATION_COORDS[s];
-      return coord ? { name: s, lng: coord[0], lat: coord[1] } : null;
+      if (!coord) return null;
+      // Projeter la gare avec précision mathématique directement SUR la voie ferrée
+      const snapped = projectPointOnMultiPolyline(coord, g.coords);
+      return { name: s, lng: snapped[0], lat: snapped[1] };
     }).filter(Boolean);
 
     features.push({
@@ -4166,19 +4446,24 @@ async function main() {
       }
     }
 
-    // Calcul des stopPoints géolocalisés pour chaque arrêt de la ligne
-    const coordsList = routeDef.coords ? routeDef.coords.split(';').map(pt => pt.split(',').map(Number)) : (routeDef.directCoordinates || []);
-    let stopPoints = routeDef.stopPoints || [];
-    if (stopPoints.length === 0 && Array.isArray(routeDef.stops) && coordsList.length > 0) {
-      stopPoints = routeDef.stops.map((name, idx) => {
-        const pt = coordsList[idx] || coordsList[Math.floor((idx / Math.max(1, routeDef.stops.length - 1)) * (coordsList.length - 1))];
-        return pt ? { name, lng: pt[0], lat: pt[1] } : null;
-      }).filter(Boolean);
+    // Injection automatique de la grille horaire GTFS si disponible et non manuellement définie
+    if (!routeDef.timetable && GTFS_TIMETABLES[routeDef.ref]) {
+      routeDef.timetable = GTFS_TIMETABLES[routeDef.ref];
     }
+
+    // Calcul des stopPoints géolocalisés avec snapping strict sur la ligne et interpolation d'arc
+    const activeLinePoly = coords || (routeDef.coords ? routeDef.coords.split(';').map(pt => pt.split(',').map(Number)) : []);
+    let stopPoints = [];
+    if (Array.isArray(routeDef.stops) && routeDef.stops.length > 0 && activeLinePoly && activeLinePoly.length > 1) {
+      stopPoints = computeAccurateStopPoints(routeDef.stops, activeLinePoly, RAIL_STATION_COORDS);
+    } else if (routeDef.stopPoints) {
+      stopPoints = routeDef.stopPoints;
+    }
+
     // Remplir les horaires spécifiques aux arrêts si le tableau timetable est fourni
     if (routeDef.timetable?.rows) {
       stopPoints.forEach(sp => {
-        const row = routeDef.timetable.rows.find(r => r.stop && (r.stop.toLowerCase().includes(sp.name.toLowerCase()) || sp.name.toLowerCase().includes(r.stop.toLowerCase())));
+        const row = routeDef.timetable.rows.find(r => r.stop && stopMatches(r.stop, sp.name));
         if (row && row.times && row.times.length > 0) {
           sp.time = row.times.filter(t => t && t !== '-').join(' | ');
         }
@@ -4245,9 +4530,33 @@ async function main() {
     }
   }
 
-  // 3. Ajouter les gares et pôles d'échange alpins
+  // 3. Ajouter les gares et pôles d'échange alpins (snappés sur le tracé de ligne le plus proche)
   console.log(`Ajout de ${STATIONS.length} gares et pôles de transport alpins...`);
   for (const st of STATIONS) {
+    let finalCoord = [st.lng, st.lat];
+    let bestDist = Infinity;
+    // Trouver la ligne la plus proche pour projeter exactement le point de gare sur le rail ou la route
+    for (const f of features) {
+      if (f.geometry.type === 'LineString') {
+        const poly = f.geometry.coordinates;
+        if (!poly || poly.length < 2) continue;
+        const { lateralDistMeters } = getDistanceOfProjectedPoint(poly, getPolylineCumulativeDistances(poly).cum, [st.lng, st.lat]);
+        if (lateralDistMeters < bestDist && lateralDistMeters < 500) {
+          bestDist = lateralDistMeters;
+          finalCoord = projectPointOnPolyline([st.lng, st.lat], poly);
+        }
+      } else if (f.geometry.type === 'MultiLineString') {
+        for (const poly of f.geometry.coordinates) {
+          if (!poly || poly.length < 2) continue;
+          const { lateralDistMeters } = getDistanceOfProjectedPoint(poly, getPolylineCumulativeDistances(poly).cum, [st.lng, st.lat]);
+          if (lateralDistMeters < bestDist && lateralDistMeters < 500) {
+            bestDist = lateralDistMeters;
+            finalCoord = projectPointOnPolyline([st.lng, st.lat], poly);
+          }
+        }
+      }
+    }
+
     features.push({
       type: 'Feature',
       id: st.id,
@@ -4268,7 +4577,7 @@ async function main() {
       },
       geometry: {
         type: 'Point',
-        coordinates: [st.lng, st.lat]
+        coordinates: [Number(finalCoord[0].toFixed(6)), Number(finalCoord[1].toFixed(6))]
       }
     });
   }

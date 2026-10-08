@@ -145,11 +145,11 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
         const [lng, lat] = feature.geometry.coordinates;
         const marker = L.circleMarker([lat, lng], {
           renderer: canvasRenderer,
-          radius: 5.5,
+          radius: 5,
           fillColor: props.color || '#3b82f6',
-          color: '#ffffff',
-          weight: 2,
-          fillOpacity: 1,
+          stroke: false,
+          weight: 0,
+          fillOpacity: 0.95,
         });
 
         marker.bindTooltip(createTooltipContent(props), {
@@ -243,23 +243,24 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
         }
         group.addLayer(line);
 
-        // 2b. Afficher chaque arrêt sous forme d'un petit point de la même couleur que le trait
+        // 2b. Afficher chaque arrêt sous forme d'un petit point pur sans contour blanc de la même couleur que le trait
         if (Array.isArray(props.stopPoints) && props.stopPoints.length > 0) {
           props.stopPoints.forEach((sp) => {
             if (sp.lat == null || sp.lng == null) return;
+            const stopColor = props.color || '#3b82f6';
             const stopMarker = L.circleMarker([sp.lat, sp.lng], {
               renderer: canvasRenderer,
               radius: 3.5,
-              fillColor: props.color || '#3b82f6',
-              color: '#ffffff',
-              weight: 1.5,
-              fillOpacity: 1,
+              fillColor: stopColor,
+              stroke: false,
+              weight: 0,
+              fillOpacity: 0.95,
             });
 
             const stopTooltipHtml = `
               <div style="font-family: inherit; min-width: 140px; padding: 2px;">
                 <div style="display: flex; align-items: center; gap: 5px; margin-bottom: 2px;">
-                  <span style="background: ${props.color || '#3b82f6'}; color: #fff; font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 4px; text-transform: uppercase;">
+                  <span style="background: ${stopColor}; color: #fff; font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 4px; text-transform: uppercase;">
                     ${props.ref || 'Arrêt'}
                   </span>
                   <span style="font-size: 10px; color: rgba(255,255,255,0.7);">${props.name}</span>
@@ -277,11 +278,19 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
               offset: [0, -6],
             });
 
-            stopMarker.on('click', (e) => {
-              L.DomEvent.stopPropagation(e);
-              if (onSelectTransport) {
-                onSelectTransport({ ...props, selectedStop: sp, isTransport: true });
-              }
+            stopMarker.on({
+              mouseover: (e) => {
+                if (e.target.setRadius) e.target.setRadius(5);
+              },
+              mouseout: (e) => {
+                if (e.target.setRadius) e.target.setRadius(3.5);
+              },
+              click: (e) => {
+                L.DomEvent.stopPropagation(e);
+                if (onSelectTransport) {
+                  onSelectTransport({ ...props, selectedStop: sp, isTransport: true });
+                }
+              },
             });
 
             group.addLayer(stopMarker);
