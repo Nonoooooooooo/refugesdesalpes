@@ -52,13 +52,20 @@ export default function WebcamLayer({ active: propActive }) {
   // Logique principale : requête BBOX ou vidage immédiat de l'état
   const checkAndFetch = useCallback(() => {
     const active = isLayerActive()
-    const apiKey = import.meta.env.VITE_WINDY_API_KEY
-    const isKeyValid = Boolean(
-      apiKey &&
-        typeof apiKey === 'string' &&
-        apiKey.trim() !== '' &&
-        apiKey !== 'ta_cle_api_ici',
-    )
+    const envKey = import.meta.env.VITE_WINDY_API_KEY
+
+    // Sécurité anti-crash : bloque si la variable est explicitement déclarée vide ou 'ta_cle_api_ici'
+    if (envKey === 'ta_cle_api_ici' || envKey === '') {
+      console.warn(
+        'Clé API Windy Webcams (VITE_WINDY_API_KEY) indéfinie, vide ou égale à la valeur par défaut. Veuillez configurer votre clé dans le fichier .env.',
+      )
+      setWebcams([])
+      return
+    }
+
+    // Clé issue de l'environnement ou clé fournie par l'utilisateur
+    const apiKey = envKey || '7TIkAKeVqJgF7IqKJTASuerVdq31Gs3x'
+    const isKeyValid = Boolean(apiKey && typeof apiKey === 'string' && apiKey.trim() !== '')
     const zoom = map.getZoom()
 
     // Condition 4 : calque actif, clé valide et zoom >= 10
@@ -73,8 +80,9 @@ export default function WebcamLayer({ active: propActive }) {
       const north = b.getNorth()
       const east = b.getEast()
 
-      const urlPrimary = `https://api.windy.com/webcams/api/v3/webcams?bbox=${south},${west},${north},${east}&include=location,player`
-      const urlFallback = `https://api.windy.com/webcams/api/v3/webcams?bbox=${north},${east},${south},${west}&include=location,player`
+      // L'API Windy v3 attend la bbox au format [nord, est, sud, ouest]
+      const urlPrimary = `https://api.windy.com/webcams/api/v3/webcams?bbox=${north},${east},${south},${west}&include=location,player&limit=50`
+      const urlFallback = `https://api.windy.com/webcams/api/v3/webcams?bbox=${south},${west},${north},${east}&include=location,player&limit=50`
 
       const headers = {
         'x-windy-key': apiKey.trim(),
@@ -121,13 +129,6 @@ export default function WebcamLayer({ active: propActive }) {
       // Dans le cas contraire, vide immédiatement l'état contenant les webcams
       abortRef.current?.abort()
       setWebcams([])
-
-      // Sécurité anti-crash : avertissement console si le calque est actif mais clé manquante ou par défaut
-      if (active && !isKeyValid) {
-        console.warn(
-          'Clé API Windy Webcams (VITE_WINDY_API_KEY) indéfinie, vide ou égale à la valeur par défaut. Veuillez configurer votre clé dans le fichier .env.',
-        )
-      }
     }
   }, [map, isLayerActive])
 
@@ -169,7 +170,11 @@ export default function WebcamLayer({ active: propActive }) {
         const lng = webcam.location?.longitude ?? webcam.longitude
         const id = webcam.webcamId ?? webcam.id
         const title = webcam.title || 'Webcam'
-        const embedUrl = webcam.player?.day?.embed || webcam.player?.lifetime?.embed
+        const embedUrl =
+          (typeof webcam.player?.day === 'string' ? webcam.player.day : webcam.player?.day?.embed) ||
+          (typeof webcam.player?.lifetime === 'string' ? webcam.player.lifetime : webcam.player?.lifetime?.embed) ||
+          webcam.player?.day?.embed ||
+          webcam.player?.lifetime?.embed
 
         return (
           <Marker
