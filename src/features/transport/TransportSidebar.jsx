@@ -17,9 +17,28 @@ import {
   Navigation,
 } from 'lucide-react';
 
-function getModeInfo(mode) {
+function getModeInfo(mode, transport = {}) {
+  const isTGV = transport.isTGV || transport.ref === 'Frecciarossa' || transport.ref === 'TGV INOUI';
+  const isFreccia = transport.ref === 'Frecciarossa';
+
   switch (mode) {
     case 'train':
+      if (isFreccia) {
+        return {
+          label: 'Train Grande Vitesse (Frecciarossa 1000)',
+          Icon: Train,
+          color: '#dc2626',
+          bgGradient: 'from-red-600/30 to-rose-600/20',
+        };
+      }
+      if (isTGV) {
+        return {
+          label: 'Ligne à Grande Vitesse (TGV INOUI)',
+          Icon: Train,
+          color: '#be185d',
+          bgGradient: 'from-pink-600/30 to-purple-600/20',
+        };
+      }
       return {
         label: 'Train / TER Alpin',
         Icon: Train,
@@ -75,7 +94,7 @@ function getModeInfo(mode) {
 export default function TransportSidebar({ transport, onClose, onSelectTransport }) {
   if (!transport) return null;
 
-  const modeInfo = getModeInfo(transport.mode);
+  const modeInfo = getModeInfo(transport.mode, transport);
   const { label, Icon } = modeInfo;
   const displayColor = transport.color || modeInfo.color;
 

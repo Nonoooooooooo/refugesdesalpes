@@ -290,8 +290,15 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
 
     // Tooltip formaté pour les lignes
     const createTooltipContent = (props) => {
+      const isFreccia = props.ref === 'Frecciarossa';
+      const isTGV = props.isTGV || props.ref === 'TGV INOUI';
+
       const modeBadge =
-        props.mode === 'train'
+        isFreccia
+          ? 'Frecciarossa 1000'
+          : isTGV
+          ? 'TGV INOUI'
+          : props.mode === 'train'
           ? 'Train'
           : props.mode === 'mountain_train'
           ? 'Train Touristique'

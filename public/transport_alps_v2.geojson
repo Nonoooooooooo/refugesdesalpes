@@ -4,6 +4,2814 @@
   "features": [
     {
       "type": "Feature",
+      "id": "trenitalia-frecciarossa-paris-milan",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            2.373481,
+            48.844945
+          ],
+          [
+            2.45,
+            48.72
+          ],
+          [
+            2.75,
+            48.35
+          ],
+          [
+            3.2,
+            47.95
+          ],
+          [
+            4.05,
+            47.3
+          ],
+          [
+            4.7836,
+            46.2842
+          ],
+          [
+            4.83,
+            45.85
+          ],
+          [
+            4.859722,
+            45.76
+          ],
+          [
+            6.02,
+            45.51
+          ],
+          [
+            6.2,
+            45.45
+          ],
+          [
+            6.354716,
+            45.277542
+          ],
+          [
+            6.471914,
+            45.216916
+          ],
+          [
+            6.659139,
+            45.193555
+          ],
+          [
+            6.819091,
+            45.036032
+          ],
+          [
+            7.15,
+            45.1
+          ],
+          [
+            7.666389,
+            45.073056
+          ],
+          [
+            8.4,
+            45.32
+          ],
+          [
+            9.205479,
+            45.487011
+          ]
+        ]
+      },
+      "properties": {
+        "id": "trenitalia-frecciarossa-paris-milan",
+        "ref": "Frecciarossa",
+        "name": "Trenitalia Frecciarossa : Paris Gare de Lyon ↔ Lyon ↔ Chambéry ↔ Modane ↔ Milan",
+        "mode": "train",
+        "operator": "Trenitalia France",
+        "network": "Trenitalia - Frecciarossa 1000",
+        "route": "Paris Gare de Lyon ↔ Lyon Part-Dieu ↔ Chambéry ↔ Saint-Jean-de-Maurienne ↔ Modane ↔ Turin ↔ Milan Centrale",
+        "frequency": "Liaisons quotidiennes à grande vitesse (jusqu'à 300 km/h)",
+        "period": "Toute l'année",
+        "color": "#dc2626",
+        "offset": 0,
+        "stops": [
+          "Paris Gare de Lyon",
+          "Lyon Part-Dieu",
+          "Chambéry - Challes-les-Eaux",
+          "Saint-Jean-de-Maurienne - Arvan",
+          "Modane (Haute-Maurienne)",
+          "Oulx Cesana Claviere Sestriere (Italie)",
+          "Torino Porta Susa (Italie)",
+          "Milano Centrale (Italie)"
+        ],
+        "stopPoints": [
+          {
+            "name": "Paris Gare de Lyon",
+            "lng": 2.373481,
+            "lat": 48.844945
+          },
+          {
+            "name": "Lyon Part-Dieu",
+            "lng": 4.859722,
+            "lat": 45.76
+          },
+          {
+            "name": "Chambéry - Challes-les-Eaux",
+            "lng": 5.919547,
+            "lat": 45.571302
+          },
+          {
+            "name": "Saint-Jean-de-Maurienne - Arvan",
+            "lng": 6.354716,
+            "lat": 45.277542
+          },
+          {
+            "name": "Modane (Haute-Maurienne)",
+            "lng": 6.659139,
+            "lat": 45.193555
+          },
+          {
+            "name": "Oulx Cesana Claviere Sestriere (Italie)",
+            "lng": 6.819091,
+            "lat": 45.036032
+          },
+          {
+            "name": "Torino Porta Susa (Italie)",
+            "lng": 7.666389,
+            "lat": 45.073056
+          },
+          {
+            "name": "Milano Centrale (Italie)",
+            "lng": 9.205479,
+            "lat": 45.487011
+          }
+        ],
+        "directions": [
+          {
+            "id": "aller",
+            "name": "Vers Milano Centrale (Italie)",
+            "origin": "Paris Gare de Lyon",
+            "destination": "Milano Centrale (Italie)",
+            "stops": [
+              "Paris Gare de Lyon",
+              "Lyon Part-Dieu",
+              "Chambéry - Challes-les-Eaux",
+              "Saint-Jean-de-Maurienne - Arvan",
+              "Modane (Haute-Maurienne)",
+              "Oulx Cesana Claviere Sestriere (Italie)",
+              "Torino Porta Susa (Italie)",
+              "Milano Centrale (Italie)"
+            ],
+            "stopPoints": [
+              {
+                "name": "Paris Gare de Lyon",
+                "lng": 2.373481,
+                "lat": 48.844945
+              },
+              {
+                "name": "Lyon Part-Dieu",
+                "lng": 4.859722,
+                "lat": 45.76
+              },
+              {
+                "name": "Chambéry - Challes-les-Eaux",
+                "lng": 5.919547,
+                "lat": 45.571302
+              },
+              {
+                "name": "Saint-Jean-de-Maurienne - Arvan",
+                "lng": 6.354716,
+                "lat": 45.277542
+              },
+              {
+                "name": "Modane (Haute-Maurienne)",
+                "lng": 6.659139,
+                "lat": 45.193555
+              },
+              {
+                "name": "Oulx Cesana Claviere Sestriere (Italie)",
+                "lng": 6.819091,
+                "lat": 45.036032
+              },
+              {
+                "name": "Torino Porta Susa (Italie)",
+                "lng": 7.666389,
+                "lat": 45.073056
+              },
+              {
+                "name": "Milano Centrale (Italie)",
+                "lng": 9.205479,
+                "lat": 45.487011
+              }
+            ],
+            "coordinates": [
+              [
+                2.373481,
+                48.844945
+              ],
+              [
+                2.45,
+                48.72
+              ],
+              [
+                2.75,
+                48.35
+              ],
+              [
+                3.2,
+                47.95
+              ],
+              [
+                4.05,
+                47.3
+              ],
+              [
+                4.7836,
+                46.2842
+              ],
+              [
+                4.83,
+                45.85
+              ],
+              [
+                4.859722,
+                45.76
+              ],
+              [
+                6.02,
+                45.51
+              ],
+              [
+                6.2,
+                45.45
+              ],
+              [
+                6.354716,
+                45.277542
+              ],
+              [
+                6.471914,
+                45.216916
+              ],
+              [
+                6.659139,
+                45.193555
+              ],
+              [
+                6.819091,
+                45.036032
+              ],
+              [
+                7.15,
+                45.1
+              ],
+              [
+                7.666389,
+                45.073056
+              ],
+              [
+                8.4,
+                45.32
+              ],
+              [
+                9.205479,
+                45.487011
+              ]
+            ]
+          },
+          {
+            "id": "retour",
+            "name": "Vers Paris Gare de Lyon",
+            "origin": "Milano Centrale (Italie)",
+            "destination": "Paris Gare de Lyon",
+            "stops": [
+              "Milano Centrale (Italie)",
+              "Torino Porta Susa (Italie)",
+              "Oulx Cesana Claviere Sestriere (Italie)",
+              "Modane (Haute-Maurienne)",
+              "Saint-Jean-de-Maurienne - Arvan",
+              "Chambéry - Challes-les-Eaux",
+              "Lyon Part-Dieu",
+              "Paris Gare de Lyon"
+            ],
+            "stopPoints": [
+              {
+                "name": "Milano Centrale (Italie)",
+                "lng": 9.205479,
+                "lat": 45.487011
+              },
+              {
+                "name": "Torino Porta Susa (Italie)",
+                "lng": 7.666389,
+                "lat": 45.073056
+              },
+              {
+                "name": "Oulx Cesana Claviere Sestriere (Italie)",
+                "lng": 6.819091,
+                "lat": 45.036032
+              },
+              {
+                "name": "Modane (Haute-Maurienne)",
+                "lng": 6.659139,
+                "lat": 45.193555
+              },
+              {
+                "name": "Saint-Jean-de-Maurienne - Arvan",
+                "lng": 6.354716,
+                "lat": 45.277542
+              },
+              {
+                "name": "Chambéry - Challes-les-Eaux",
+                "lng": 5.919547,
+                "lat": 45.571302
+              },
+              {
+                "name": "Lyon Part-Dieu",
+                "lng": 4.859722,
+                "lat": 45.76
+              },
+              {
+                "name": "Paris Gare de Lyon",
+                "lng": 2.373481,
+                "lat": 48.844945
+              }
+            ],
+            "coordinates": [
+              [
+                9.205479,
+                45.487011
+              ],
+              [
+                8.4,
+                45.32
+              ],
+              [
+                7.666389,
+                45.073056
+              ],
+              [
+                7.15,
+                45.1
+              ],
+              [
+                6.819091,
+                45.036032
+              ],
+              [
+                6.659139,
+                45.193555
+              ],
+              [
+                6.471914,
+                45.216916
+              ],
+              [
+                6.354716,
+                45.277542
+              ],
+              [
+                6.2,
+                45.45
+              ],
+              [
+                6.02,
+                45.51
+              ],
+              [
+                4.859722,
+                45.76
+              ],
+              [
+                4.83,
+                45.85
+              ],
+              [
+                4.7836,
+                46.2842
+              ],
+              [
+                4.05,
+                47.3
+              ],
+              [
+                3.2,
+                47.95
+              ],
+              [
+                2.75,
+                48.35
+              ],
+              [
+                2.45,
+                48.72
+              ],
+              [
+                2.373481,
+                48.844945
+              ]
+            ]
+          }
+        ],
+        "isTGV": true,
+        "url": "https://www.trenitalia.com"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "tgv-inoui-paris-tarentaise",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            2.373481,
+            48.844945
+          ],
+          [
+            2.45,
+            48.72
+          ],
+          [
+            2.75,
+            48.35
+          ],
+          [
+            3.2,
+            47.95
+          ],
+          [
+            4.05,
+            47.3
+          ],
+          [
+            4.7836,
+            46.2842
+          ],
+          [
+            4.83,
+            45.85
+          ],
+          [
+            5.075834,
+            45.721014
+          ],
+          [
+            5.25,
+            45.62
+          ],
+          [
+            5.55,
+            45.54
+          ],
+          [
+            5.75,
+            45.535
+          ],
+          [
+            5.919547,
+            45.571302
+          ],
+          [
+            6.02,
+            45.51
+          ],
+          [
+            6.15,
+            45.57
+          ],
+          [
+            6.383167,
+            45.672977
+          ],
+          [
+            6.45,
+            45.56
+          ],
+          [
+            6.531399,
+            45.48647
+          ],
+          [
+            6.648614,
+            45.554387
+          ],
+          [
+            6.733849,
+            45.574213
+          ],
+          [
+            6.771273,
+            45.619036
+          ]
+        ]
+      },
+      "properties": {
+        "id": "tgv-inoui-paris-tarentaise",
+        "ref": "TGV INOUI",
+        "name": "TGV INOUI des Neiges : Paris ↔ Chambéry ↔ Albertville ↔ Moûtiers ↔ Bourg-Saint-Maurice",
+        "mode": "train",
+        "operator": "SNCF Voyageurs",
+        "network": "TGV INOUI - Tarentaise & Haute-Tarentaise",
+        "route": "Paris Gare de Lyon ↔ Lyon Saint-Exupéry ↔ Chambéry ↔ Albertville ↔ Moûtiers ↔ Aime-la-Plagne ↔ Landry ↔ Bourg-Saint-Maurice",
+        "frequency": "Liaisons directes quotidiennes (Renfort massif week-ends & hiver pour les stations)",
+        "period": "Toute l'année (Accès direct Val Thorens, Courchevel, Méribel, Les Arcs, Tignes, Val d'Isère)",
+        "color": "#9d174d",
+        "offset": 0,
+        "stops": [
+          "Paris Gare de Lyon",
+          "Lyon Saint-Exupéry TGV",
+          "Chambéry - Challes-les-Eaux",
+          "Albertville",
+          "Moûtiers - Salins - Brides-les-Bains (3 Vallées)",
+          "Aime - La Plagne",
+          "Landry (Peisey-Vallandry)",
+          "Bourg-Saint-Maurice (Les Arcs / Tignes / Val d'Isère)"
+        ],
+        "stopPoints": [
+          {
+            "name": "Paris Gare de Lyon",
+            "lng": 2.373481,
+            "lat": 48.844945
+          },
+          {
+            "name": "Lyon Saint-Exupéry TGV",
+            "lng": 5.075834,
+            "lat": 45.721014
+          },
+          {
+            "name": "Chambéry - Challes-les-Eaux",
+            "lng": 5.919547,
+            "lat": 45.571302
+          },
+          {
+            "name": "Albertville",
+            "lng": 6.383167,
+            "lat": 45.672977
+          },
+          {
+            "name": "Moûtiers - Salins - Brides-les-Bains (3 Vallées)",
+            "lng": 6.531399,
+            "lat": 45.48647
+          },
+          {
+            "name": "Aime - La Plagne",
+            "lng": 6.648614,
+            "lat": 45.554387
+          },
+          {
+            "name": "Landry (Peisey-Vallandry)",
+            "lng": 6.733849,
+            "lat": 45.574213
+          },
+          {
+            "name": "Bourg-Saint-Maurice (Les Arcs / Tignes / Val d'Isère)",
+            "lng": 6.771273,
+            "lat": 45.619036
+          }
+        ],
+        "directions": [
+          {
+            "id": "aller",
+            "name": "Vers Bourg-Saint-Maurice (Les Arcs / Tignes / Val d'Isère)",
+            "origin": "Paris Gare de Lyon",
+            "destination": "Bourg-Saint-Maurice (Les Arcs / Tignes / Val d'Isère)",
+            "stops": [
+              "Paris Gare de Lyon",
+              "Lyon Saint-Exupéry TGV",
+              "Chambéry - Challes-les-Eaux",
+              "Albertville",
+              "Moûtiers - Salins - Brides-les-Bains (3 Vallées)",
+              "Aime - La Plagne",
+              "Landry (Peisey-Vallandry)",
+              "Bourg-Saint-Maurice (Les Arcs / Tignes / Val d'Isère)"
+            ],
+            "stopPoints": [
+              {
+                "name": "Paris Gare de Lyon",
+                "lng": 2.373481,
+                "lat": 48.844945
+              },
+              {
+                "name": "Lyon Saint-Exupéry TGV",
+                "lng": 5.075834,
+                "lat": 45.721014
+              },
+              {
+                "name": "Chambéry - Challes-les-Eaux",
+                "lng": 5.919547,
+                "lat": 45.571302
+              },
+              {
+                "name": "Albertville",
+                "lng": 6.383167,
+                "lat": 45.672977
+              },
+              {
+                "name": "Moûtiers - Salins - Brides-les-Bains (3 Vallées)",
+                "lng": 6.531399,
+                "lat": 45.48647
+              },
+              {
+                "name": "Aime - La Plagne",
+                "lng": 6.648614,
+                "lat": 45.554387
+              },
+              {
+                "name": "Landry (Peisey-Vallandry)",
+                "lng": 6.733849,
+                "lat": 45.574213
+              },
+              {
+                "name": "Bourg-Saint-Maurice (Les Arcs / Tignes / Val d'Isère)",
+                "lng": 6.771273,
+                "lat": 45.619036
+              }
+            ],
+            "coordinates": [
+              [
+                2.373481,
+                48.844945
+              ],
+              [
+                2.45,
+                48.72
+              ],
+              [
+                2.75,
+                48.35
+              ],
+              [
+                3.2,
+                47.95
+              ],
+              [
+                4.05,
+                47.3
+              ],
+              [
+                4.7836,
+                46.2842
+              ],
+              [
+                4.83,
+                45.85
+              ],
+              [
+                5.075834,
+                45.721014
+              ],
+              [
+                5.25,
+                45.62
+              ],
+              [
+                5.55,
+                45.54
+              ],
+              [
+                5.75,
+                45.535
+              ],
+              [
+                5.919547,
+                45.571302
+              ],
+              [
+                6.02,
+                45.51
+              ],
+              [
+                6.15,
+                45.57
+              ],
+              [
+                6.383167,
+                45.672977
+              ],
+              [
+                6.45,
+                45.56
+              ],
+              [
+                6.531399,
+                45.48647
+              ],
+              [
+                6.648614,
+                45.554387
+              ],
+              [
+                6.733849,
+                45.574213
+              ],
+              [
+                6.771273,
+                45.619036
+              ]
+            ]
+          },
+          {
+            "id": "retour",
+            "name": "Vers Paris Gare de Lyon",
+            "origin": "Bourg-Saint-Maurice (Les Arcs / Tignes / Val d'Isère)",
+            "destination": "Paris Gare de Lyon",
+            "stops": [
+              "Bourg-Saint-Maurice (Les Arcs / Tignes / Val d'Isère)",
+              "Landry (Peisey-Vallandry)",
+              "Aime - La Plagne",
+              "Moûtiers - Salins - Brides-les-Bains (3 Vallées)",
+              "Albertville",
+              "Chambéry - Challes-les-Eaux",
+              "Lyon Saint-Exupéry TGV",
+              "Paris Gare de Lyon"
+            ],
+            "stopPoints": [
+              {
+                "name": "Bourg-Saint-Maurice (Les Arcs / Tignes / Val d'Isère)",
+                "lng": 6.771273,
+                "lat": 45.619036
+              },
+              {
+                "name": "Landry (Peisey-Vallandry)",
+                "lng": 6.733849,
+                "lat": 45.574213
+              },
+              {
+                "name": "Aime - La Plagne",
+                "lng": 6.648614,
+                "lat": 45.554387
+              },
+              {
+                "name": "Moûtiers - Salins - Brides-les-Bains (3 Vallées)",
+                "lng": 6.531399,
+                "lat": 45.48647
+              },
+              {
+                "name": "Albertville",
+                "lng": 6.383167,
+                "lat": 45.672977
+              },
+              {
+                "name": "Chambéry - Challes-les-Eaux",
+                "lng": 5.919547,
+                "lat": 45.571302
+              },
+              {
+                "name": "Lyon Saint-Exupéry TGV",
+                "lng": 5.075834,
+                "lat": 45.721014
+              },
+              {
+                "name": "Paris Gare de Lyon",
+                "lng": 2.373481,
+                "lat": 48.844945
+              }
+            ],
+            "coordinates": [
+              [
+                6.771273,
+                45.619036
+              ],
+              [
+                6.733849,
+                45.574213
+              ],
+              [
+                6.648614,
+                45.554387
+              ],
+              [
+                6.531399,
+                45.48647
+              ],
+              [
+                6.45,
+                45.56
+              ],
+              [
+                6.383167,
+                45.672977
+              ],
+              [
+                6.15,
+                45.57
+              ],
+              [
+                6.02,
+                45.51
+              ],
+              [
+                5.919547,
+                45.571302
+              ],
+              [
+                5.75,
+                45.535
+              ],
+              [
+                5.55,
+                45.54
+              ],
+              [
+                5.25,
+                45.62
+              ],
+              [
+                5.075834,
+                45.721014
+              ],
+              [
+                4.83,
+                45.85
+              ],
+              [
+                4.7836,
+                46.2842
+              ],
+              [
+                4.05,
+                47.3
+              ],
+              [
+                3.2,
+                47.95
+              ],
+              [
+                2.75,
+                48.35
+              ],
+              [
+                2.45,
+                48.72
+              ],
+              [
+                2.373481,
+                48.844945
+              ]
+            ]
+          }
+        ],
+        "isTGV": true,
+        "url": "https://www.sncf-connect.com"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "tgv-inoui-paris-grenoble",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            2.373481,
+            48.844945
+          ],
+          [
+            2.45,
+            48.72
+          ],
+          [
+            2.75,
+            48.35
+          ],
+          [
+            3.2,
+            47.95
+          ],
+          [
+            4.05,
+            47.3
+          ],
+          [
+            4.7836,
+            46.2842
+          ],
+          [
+            4.83,
+            45.85
+          ],
+          [
+            5.075834,
+            45.721014
+          ],
+          [
+            5.075834,
+            45.721014
+          ],
+          [
+            5.275,
+            45.589
+          ],
+          [
+            5.45,
+            45.48
+          ],
+          [
+            5.589,
+            45.367
+          ],
+          [
+            5.67,
+            45.24
+          ],
+          [
+            5.714548,
+            45.191491
+          ]
+        ]
+      },
+      "properties": {
+        "id": "tgv-inoui-paris-grenoble",
+        "ref": "TGV INOUI",
+        "name": "TGV INOUI : Paris Gare de Lyon ↔ Lyon Saint-Exupéry ↔ Grenoble",
+        "mode": "train",
+        "operator": "SNCF Voyageurs",
+        "network": "TGV INOUI - Alpes & Isère",
+        "route": "Paris Gare de Lyon ↔ Lyon Saint-Exupéry TGV ↔ Bourgoin-Jallieu ↔ Voiron ↔ Grenoble",
+        "frequency": "Jusqu'à 10 allers-retours directs par jour (Trajet en 3h00)",
+        "period": "Toute l'année (Accès direct Belledonne, Oisans, Vercors, Chartreuse)",
+        "color": "#7c3aed",
+        "offset": 0,
+        "stops": [
+          "Paris Gare de Lyon",
+          "Lyon Saint-Exupéry TGV",
+          "Bourgoin-Jallieu",
+          "Voiron",
+          "Grenoble Gare Centrale"
+        ],
+        "stopPoints": [
+          {
+            "name": "Paris Gare de Lyon",
+            "lng": 2.373481,
+            "lat": 48.844945
+          },
+          {
+            "name": "Lyon Saint-Exupéry TGV",
+            "lng": 5.075834,
+            "lat": 45.721014
+          },
+          {
+            "name": "Bourgoin-Jallieu",
+            "lng": 5.275,
+            "lat": 45.589
+          },
+          {
+            "name": "Voiron",
+            "lng": 5.589,
+            "lat": 45.367
+          },
+          {
+            "name": "Grenoble Gare Centrale",
+            "lng": 5.714548,
+            "lat": 45.191491
+          }
+        ],
+        "directions": [
+          {
+            "id": "aller",
+            "name": "Vers Grenoble Gare Centrale",
+            "origin": "Paris Gare de Lyon",
+            "destination": "Grenoble Gare Centrale",
+            "stops": [
+              "Paris Gare de Lyon",
+              "Lyon Saint-Exupéry TGV",
+              "Bourgoin-Jallieu",
+              "Voiron",
+              "Grenoble Gare Centrale"
+            ],
+            "stopPoints": [
+              {
+                "name": "Paris Gare de Lyon",
+                "lng": 2.373481,
+                "lat": 48.844945
+              },
+              {
+                "name": "Lyon Saint-Exupéry TGV",
+                "lng": 5.075834,
+                "lat": 45.721014
+              },
+              {
+                "name": "Bourgoin-Jallieu",
+                "lng": 5.275,
+                "lat": 45.589
+              },
+              {
+                "name": "Voiron",
+                "lng": 5.589,
+                "lat": 45.367
+              },
+              {
+                "name": "Grenoble Gare Centrale",
+                "lng": 5.714548,
+                "lat": 45.191491
+              }
+            ],
+            "coordinates": [
+              [
+                2.373481,
+                48.844945
+              ],
+              [
+                2.45,
+                48.72
+              ],
+              [
+                2.75,
+                48.35
+              ],
+              [
+                3.2,
+                47.95
+              ],
+              [
+                4.05,
+                47.3
+              ],
+              [
+                4.7836,
+                46.2842
+              ],
+              [
+                4.83,
+                45.85
+              ],
+              [
+                5.075834,
+                45.721014
+              ],
+              [
+                5.075834,
+                45.721014
+              ],
+              [
+                5.275,
+                45.589
+              ],
+              [
+                5.45,
+                45.48
+              ],
+              [
+                5.589,
+                45.367
+              ],
+              [
+                5.67,
+                45.24
+              ],
+              [
+                5.714548,
+                45.191491
+              ]
+            ]
+          },
+          {
+            "id": "retour",
+            "name": "Vers Paris Gare de Lyon",
+            "origin": "Grenoble Gare Centrale",
+            "destination": "Paris Gare de Lyon",
+            "stops": [
+              "Grenoble Gare Centrale",
+              "Voiron",
+              "Bourgoin-Jallieu",
+              "Lyon Saint-Exupéry TGV",
+              "Paris Gare de Lyon"
+            ],
+            "stopPoints": [
+              {
+                "name": "Grenoble Gare Centrale",
+                "lng": 5.714548,
+                "lat": 45.191491
+              },
+              {
+                "name": "Voiron",
+                "lng": 5.589,
+                "lat": 45.367
+              },
+              {
+                "name": "Bourgoin-Jallieu",
+                "lng": 5.275,
+                "lat": 45.589
+              },
+              {
+                "name": "Lyon Saint-Exupéry TGV",
+                "lng": 5.075834,
+                "lat": 45.721014
+              },
+              {
+                "name": "Paris Gare de Lyon",
+                "lng": 2.373481,
+                "lat": 48.844945
+              }
+            ],
+            "coordinates": [
+              [
+                5.714548,
+                45.191491
+              ],
+              [
+                5.67,
+                45.24
+              ],
+              [
+                5.589,
+                45.367
+              ],
+              [
+                5.45,
+                45.48
+              ],
+              [
+                5.275,
+                45.589
+              ],
+              [
+                5.075834,
+                45.721014
+              ],
+              [
+                5.075834,
+                45.721014
+              ],
+              [
+                4.83,
+                45.85
+              ],
+              [
+                4.7836,
+                46.2842
+              ],
+              [
+                4.05,
+                47.3
+              ],
+              [
+                3.2,
+                47.95
+              ],
+              [
+                2.75,
+                48.35
+              ],
+              [
+                2.45,
+                48.72
+              ],
+              [
+                2.373481,
+                48.844945
+              ]
+            ]
+          }
+        ],
+        "isTGV": true,
+        "url": "https://www.sncf-connect.com"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "tgv-inoui-paris-annecy",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            2.373481,
+            48.844945
+          ],
+          [
+            2.45,
+            48.72
+          ],
+          [
+            2.75,
+            48.35
+          ],
+          [
+            3.2,
+            47.95
+          ],
+          [
+            4.05,
+            47.3
+          ],
+          [
+            4.7836,
+            46.2842
+          ],
+          [
+            4.7836,
+            46.2842
+          ],
+          [
+            5.2147,
+            46.2005
+          ],
+          [
+            5.55,
+            45.95
+          ],
+          [
+            5.7878,
+            45.8456
+          ],
+          [
+            5.909371,
+            45.688161
+          ],
+          [
+            6.05,
+            45.78
+          ],
+          [
+            6.1216,
+            45.9004
+          ]
+        ]
+      },
+      "properties": {
+        "id": "tgv-inoui-paris-annecy",
+        "ref": "TGV INOUI",
+        "name": "TGV INOUI : Paris Gare de Lyon ↔ Mâcon ↔ Aix-les-Bains ↔ Annecy",
+        "mode": "train",
+        "operator": "SNCF Voyageurs",
+        "network": "TGV INOUI - Lac d'Annecy & Aravis",
+        "route": "Paris Gare de Lyon ↔ Mâcon-Loché TGV ↔ Bourg-en-Bresse ↔ Culoz ↔ Aix-les-Bains ↔ Annecy",
+        "frequency": "Nombreuses liaisons directes quotidiennes (Trajet en 3h40)",
+        "period": "Toute l'année (Accès direct Lac d'Annecy, La Clusaz, Le Grand-Bornand)",
+        "color": "#0284c7",
+        "offset": 0,
+        "stops": [
+          "Paris Gare de Lyon",
+          "Mâcon-Loché TGV",
+          "Bourg-en-Bresse",
+          "Culoz",
+          "Aix-les-Bains - Le Revard",
+          "Annecy"
+        ],
+        "stopPoints": [
+          {
+            "name": "Paris Gare de Lyon",
+            "lng": 2.373481,
+            "lat": 48.844945
+          },
+          {
+            "name": "Mâcon-Loché TGV",
+            "lng": 4.7836,
+            "lat": 46.2842
+          },
+          {
+            "name": "Bourg-en-Bresse",
+            "lng": 5.2147,
+            "lat": 46.2005
+          },
+          {
+            "name": "Culoz",
+            "lng": 5.7878,
+            "lat": 45.8456
+          },
+          {
+            "name": "Aix-les-Bains - Le Revard",
+            "lng": 5.909371,
+            "lat": 45.688161
+          },
+          {
+            "name": "Annecy",
+            "lng": 6.1216,
+            "lat": 45.9004
+          }
+        ],
+        "directions": [
+          {
+            "id": "aller",
+            "name": "Vers Annecy",
+            "origin": "Paris Gare de Lyon",
+            "destination": "Annecy",
+            "stops": [
+              "Paris Gare de Lyon",
+              "Mâcon-Loché TGV",
+              "Bourg-en-Bresse",
+              "Culoz",
+              "Aix-les-Bains - Le Revard",
+              "Annecy"
+            ],
+            "stopPoints": [
+              {
+                "name": "Paris Gare de Lyon",
+                "lng": 2.373481,
+                "lat": 48.844945
+              },
+              {
+                "name": "Mâcon-Loché TGV",
+                "lng": 4.7836,
+                "lat": 46.2842
+              },
+              {
+                "name": "Bourg-en-Bresse",
+                "lng": 5.2147,
+                "lat": 46.2005
+              },
+              {
+                "name": "Culoz",
+                "lng": 5.7878,
+                "lat": 45.8456
+              },
+              {
+                "name": "Aix-les-Bains - Le Revard",
+                "lng": 5.909371,
+                "lat": 45.688161
+              },
+              {
+                "name": "Annecy",
+                "lng": 6.1216,
+                "lat": 45.9004
+              }
+            ],
+            "coordinates": [
+              [
+                2.373481,
+                48.844945
+              ],
+              [
+                2.45,
+                48.72
+              ],
+              [
+                2.75,
+                48.35
+              ],
+              [
+                3.2,
+                47.95
+              ],
+              [
+                4.05,
+                47.3
+              ],
+              [
+                4.7836,
+                46.2842
+              ],
+              [
+                4.7836,
+                46.2842
+              ],
+              [
+                5.2147,
+                46.2005
+              ],
+              [
+                5.55,
+                45.95
+              ],
+              [
+                5.7878,
+                45.8456
+              ],
+              [
+                5.909371,
+                45.688161
+              ],
+              [
+                6.05,
+                45.78
+              ],
+              [
+                6.1216,
+                45.9004
+              ]
+            ]
+          },
+          {
+            "id": "retour",
+            "name": "Vers Paris Gare de Lyon",
+            "origin": "Annecy",
+            "destination": "Paris Gare de Lyon",
+            "stops": [
+              "Annecy",
+              "Aix-les-Bains - Le Revard",
+              "Culoz",
+              "Bourg-en-Bresse",
+              "Mâcon-Loché TGV",
+              "Paris Gare de Lyon"
+            ],
+            "stopPoints": [
+              {
+                "name": "Annecy",
+                "lng": 6.1216,
+                "lat": 45.9004
+              },
+              {
+                "name": "Aix-les-Bains - Le Revard",
+                "lng": 5.909371,
+                "lat": 45.688161
+              },
+              {
+                "name": "Culoz",
+                "lng": 5.7878,
+                "lat": 45.8456
+              },
+              {
+                "name": "Bourg-en-Bresse",
+                "lng": 5.2147,
+                "lat": 46.2005
+              },
+              {
+                "name": "Mâcon-Loché TGV",
+                "lng": 4.7836,
+                "lat": 46.2842
+              },
+              {
+                "name": "Paris Gare de Lyon",
+                "lng": 2.373481,
+                "lat": 48.844945
+              }
+            ],
+            "coordinates": [
+              [
+                6.1216,
+                45.9004
+              ],
+              [
+                6.05,
+                45.78
+              ],
+              [
+                5.909371,
+                45.688161
+              ],
+              [
+                5.7878,
+                45.8456
+              ],
+              [
+                5.55,
+                45.95
+              ],
+              [
+                5.2147,
+                46.2005
+              ],
+              [
+                4.7836,
+                46.2842
+              ],
+              [
+                4.7836,
+                46.2842
+              ],
+              [
+                4.05,
+                47.3
+              ],
+              [
+                3.2,
+                47.95
+              ],
+              [
+                2.75,
+                48.35
+              ],
+              [
+                2.45,
+                48.72
+              ],
+              [
+                2.373481,
+                48.844945
+              ]
+            ]
+          }
+        ],
+        "isTGV": true,
+        "url": "https://www.sncf-connect.com"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "tgv-inoui-paris-mont-blanc",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            2.373481,
+            48.844945
+          ],
+          [
+            3.5,
+            47.7
+          ],
+          [
+            4.7836,
+            46.2842
+          ],
+          [
+            5.35,
+            46.2
+          ],
+          [
+            5.8272,
+            46.1085
+          ],
+          [
+            6.2415,
+            46.1934
+          ],
+          [
+            6.4,
+            46.11
+          ],
+          [
+            6.5772,
+            46.0617
+          ],
+          [
+            6.6334,
+            45.9379
+          ],
+          [
+            6.7027,
+            45.9061
+          ]
+        ]
+      },
+      "properties": {
+        "id": "tgv-inoui-paris-mont-blanc",
+        "ref": "TGV INOUI",
+        "name": "TGV INOUI Mont-Blanc : Paris ↔ Bellegarde ↔ Cluses ↔ Saint-Gervais-les-Bains-Le Fayet",
+        "mode": "train",
+        "operator": "SNCF Voyageurs",
+        "network": "TGV INOUI - Pays du Mont-Blanc & Chamonix",
+        "route": "Paris Gare de Lyon ↔ Bellegarde ↔ Annemasse ↔ Cluses ↔ Sallanches ↔ Saint-Gervais-les-Bains-Le Fayet",
+        "frequency": "Liaisons directes week-ends & renforts vacances (Accès Chamonix, Megève, Grand Massif)",
+        "period": "Toute l'année (Correspondance Mont-Blanc Express vers Chamonix)",
+        "color": "#0d9488",
+        "offset": 0,
+        "stops": [
+          "Paris Gare de Lyon",
+          "Bellegarde-sur-Valserine",
+          "Annemasse",
+          "Cluses",
+          "Sallanches - Combloux - Megève",
+          "Saint-Gervais-les-Bains-Le Fayet (Mont-Blanc)"
+        ],
+        "stopPoints": [
+          {
+            "name": "Paris Gare de Lyon",
+            "lng": 2.373481,
+            "lat": 48.844945
+          },
+          {
+            "name": "Bellegarde-sur-Valserine",
+            "lng": 5.8272,
+            "lat": 46.1085
+          },
+          {
+            "name": "Annemasse",
+            "lng": 6.2415,
+            "lat": 46.1934
+          },
+          {
+            "name": "Cluses",
+            "lng": 6.5772,
+            "lat": 46.0617
+          },
+          {
+            "name": "Sallanches - Combloux - Megève",
+            "lng": 6.6334,
+            "lat": 45.9379
+          },
+          {
+            "name": "Saint-Gervais-les-Bains-Le Fayet (Mont-Blanc)",
+            "lng": 6.7027,
+            "lat": 45.9061
+          }
+        ],
+        "directions": [
+          {
+            "id": "aller",
+            "name": "Vers Saint-Gervais-les-Bains-Le Fayet (Mont-Blanc)",
+            "origin": "Paris Gare de Lyon",
+            "destination": "Saint-Gervais-les-Bains-Le Fayet (Mont-Blanc)",
+            "stops": [
+              "Paris Gare de Lyon",
+              "Bellegarde-sur-Valserine",
+              "Annemasse",
+              "Cluses",
+              "Sallanches - Combloux - Megève",
+              "Saint-Gervais-les-Bains-Le Fayet (Mont-Blanc)"
+            ],
+            "stopPoints": [
+              {
+                "name": "Paris Gare de Lyon",
+                "lng": 2.373481,
+                "lat": 48.844945
+              },
+              {
+                "name": "Bellegarde-sur-Valserine",
+                "lng": 5.8272,
+                "lat": 46.1085
+              },
+              {
+                "name": "Annemasse",
+                "lng": 6.2415,
+                "lat": 46.1934
+              },
+              {
+                "name": "Cluses",
+                "lng": 6.5772,
+                "lat": 46.0617
+              },
+              {
+                "name": "Sallanches - Combloux - Megève",
+                "lng": 6.6334,
+                "lat": 45.9379
+              },
+              {
+                "name": "Saint-Gervais-les-Bains-Le Fayet (Mont-Blanc)",
+                "lng": 6.7027,
+                "lat": 45.9061
+              }
+            ],
+            "coordinates": [
+              [
+                2.373481,
+                48.844945
+              ],
+              [
+                3.5,
+                47.7
+              ],
+              [
+                4.7836,
+                46.2842
+              ],
+              [
+                5.35,
+                46.2
+              ],
+              [
+                5.8272,
+                46.1085
+              ],
+              [
+                6.2415,
+                46.1934
+              ],
+              [
+                6.4,
+                46.11
+              ],
+              [
+                6.5772,
+                46.0617
+              ],
+              [
+                6.6334,
+                45.9379
+              ],
+              [
+                6.7027,
+                45.9061
+              ]
+            ]
+          },
+          {
+            "id": "retour",
+            "name": "Vers Paris Gare de Lyon",
+            "origin": "Saint-Gervais-les-Bains-Le Fayet (Mont-Blanc)",
+            "destination": "Paris Gare de Lyon",
+            "stops": [
+              "Saint-Gervais-les-Bains-Le Fayet (Mont-Blanc)",
+              "Sallanches - Combloux - Megève",
+              "Cluses",
+              "Annemasse",
+              "Bellegarde-sur-Valserine",
+              "Paris Gare de Lyon"
+            ],
+            "stopPoints": [
+              {
+                "name": "Saint-Gervais-les-Bains-Le Fayet (Mont-Blanc)",
+                "lng": 6.7027,
+                "lat": 45.9061
+              },
+              {
+                "name": "Sallanches - Combloux - Megève",
+                "lng": 6.6334,
+                "lat": 45.9379
+              },
+              {
+                "name": "Cluses",
+                "lng": 6.5772,
+                "lat": 46.0617
+              },
+              {
+                "name": "Annemasse",
+                "lng": 6.2415,
+                "lat": 46.1934
+              },
+              {
+                "name": "Bellegarde-sur-Valserine",
+                "lng": 5.8272,
+                "lat": 46.1085
+              },
+              {
+                "name": "Paris Gare de Lyon",
+                "lng": 2.373481,
+                "lat": 48.844945
+              }
+            ],
+            "coordinates": [
+              [
+                6.7027,
+                45.9061
+              ],
+              [
+                6.6334,
+                45.9379
+              ],
+              [
+                6.5772,
+                46.0617
+              ],
+              [
+                6.4,
+                46.11
+              ],
+              [
+                6.2415,
+                46.1934
+              ],
+              [
+                5.8272,
+                46.1085
+              ],
+              [
+                5.35,
+                46.2
+              ],
+              [
+                4.7836,
+                46.2842
+              ],
+              [
+                3.5,
+                47.7
+              ],
+              [
+                2.373481,
+                48.844945
+              ]
+            ]
+          }
+        ],
+        "isTGV": true,
+        "url": "https://www.sncf-connect.com"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "tgv-inoui-paris-maurienne",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            2.373481,
+            48.844945
+          ],
+          [
+            2.45,
+            48.72
+          ],
+          [
+            2.75,
+            48.35
+          ],
+          [
+            3.2,
+            47.95
+          ],
+          [
+            4.05,
+            47.3
+          ],
+          [
+            4.7836,
+            46.2842
+          ],
+          [
+            4.83,
+            45.85
+          ],
+          [
+            5.075834,
+            45.721014
+          ],
+          [
+            5.25,
+            45.62
+          ],
+          [
+            5.55,
+            45.54
+          ],
+          [
+            5.75,
+            45.535
+          ],
+          [
+            5.919547,
+            45.571302
+          ],
+          [
+            6.02,
+            45.51
+          ],
+          [
+            6.2,
+            45.45
+          ],
+          [
+            6.354716,
+            45.277542
+          ],
+          [
+            6.471914,
+            45.216916
+          ],
+          [
+            6.659139,
+            45.193555
+          ]
+        ]
+      },
+      "properties": {
+        "id": "tgv-inoui-paris-maurienne",
+        "ref": "TGV INOUI",
+        "name": "TGV INOUI Maurienne : Paris Gare de Lyon ↔ Chambéry ↔ Saint-Jean-de-Maurienne ↔ Modane",
+        "mode": "train",
+        "operator": "SNCF Voyageurs",
+        "network": "TGV INOUI - Maurienne & Vanoise",
+        "route": "Paris Gare de Lyon ↔ Lyon Saint-Exupéry ↔ Chambéry ↔ Saint-Jean-de-Maurienne ↔ Saint-Michel-Valloire ↔ Modane",
+        "frequency": "Allers-retours quotidiens à grande vitesse",
+        "period": "Toute l'année (Accès Vanoise, Val Cenis, La Norma, Valfréjus, Valloire)",
+        "color": "#c026d3",
+        "offset": 0,
+        "stops": [
+          "Paris Gare de Lyon",
+          "Lyon Saint-Exupéry TGV",
+          "Chambéry - Challes-les-Eaux",
+          "Saint-Jean-de-Maurienne - Arvan",
+          "Saint-Michel - Valloire",
+          "Modane (Haute-Maurienne)"
+        ],
+        "stopPoints": [
+          {
+            "name": "Paris Gare de Lyon",
+            "lng": 2.373481,
+            "lat": 48.844945
+          },
+          {
+            "name": "Lyon Saint-Exupéry TGV",
+            "lng": 5.075834,
+            "lat": 45.721014
+          },
+          {
+            "name": "Chambéry - Challes-les-Eaux",
+            "lng": 5.919547,
+            "lat": 45.571302
+          },
+          {
+            "name": "Saint-Jean-de-Maurienne - Arvan",
+            "lng": 6.354716,
+            "lat": 45.277542
+          },
+          {
+            "name": "Saint-Michel - Valloire",
+            "lng": 6.471914,
+            "lat": 45.216916
+          },
+          {
+            "name": "Modane (Haute-Maurienne)",
+            "lng": 6.659139,
+            "lat": 45.193555
+          }
+        ],
+        "directions": [
+          {
+            "id": "aller",
+            "name": "Vers Modane (Haute-Maurienne)",
+            "origin": "Paris Gare de Lyon",
+            "destination": "Modane (Haute-Maurienne)",
+            "stops": [
+              "Paris Gare de Lyon",
+              "Lyon Saint-Exupéry TGV",
+              "Chambéry - Challes-les-Eaux",
+              "Saint-Jean-de-Maurienne - Arvan",
+              "Saint-Michel - Valloire",
+              "Modane (Haute-Maurienne)"
+            ],
+            "stopPoints": [
+              {
+                "name": "Paris Gare de Lyon",
+                "lng": 2.373481,
+                "lat": 48.844945
+              },
+              {
+                "name": "Lyon Saint-Exupéry TGV",
+                "lng": 5.075834,
+                "lat": 45.721014
+              },
+              {
+                "name": "Chambéry - Challes-les-Eaux",
+                "lng": 5.919547,
+                "lat": 45.571302
+              },
+              {
+                "name": "Saint-Jean-de-Maurienne - Arvan",
+                "lng": 6.354716,
+                "lat": 45.277542
+              },
+              {
+                "name": "Saint-Michel - Valloire",
+                "lng": 6.471914,
+                "lat": 45.216916
+              },
+              {
+                "name": "Modane (Haute-Maurienne)",
+                "lng": 6.659139,
+                "lat": 45.193555
+              }
+            ],
+            "coordinates": [
+              [
+                2.373481,
+                48.844945
+              ],
+              [
+                2.45,
+                48.72
+              ],
+              [
+                2.75,
+                48.35
+              ],
+              [
+                3.2,
+                47.95
+              ],
+              [
+                4.05,
+                47.3
+              ],
+              [
+                4.7836,
+                46.2842
+              ],
+              [
+                4.83,
+                45.85
+              ],
+              [
+                5.075834,
+                45.721014
+              ],
+              [
+                5.25,
+                45.62
+              ],
+              [
+                5.55,
+                45.54
+              ],
+              [
+                5.75,
+                45.535
+              ],
+              [
+                5.919547,
+                45.571302
+              ],
+              [
+                6.02,
+                45.51
+              ],
+              [
+                6.2,
+                45.45
+              ],
+              [
+                6.354716,
+                45.277542
+              ],
+              [
+                6.471914,
+                45.216916
+              ],
+              [
+                6.659139,
+                45.193555
+              ]
+            ]
+          },
+          {
+            "id": "retour",
+            "name": "Vers Paris Gare de Lyon",
+            "origin": "Modane (Haute-Maurienne)",
+            "destination": "Paris Gare de Lyon",
+            "stops": [
+              "Modane (Haute-Maurienne)",
+              "Saint-Michel - Valloire",
+              "Saint-Jean-de-Maurienne - Arvan",
+              "Chambéry - Challes-les-Eaux",
+              "Lyon Saint-Exupéry TGV",
+              "Paris Gare de Lyon"
+            ],
+            "stopPoints": [
+              {
+                "name": "Modane (Haute-Maurienne)",
+                "lng": 6.659139,
+                "lat": 45.193555
+              },
+              {
+                "name": "Saint-Michel - Valloire",
+                "lng": 6.471914,
+                "lat": 45.216916
+              },
+              {
+                "name": "Saint-Jean-de-Maurienne - Arvan",
+                "lng": 6.354716,
+                "lat": 45.277542
+              },
+              {
+                "name": "Chambéry - Challes-les-Eaux",
+                "lng": 5.919547,
+                "lat": 45.571302
+              },
+              {
+                "name": "Lyon Saint-Exupéry TGV",
+                "lng": 5.075834,
+                "lat": 45.721014
+              },
+              {
+                "name": "Paris Gare de Lyon",
+                "lng": 2.373481,
+                "lat": 48.844945
+              }
+            ],
+            "coordinates": [
+              [
+                6.659139,
+                45.193555
+              ],
+              [
+                6.471914,
+                45.216916
+              ],
+              [
+                6.354716,
+                45.277542
+              ],
+              [
+                6.2,
+                45.45
+              ],
+              [
+                6.02,
+                45.51
+              ],
+              [
+                5.919547,
+                45.571302
+              ],
+              [
+                5.75,
+                45.535
+              ],
+              [
+                5.55,
+                45.54
+              ],
+              [
+                5.25,
+                45.62
+              ],
+              [
+                5.075834,
+                45.721014
+              ],
+              [
+                4.83,
+                45.85
+              ],
+              [
+                4.7836,
+                46.2842
+              ],
+              [
+                4.05,
+                47.3
+              ],
+              [
+                3.2,
+                47.95
+              ],
+              [
+                2.75,
+                48.35
+              ],
+              [
+                2.45,
+                48.72
+              ],
+              [
+                2.373481,
+                48.844945
+              ]
+            ]
+          }
+        ],
+        "isTGV": true,
+        "url": "https://www.sncf-connect.com"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "tgv-inoui-mediterranee-grenoble",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.380843,
+            43.303283
+          ],
+          [
+            5.445177,
+            43.522763
+          ],
+          [
+            4.80556,
+            43.941707
+          ],
+          [
+            4.88,
+            44.5
+          ],
+          [
+            4.9785,
+            44.9897
+          ],
+          [
+            5.35,
+            45.15
+          ],
+          [
+            5.714548,
+            45.191491
+          ]
+        ]
+      },
+      "properties": {
+        "id": "tgv-inoui-mediterranee-grenoble",
+        "ref": "TGV INOUI",
+        "name": "TGV INOUI Méditerranée : Marseille ↔ Aix TGV ↔ Avignon TGV ↔ Valence TGV ↔ Grenoble",
+        "mode": "train",
+        "operator": "SNCF Voyageurs",
+        "network": "TGV INOUI - Ligne Méditerranée & Sillon Alpin",
+        "route": "Marseille-Saint-Charles ↔ Aix-en-Provence TGV ↔ Avignon TGV ↔ Valence TGV ↔ Grenoble",
+        "frequency": "Liaisons quotidiennes reliant le littoral méditerranéen aux Alpes",
+        "period": "Toute l'année",
+        "color": "#ea580c",
+        "offset": 0,
+        "stops": [
+          "Marseille-Saint-Charles",
+          "Aix-en-Provence TGV",
+          "Avignon TGV",
+          "Valence TGV",
+          "Grenoble Gare Centrale"
+        ],
+        "stopPoints": [
+          {
+            "name": "Marseille-Saint-Charles",
+            "lng": 5.380843,
+            "lat": 43.303283
+          },
+          {
+            "name": "Aix-en-Provence TGV",
+            "lng": 5.445177,
+            "lat": 43.522763
+          },
+          {
+            "name": "Avignon TGV",
+            "lng": 4.80556,
+            "lat": 43.941707
+          },
+          {
+            "name": "Valence TGV",
+            "lng": 4.9785,
+            "lat": 44.9897
+          },
+          {
+            "name": "Grenoble Gare Centrale",
+            "lng": 5.714548,
+            "lat": 45.191491
+          }
+        ],
+        "directions": [
+          {
+            "id": "aller",
+            "name": "Vers Grenoble Gare Centrale",
+            "origin": "Marseille-Saint-Charles",
+            "destination": "Grenoble Gare Centrale",
+            "stops": [
+              "Marseille-Saint-Charles",
+              "Aix-en-Provence TGV",
+              "Avignon TGV",
+              "Valence TGV",
+              "Grenoble Gare Centrale"
+            ],
+            "stopPoints": [
+              {
+                "name": "Marseille-Saint-Charles",
+                "lng": 5.380843,
+                "lat": 43.303283
+              },
+              {
+                "name": "Aix-en-Provence TGV",
+                "lng": 5.445177,
+                "lat": 43.522763
+              },
+              {
+                "name": "Avignon TGV",
+                "lng": 4.80556,
+                "lat": 43.941707
+              },
+              {
+                "name": "Valence TGV",
+                "lng": 4.9785,
+                "lat": 44.9897
+              },
+              {
+                "name": "Grenoble Gare Centrale",
+                "lng": 5.714548,
+                "lat": 45.191491
+              }
+            ],
+            "coordinates": [
+              [
+                5.380843,
+                43.303283
+              ],
+              [
+                5.445177,
+                43.522763
+              ],
+              [
+                4.80556,
+                43.941707
+              ],
+              [
+                4.88,
+                44.5
+              ],
+              [
+                4.9785,
+                44.9897
+              ],
+              [
+                5.35,
+                45.15
+              ],
+              [
+                5.714548,
+                45.191491
+              ]
+            ]
+          },
+          {
+            "id": "retour",
+            "name": "Vers Marseille-Saint-Charles",
+            "origin": "Grenoble Gare Centrale",
+            "destination": "Marseille-Saint-Charles",
+            "stops": [
+              "Grenoble Gare Centrale",
+              "Valence TGV",
+              "Avignon TGV",
+              "Aix-en-Provence TGV",
+              "Marseille-Saint-Charles"
+            ],
+            "stopPoints": [
+              {
+                "name": "Grenoble Gare Centrale",
+                "lng": 5.714548,
+                "lat": 45.191491
+              },
+              {
+                "name": "Valence TGV",
+                "lng": 4.9785,
+                "lat": 44.9897
+              },
+              {
+                "name": "Avignon TGV",
+                "lng": 4.80556,
+                "lat": 43.941707
+              },
+              {
+                "name": "Aix-en-Provence TGV",
+                "lng": 5.445177,
+                "lat": 43.522763
+              },
+              {
+                "name": "Marseille-Saint-Charles",
+                "lng": 5.380843,
+                "lat": 43.303283
+              }
+            ],
+            "coordinates": [
+              [
+                5.714548,
+                45.191491
+              ],
+              [
+                5.35,
+                45.15
+              ],
+              [
+                4.9785,
+                44.9897
+              ],
+              [
+                4.88,
+                44.5
+              ],
+              [
+                4.80556,
+                43.941707
+              ],
+              [
+                5.445177,
+                43.522763
+              ],
+              [
+                5.380843,
+                43.303283
+              ]
+            ]
+          }
+        ],
+        "isTGV": true,
+        "url": "https://www.sncf-connect.com"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "tgv-inoui-lille-alpes",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            3.0757,
+            50.6389
+          ],
+          [
+            2.5708,
+            49.0042
+          ],
+          [
+            2.7826,
+            48.8703
+          ],
+          [
+            3.2,
+            47.95
+          ],
+          [
+            4.05,
+            47.3
+          ],
+          [
+            5.075834,
+            45.721014
+          ],
+          [
+            5.25,
+            45.62
+          ],
+          [
+            5.55,
+            45.54
+          ],
+          [
+            5.75,
+            45.535
+          ],
+          [
+            5.919547,
+            45.571302
+          ],
+          [
+            6.02,
+            45.51
+          ],
+          [
+            6.15,
+            45.57
+          ],
+          [
+            6.383167,
+            45.672977
+          ],
+          [
+            6.45,
+            45.56
+          ],
+          [
+            6.531399,
+            45.48647
+          ],
+          [
+            6.648614,
+            45.554387
+          ],
+          [
+            6.733849,
+            45.574213
+          ],
+          [
+            6.771273,
+            45.619036
+          ]
+        ]
+      },
+      "properties": {
+        "id": "tgv-inoui-lille-alpes",
+        "ref": "TGV INOUI",
+        "name": "TGV INOUI Intersecteurs : Lille ↔ Roissy CDG ↔ Lyon ↔ Chambéry ↔ Bourg-Saint-Maurice",
+        "mode": "train",
+        "operator": "SNCF Voyageurs",
+        "network": "TGV INOUI - Nord & Île-de-France vers les Alpes",
+        "route": "Lille-Europe ↔ Aéroport CDG 2 TGV ↔ Marne-la-Vallée Chessy ↔ Lyon Saint-Exupéry ↔ Chambéry ↔ Albertville ↔ Moûtiers ↔ Bourg-Saint-Maurice",
+        "frequency": "Liaisons directes contournant Paris (très prisées en hiver)",
+        "period": "Toute l'année (Renfort hivernal stations de ski)",
+        "color": "#059669",
+        "offset": 0,
+        "stops": [
+          "Lille-Europe",
+          "Aéroport CDG 2 TGV",
+          "Marne-la-Vallée Chessy TGV",
+          "Lyon Saint-Exupéry TGV",
+          "Chambéry - Challes-les-Eaux",
+          "Albertville",
+          "Moûtiers - Salins - Brides-les-Bains (3 Vallées)",
+          "Aime - La Plagne",
+          "Landry (Peisey-Vallandry)",
+          "Bourg-Saint-Maurice (Les Arcs / Tignes / Val d'Isère)"
+        ],
+        "stopPoints": [
+          {
+            "name": "Lille-Europe",
+            "lng": 3.0757,
+            "lat": 50.6389
+          },
+          {
+            "name": "Aéroport CDG 2 TGV",
+            "lng": 2.5708,
+            "lat": 49.0042
+          },
+          {
+            "name": "Marne-la-Vallée Chessy TGV",
+            "lng": 2.7826,
+            "lat": 48.8703
+          },
+          {
+            "name": "Lyon Saint-Exupéry TGV",
+            "lng": 5.075834,
+            "lat": 45.721014
+          },
+          {
+            "name": "Chambéry - Challes-les-Eaux",
+            "lng": 5.919547,
+            "lat": 45.571302
+          },
+          {
+            "name": "Albertville",
+            "lng": 6.383167,
+            "lat": 45.672977
+          },
+          {
+            "name": "Moûtiers - Salins - Brides-les-Bains (3 Vallées)",
+            "lng": 6.531399,
+            "lat": 45.48647
+          },
+          {
+            "name": "Aime - La Plagne",
+            "lng": 6.648614,
+            "lat": 45.554387
+          },
+          {
+            "name": "Landry (Peisey-Vallandry)",
+            "lng": 6.733849,
+            "lat": 45.574213
+          },
+          {
+            "name": "Bourg-Saint-Maurice (Les Arcs / Tignes / Val d'Isère)",
+            "lng": 6.771273,
+            "lat": 45.619036
+          }
+        ],
+        "directions": [
+          {
+            "id": "aller",
+            "name": "Vers Bourg-Saint-Maurice (Les Arcs / Tignes / Val d'Isère)",
+            "origin": "Lille-Europe",
+            "destination": "Bourg-Saint-Maurice (Les Arcs / Tignes / Val d'Isère)",
+            "stops": [
+              "Lille-Europe",
+              "Aéroport CDG 2 TGV",
+              "Marne-la-Vallée Chessy TGV",
+              "Lyon Saint-Exupéry TGV",
+              "Chambéry - Challes-les-Eaux",
+              "Albertville",
+              "Moûtiers - Salins - Brides-les-Bains (3 Vallées)",
+              "Aime - La Plagne",
+              "Landry (Peisey-Vallandry)",
+              "Bourg-Saint-Maurice (Les Arcs / Tignes / Val d'Isère)"
+            ],
+            "stopPoints": [
+              {
+                "name": "Lille-Europe",
+                "lng": 3.0757,
+                "lat": 50.6389
+              },
+              {
+                "name": "Aéroport CDG 2 TGV",
+                "lng": 2.5708,
+                "lat": 49.0042
+              },
+              {
+                "name": "Marne-la-Vallée Chessy TGV",
+                "lng": 2.7826,
+                "lat": 48.8703
+              },
+              {
+                "name": "Lyon Saint-Exupéry TGV",
+                "lng": 5.075834,
+                "lat": 45.721014
+              },
+              {
+                "name": "Chambéry - Challes-les-Eaux",
+                "lng": 5.919547,
+                "lat": 45.571302
+              },
+              {
+                "name": "Albertville",
+                "lng": 6.383167,
+                "lat": 45.672977
+              },
+              {
+                "name": "Moûtiers - Salins - Brides-les-Bains (3 Vallées)",
+                "lng": 6.531399,
+                "lat": 45.48647
+              },
+              {
+                "name": "Aime - La Plagne",
+                "lng": 6.648614,
+                "lat": 45.554387
+              },
+              {
+                "name": "Landry (Peisey-Vallandry)",
+                "lng": 6.733849,
+                "lat": 45.574213
+              },
+              {
+                "name": "Bourg-Saint-Maurice (Les Arcs / Tignes / Val d'Isère)",
+                "lng": 6.771273,
+                "lat": 45.619036
+              }
+            ],
+            "coordinates": [
+              [
+                3.0757,
+                50.6389
+              ],
+              [
+                2.5708,
+                49.0042
+              ],
+              [
+                2.7826,
+                48.8703
+              ],
+              [
+                3.2,
+                47.95
+              ],
+              [
+                4.05,
+                47.3
+              ],
+              [
+                5.075834,
+                45.721014
+              ],
+              [
+                5.25,
+                45.62
+              ],
+              [
+                5.55,
+                45.54
+              ],
+              [
+                5.75,
+                45.535
+              ],
+              [
+                5.919547,
+                45.571302
+              ],
+              [
+                6.02,
+                45.51
+              ],
+              [
+                6.15,
+                45.57
+              ],
+              [
+                6.383167,
+                45.672977
+              ],
+              [
+                6.45,
+                45.56
+              ],
+              [
+                6.531399,
+                45.48647
+              ],
+              [
+                6.648614,
+                45.554387
+              ],
+              [
+                6.733849,
+                45.574213
+              ],
+              [
+                6.771273,
+                45.619036
+              ]
+            ]
+          },
+          {
+            "id": "retour",
+            "name": "Vers Lille-Europe",
+            "origin": "Bourg-Saint-Maurice (Les Arcs / Tignes / Val d'Isère)",
+            "destination": "Lille-Europe",
+            "stops": [
+              "Bourg-Saint-Maurice (Les Arcs / Tignes / Val d'Isère)",
+              "Landry (Peisey-Vallandry)",
+              "Aime - La Plagne",
+              "Moûtiers - Salins - Brides-les-Bains (3 Vallées)",
+              "Albertville",
+              "Chambéry - Challes-les-Eaux",
+              "Lyon Saint-Exupéry TGV",
+              "Marne-la-Vallée Chessy TGV",
+              "Aéroport CDG 2 TGV",
+              "Lille-Europe"
+            ],
+            "stopPoints": [
+              {
+                "name": "Bourg-Saint-Maurice (Les Arcs / Tignes / Val d'Isère)",
+                "lng": 6.771273,
+                "lat": 45.619036
+              },
+              {
+                "name": "Landry (Peisey-Vallandry)",
+                "lng": 6.733849,
+                "lat": 45.574213
+              },
+              {
+                "name": "Aime - La Plagne",
+                "lng": 6.648614,
+                "lat": 45.554387
+              },
+              {
+                "name": "Moûtiers - Salins - Brides-les-Bains (3 Vallées)",
+                "lng": 6.531399,
+                "lat": 45.48647
+              },
+              {
+                "name": "Albertville",
+                "lng": 6.383167,
+                "lat": 45.672977
+              },
+              {
+                "name": "Chambéry - Challes-les-Eaux",
+                "lng": 5.919547,
+                "lat": 45.571302
+              },
+              {
+                "name": "Lyon Saint-Exupéry TGV",
+                "lng": 5.075834,
+                "lat": 45.721014
+              },
+              {
+                "name": "Marne-la-Vallée Chessy TGV",
+                "lng": 2.7826,
+                "lat": 48.8703
+              },
+              {
+                "name": "Aéroport CDG 2 TGV",
+                "lng": 2.5708,
+                "lat": 49.0042
+              },
+              {
+                "name": "Lille-Europe",
+                "lng": 3.0757,
+                "lat": 50.6389
+              }
+            ],
+            "coordinates": [
+              [
+                6.771273,
+                45.619036
+              ],
+              [
+                6.733849,
+                45.574213
+              ],
+              [
+                6.648614,
+                45.554387
+              ],
+              [
+                6.531399,
+                45.48647
+              ],
+              [
+                6.45,
+                45.56
+              ],
+              [
+                6.383167,
+                45.672977
+              ],
+              [
+                6.15,
+                45.57
+              ],
+              [
+                6.02,
+                45.51
+              ],
+              [
+                5.919547,
+                45.571302
+              ],
+              [
+                5.75,
+                45.535
+              ],
+              [
+                5.55,
+                45.54
+              ],
+              [
+                5.25,
+                45.62
+              ],
+              [
+                5.075834,
+                45.721014
+              ],
+              [
+                4.05,
+                47.3
+              ],
+              [
+                3.2,
+                47.95
+              ],
+              [
+                2.7826,
+                48.8703
+              ],
+              [
+                2.5708,
+                49.0042
+              ],
+              [
+                3.0757,
+                50.6389
+              ]
+            ]
+          }
+        ],
+        "isTGV": true,
+        "url": "https://www.sncf-connect.com"
+      }
+    },
+    {
+      "type": "Feature",
       "id": "rail-ligne-de-lyon-perrache---marseille-saint-charles--via-grenoble-",
       "properties": {
         "id": "rail-ligne-de-lyon-perrache---marseille-saint-charles--via-grenoble-",
