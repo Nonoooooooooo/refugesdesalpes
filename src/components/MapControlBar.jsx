@@ -219,7 +219,7 @@ export default function MapControlBar({
           {/* Bouton Parkings (Overpass) placé dans la section filtres */}
           <button
             onClick={onToggleParkings}
-            title="Afficher/masquer les parkings (zoom >= 13)"
+            title="Afficher/masquer les parkings (zoom >= 12)"
             className={`glass-btn flex items-center gap-1.5 rounded-xl px-2.5 py-1 text-xs font-medium transition-all ${
               showParkings
                 ? 'border border-blue-400/60 bg-blue-500/40 text-blue-100 shadow-[0_0_12px_rgba(59,130,246,0.4)] ring-1 ring-blue-400/40 font-semibold'
