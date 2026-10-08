@@ -124,6 +124,7 @@ export default function App() {
   const [showTransports, setShowTransports] = useState(false)
   const [showParkings, setShowParkings] = useState(false)
   const [showPeaks, setShowPeaks] = useState(false)
+  const [showWebcams, setShowWebcams] = useState(false)
 
   // Cumule les points déjà vus pour éviter le scintillement, borne la taille.
   const handleData = useCallback((incoming) => {
@@ -241,8 +242,8 @@ export default function App() {
         />
         <OverpassLayer showParkings={showParkings} showPeaks={showPeaks} />
         <LayersControl position="topright">
-          <LayersControl.Overlay name="Webcams" checked={false}>
-            <WebcamLayer />
+          <LayersControl.Overlay name="Webcams" checked={showWebcams}>
+            <WebcamLayer active={showWebcams} />
           </LayersControl.Overlay>
         </LayersControl>
         <BboxLoader onData={handleData} onStatus={setStatus} reloadKey={reloadKey} />
@@ -300,6 +301,8 @@ export default function App() {
         onToggleParkings={() => setShowParkings((v) => !v)}
         showPeaks={showPeaks}
         onTogglePeaks={() => setShowPeaks((v) => !v)}
+        showWebcams={showWebcams}
+        onToggleWebcams={() => setShowWebcams((v) => !v)}
         activeTypes={activeTypes}
         onToggleType={toggleType}
       />

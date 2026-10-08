@@ -24,21 +24,30 @@ function getWebcamIcon() {
   return cachedWebcamIcon
 }
 
-export default function WebcamLayer() {
+export default function WebcamLayer({ active: propActive }) {
   const map = useMap()
   const [webcams, setWebcams] = useState([])
-  const [isActive, setIsActive] = useState(false)
-  const isActiveRef = useRef(false)
+  const [isActive, setIsActive] = useState(() => Boolean(propActive))
+  const isActiveRef = useRef(Boolean(propActive))
   const layerGroupRef = useRef(null)
   const abortRef = useRef(null)
 
+  // Synchronisation si le statut actif est passé en prop
+  useEffect(() => {
+    if (propActive !== undefined) {
+      setIsActive(propActive)
+      isActiveRef.current = propActive
+    }
+  }, [propActive])
+
   // Vérifie si le calque est actuellement actif sur la carte
   const isLayerActive = useCallback(() => {
+    if (propActive !== undefined) return propActive
     if (layerGroupRef.current && map.hasLayer(layerGroupRef.current)) {
       return true
     }
     return isActiveRef.current
-  }, [map])
+  }, [map, propActive])
 
   // Logique principale : requête BBOX ou vidage immédiat de l'état
   const checkAndFetch = useCallback(() => {
