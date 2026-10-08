@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { MapContainer, TileLayer, Marker, Tooltip, Pane, useMap, useMapEvents } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Tooltip, Pane, LayersControl, useMap, useMapEvents } from 'react-leaflet'
 import MarkerClusterGroup from 'react-leaflet-cluster'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
@@ -14,6 +14,7 @@ import SearchBar from './components/SearchBar.jsx'
 import TransportLayer from './features/transport/TransportLayer.jsx'
 import TransportSidebar from './features/transport/TransportSidebar.jsx'
 import OverpassLayer from './features/overpass/OverpassLayer.jsx'
+import WebcamLayer from './features/webcams/WebcamLayer.jsx'
 
 const MIN_ZOOM_FETCH = 9
 const IMAGERY_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
@@ -123,6 +124,7 @@ export default function App() {
   const [showTransports, setShowTransports] = useState(false)
   const [showParkings, setShowParkings] = useState(false)
   const [showPeaks, setShowPeaks] = useState(false)
+  const [showWebcams, setShowWebcams] = useState(false)
 
   // Cumule les points déjà vus pour éviter le scintillement, borne la taille.
   const handleData = useCallback((incoming) => {
@@ -239,6 +241,11 @@ export default function App() {
           selectedTransport={selected?.isTransport ? selected : null}
         />
         <OverpassLayer showParkings={showParkings} showPeaks={showPeaks} />
+        <LayersControl position="topright">
+          <LayersControl.Overlay name="Webcams" checked={showWebcams}>
+            <WebcamLayer active={showWebcams} />
+          </LayersControl.Overlay>
+        </LayersControl>
         <BboxLoader onData={handleData} onStatus={setStatus} reloadKey={reloadKey} />
         <FlyToSelected target={flyTarget} />
         <MapControls />
@@ -294,6 +301,8 @@ export default function App() {
         onToggleParkings={() => setShowParkings((v) => !v)}
         showPeaks={showPeaks}
         onTogglePeaks={() => setShowPeaks((v) => !v)}
+        showWebcams={showWebcams}
+        onToggleWebcams={() => setShowWebcams((v) => !v)}
         activeTypes={activeTypes}
         onToggleType={toggleType}
       />

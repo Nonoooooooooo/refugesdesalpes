@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import {
   Satellite,
   Mountain,
@@ -6,6 +6,7 @@ import {
   TrainFront,
   SquareParking,
   MountainSnow,
+  Camera,
   Filter,
   ChevronDown,
   ChevronUp,
@@ -16,7 +17,7 @@ import { FILTERABLE } from '../lib/types.jsx'
 
 /**
  * Barre de contrôle unifiée en haut à droite :
- * Ligne 1 : Fond de carte (Satellite/Relief/CyclOSM) | Sentiers | Transports | Parkings | Sommets | Filtres
+ * Ligne 1 : Fond de carte (Satellite/Relief/CyclOSM) | Sentiers | Transports | Sommets | Webcams | Filtres
  * Ligne 2 : Panneau de filtres des hébergements
  */
 export default function MapControlBar({
@@ -30,6 +31,8 @@ export default function MapControlBar({
   onToggleParkings,
   showPeaks,
   onTogglePeaks,
+  showWebcams,
+  onToggleWebcams,
   activeTypes,
   onToggleType,
 }) {
@@ -134,6 +137,20 @@ export default function MapControlBar({
         >
           <MountainSnow size={14} className={showPeaks ? 'text-amber-300' : ''} />
           <span className="hidden sm:inline">Sommets & Cols</span>
+        </button>
+
+        {/* Bouton Webcams (Windy v3) */}
+        <button
+          onClick={onToggleWebcams}
+          title="Afficher/masquer les webcams Windy en direct (zoom >= 10)"
+          className={`glass-btn flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-medium transition-all ${
+            showWebcams
+              ? 'border border-sky-400/50 bg-sky-500/35 text-sky-200 shadow-[0_0_12px_rgba(14,165,233,0.35)] ring-1 ring-sky-400/30 font-semibold'
+              : 'bg-white/5 text-white/65 hover:text-white hover:bg-white/10'
+          }`}
+        >
+          <Camera size={14} className={showWebcams ? 'text-sky-300' : ''} />
+          <span className="hidden sm:inline">Webcams</span>
         </button>
 
         <div className="mx-0.5 h-5 w-px bg-white/15" />
