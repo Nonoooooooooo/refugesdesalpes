@@ -5,6 +5,29 @@ const CHAMONIX_BUS_ROUTES = fs.existsSync('scripts/data/chamonix_bus.json')
   ? JSON.parse(fs.readFileSync('scripts/data/chamonix_bus.json', 'utf8'))
   : [];
 
+const EXCLUDED_CRE_REFS = new Set(['X76', 'X73', 'X18', 'X13', 'X25', 'X51', 'X71', 'X74', 'X75']);
+const CARS_REGION_EXPRESS_ROUTES = (fs.existsSync('scripts/data/cars_region_express_final.json')
+  ? JSON.parse(fs.readFileSync('scripts/data/cars_region_express_final.json', 'utf8'))
+  : []).filter(r => !EXCLUDED_CRE_REFS.has((r.ref || '').toUpperCase()));
+
+const HAUTE_SAVOIE_DATA = fs.existsSync('scripts/data/haute_savoie_final.json')
+  ? JSON.parse(fs.readFileSync('scripts/data/haute_savoie_final.json', 'utf8'))
+  : { routes: [], aravisShapes: {} };
+const HAUTE_SAVOIE_ROUTES = HAUTE_SAVOIE_DATA.routes || [];
+const ARAVIS_SHAPES = HAUTE_SAVOIE_DATA.aravisShapes || {};
+
+const RESORTS_SAVOIE_ROUTES = fs.existsSync('scripts/data/resorts_savoie_final.json')
+  ? JSON.parse(fs.readFileSync('scripts/data/resorts_savoie_final.json', 'utf8'))
+  : [];
+
+const DROME_ALPINE_ROUTES = fs.existsSync('scripts/data/drome_alpine_final.json')
+  ? JSON.parse(fs.readFileSync('scripts/data/drome_alpine_final.json', 'utf8'))
+  : [];
+
+const MISSING_RESORTS_ROUTES = fs.existsSync('scripts/data/missing_resorts_final.json')
+  ? JSON.parse(fs.readFileSync('scripts/data/missing_resorts_final.json', 'utf8'))
+  : [];
+
 const OSRM_URL = 'https://router.project-osrm.org/route/v1/driving/';
 
 function fetchRoute(coords) {
@@ -34,103 +57,386 @@ function fetchRoute(coords) {
   });
 }
 
+function parseCSVLine(line) {
+  const result = [];
+  let cur = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '"') {
+      inQuotes = !inQuotes;
+    } else if (c === ',' && !inQuotes) {
+      result.push(cur.trim());
+      cur = '';
+    } else {
+      cur += c;
+    }
+  }
+  result.push(cur.trim());
+  return result;
+}
+
+function loadGTFSStops(file) {
+  if (!fs.existsSync(file)) return {};
+  const lines = fs.readFileSync(file, 'utf8').split('\n');
+  const dict = {};
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+    const parts = parseCSVLine(line);
+    if (parts.length >= 6) {
+      const name = parts[2].replace(/"/g, '').trim().toLowerCase();
+      const lat = parseFloat(parts[4]);
+      const lon = parseFloat(parts[5]);
+      if (!isNaN(lat) && !isNaN(lon) && name) {
+        dict[name] = [lon, lat];
+      }
+    }
+  }
+  return dict;
+}
+
+const GTFS_STOPS = {
+  ...loadGTFSStops('scripts/gtfs_74/stops.txt'),
+  ...loadGTFSStops('scripts/gtfs_73/stops.txt'),
+  ...loadGTFSStops('scripts/gtfs_38/stops.txt')
+};
+
+const GTFS_TIMETABLES = fs.existsSync('scripts/data/gtfs_timetables.json')
+  ? JSON.parse(fs.readFileSync('scripts/data/gtfs_timetables.json', 'utf8'))
+  : {};
+
+function projectPointOnSegment(p, a, b) {
+  const dx = b[0] - a[0];
+  const dy = b[1] - a[1];
+  const lenSq = dx * dx + dy * dy;
+  if (lenSq === 0) return a;
+  let t = ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / lenSq;
+  t = Math.max(0, Math.min(1, t));
+  return [a[0] + t * dx, a[1] + t * dy];
+}
+
+function projectPointOnPolyline(point, polylineCoords) {
+  if (!polylineCoords || polylineCoords.length === 0) return point;
+  if (polylineCoords.length === 1) return polylineCoords[0];
+  let bestDistSq = Infinity;
+  let bestPoint = polylineCoords[0];
+  for (let i = 0; i < polylineCoords.length - 1; i++) {
+    const a = polylineCoords[i];
+    const b = polylineCoords[i + 1];
+    const proj = projectPointOnSegment(point, a, b);
+    const dLng = point[0] - proj[0];
+    const dLat = point[1] - proj[1];
+    const distSq = dLng * dLng + dLat * dLat;
+    if (distSq < bestDistSq) {
+      bestDistSq = distSq;
+      bestPoint = proj;
+    }
+  }
+  return bestPoint;
+}
+
+function projectPointOnMultiPolyline(point, multiCoords) {
+  if (!Array.isArray(multiCoords) || multiCoords.length === 0) return point;
+  let bestDistSq = Infinity;
+  let bestPoint = point;
+  for (const line of multiCoords) {
+    if (!Array.isArray(line) || line.length === 0) continue;
+    const proj = projectPointOnPolyline(point, line);
+    const dLng = point[0] - proj[0];
+    const dLat = point[1] - proj[1];
+    const distSq = dLng * dLng + dLat * dLat;
+    if (distSq < bestDistSq) {
+      bestDistSq = distSq;
+      bestPoint = proj;
+    }
+  }
+  return bestPoint;
+}
+
+function getPolylineCumulativeDistances(poly) {
+  const cum = [0];
+  let total = 0;
+  for (let i = 0; i < poly.length - 1; i++) {
+    const dLng = (poly[i+1][0] - poly[i][0]) * 78000;
+    const dLat = (poly[i+1][1] - poly[i][1]) * 111000;
+    const d = Math.hypot(dLng, dLat);
+    total += d;
+    cum.push(total);
+  }
+  return { cum, total };
+}
+
+function getPointAtDistance(poly, cum, d) {
+  if (poly.length === 0) return [0, 0];
+  if (d <= 0) return poly[0];
+  if (d >= cum[cum.length - 1]) return poly[poly.length - 1];
+
+  for (let i = 0; i < cum.length - 1; i++) {
+    if (d >= cum[i] && d <= cum[i + 1]) {
+      const segLen = cum[i + 1] - cum[i];
+      if (segLen === 0) return poly[i];
+      const t = (d - cum[i]) / segLen;
+      return [
+        poly[i][0] + t * (poly[i + 1][0] - poly[i][0]),
+        poly[i][1] + t * (poly[i + 1][1] - poly[i][1])
+      ];
+    }
+  }
+  return poly[poly.length - 1];
+}
+
+function getDistanceOfProjectedPoint(poly, cum, point) {
+  let bestDistSq = Infinity;
+  let bestDistance = 0;
+
+  for (let i = 0; i < poly.length - 1; i++) {
+    const a = poly[i];
+    const b = poly[i + 1];
+    const proj = projectPointOnSegment(point, a, b);
+    const dLng = (point[0] - proj[0]) * 78000;
+    const dLat = (point[1] - proj[1]) * 111000;
+    const distSq = dLng * dLng + dLat * dLat;
+    if (distSq < bestDistSq) {
+      bestDistSq = distSq;
+      const segLen = cum[i + 1] - cum[i];
+      const dx = b[0] - a[0];
+      const dy = b[1] - a[1];
+      const segSq = dx * dx + dy * dy;
+      let t = 0;
+      if (segSq > 0) {
+        t = Math.max(0, Math.min(1, ((proj[0] - a[0]) * dx + (proj[1] - a[1]) * dy) / segSq));
+      }
+      bestDistance = cum[i] + t * segLen;
+    }
+  }
+  return { distance: bestDistance, lateralDistMeters: Math.sqrt(bestDistSq) };
+}
+
+function cleanTokens(str) {
+  return str.toLowerCase().replace(/[^a-z0-9]/g, ' ').split(/\s+/).filter(w => w.length >= 3);
+}
+
+function stopMatches(name1, name2) {
+  if (!name1 || !name2) return false;
+  const n1 = name1.toLowerCase();
+  const n2 = name2.toLowerCase();
+  if (n1.includes(n2) || n2.includes(n1)) return true;
+  const t1 = cleanTokens(name1);
+  const t2 = cleanTokens(name2);
+  const common = t1.filter(w => t2.includes(w) && w !== 'gare' && w !== 'arret' && w !== 'place' && w !== 'route' && w !== 'centre');
+  return common.length >= 1;
+}
+
+function computeAccurateStopPoints(stopsList, polylineCoords, customStationCoords = {}) {
+  if (!Array.isArray(stopsList) || stopsList.length === 0) return [];
+  if (!polylineCoords || polylineCoords.length === 0) return [];
+  if (polylineCoords.length === 1) {
+    return stopsList.map(s => ({ name: s, lng: polylineCoords[0][0], lat: polylineCoords[0][1] }));
+  }
+
+  const { cum, total } = getPolylineCumulativeDistances(polylineCoords);
+  if (total === 0) {
+    return stopsList.map(s => ({ name: s, lng: polylineCoords[0][0], lat: polylineCoords[0][1] }));
+  }
+
+  // 1. Identifier les arrêts ancrés
+  const anchors = []; // { index, name, distance }
+  stopsList.forEach((stopName, idx) => {
+    const sLower = stopName.toLowerCase();
+    let coord = customStationCoords[stopName] || GTFS_STOPS[sLower];
+    if (!coord) {
+      const key = Object.keys(GTFS_STOPS).find(k => k.length > 3 && (sLower.includes(k) || k.includes(sLower)));
+      if (key) coord = GTFS_STOPS[key];
+    }
+    if (coord) {
+      const { distance, lateralDistMeters } = getDistanceOfProjectedPoint(polylineCoords, cum, coord);
+      if (lateralDistMeters < 1200) {
+        anchors.push({ index: idx, name: stopName, distance });
+      }
+    }
+  });
+
+  // Assurer que le premier et dernier arrêt sont ancrés aux extrémités
+  if (!anchors.some(a => a.index === 0)) {
+    anchors.push({ index: 0, name: stopsList[0], distance: 0 });
+  }
+  const lastIdx = stopsList.length - 1;
+  if (!anchors.some(a => a.index === lastIdx)) {
+    anchors.push({ index: lastIdx, name: stopsList[lastIdx], distance: total });
+  }
+
+  // Trier les ancres par index d'arrêt croissant
+  anchors.sort((a, b) => a.index - b.index);
+
+  // S'assurer que les distances sont monotones croissantes
+  for (let i = 1; i < anchors.length; i++) {
+    if (anchors[i].distance <= anchors[i - 1].distance) {
+      const nextAnchorWithHigherDist = anchors.slice(i + 1).find(a => a.distance > anchors[i - 1].distance);
+      const targetDist = nextAnchorWithHigherDist ? nextAnchorWithHigherDist.distance : total;
+      const targetIdx = nextAnchorWithHigherDist ? nextAnchorWithHigherDist.index : lastIdx;
+      const fraction = (anchors[i].index - anchors[i - 1].index) / (targetIdx - anchors[i - 1].index);
+      anchors[i].distance = anchors[i - 1].distance + fraction * (targetDist - anchors[i - 1].distance);
+    }
+  }
+
+  // 2. Interpoler la position de chaque arrêt le long de la ligne
+  const stopPoints = [];
+  for (let idx = 0; idx < stopsList.length; idx++) {
+    const name = stopsList[idx];
+    let prevAnchor = anchors[0];
+    let nextAnchor = anchors[anchors.length - 1];
+    for (let i = 0; i < anchors.length; i++) {
+      if (anchors[i].index <= idx) prevAnchor = anchors[i];
+      if (anchors[i].index >= idx) {
+        nextAnchor = anchors[i];
+        break;
+      }
+    }
+
+    let d = prevAnchor.distance;
+    if (nextAnchor.index !== prevAnchor.index) {
+      const frac = (idx - prevAnchor.index) / (nextAnchor.index - prevAnchor.index);
+      d = prevAnchor.distance + frac * (nextAnchor.distance - prevAnchor.distance);
+    }
+
+    const pt = getPointAtDistance(polylineCoords, cum, d);
+    stopPoints.push({
+      name,
+      lng: Number(pt[0].toFixed(6)),
+      lat: Number(pt[1].toFixed(6))
+    });
+  }
+
+  // Dédupliquer les arrêts ayant le même nom ou situés à moins de 5 mètres
+  const uniqueStopPoints = [];
+  for (const sp of stopPoints) {
+    const isDup = uniqueStopPoints.some(prev => 
+      prev.name.toLowerCase() === sp.name.toLowerCase() ||
+      (Math.hypot((prev.lng - sp.lng) * 78000, (prev.lat - sp.lat) * 111000) < 5)
+    );
+    if (!isDup) {
+      uniqueStopPoints.push(sp);
+    }
+  }
+
+  return uniqueStopPoints;
+}
+
 const BUS_ROUTES = [
-  // HAUTE-SAVOIE & MONT-BLANC
+  // ─────────────────────────────────────────────────────────
+  // CHABLAIS & PORTES DU SOLEIL : AVORIAZ 1800, MORZINE, LES GETS
+  // ─────────────────────────────────────────────────────────
   {
-    id: 'bus-y51',
-    ref: 'Y51',
-    name: 'Ligne Y51 : Annecy ↔ Albertville',
+    id: 'cable-prodains-express',
+    ref: '3S Prodains',
+    name: 'Téléphérique 3S Prodains Express : Les Prodains ↔ Avoriaz 1800',
+    mode: 'cable',
+    operator: 'SERMA Avoriaz / Portes du Soleil',
+    network: 'Avoriaz 1800',
+    route: 'Les Prodains (1180 m) ↔ Avoriaz 1800 (1795 m, Place Jean Vuarnet)',
+    frequency: 'En continu toutes les 5 min (durée 4 min)',
+    period: 'Saisons d\'hiver & d\'été (Liaison piétons & bagages)',
+    stops: ['Les Prodains (1180 m)', 'Avoriaz 1800 (1795 m)'],
+    color: '#ec4899',
+    url: 'https://www.avoriaz.com',
+    directCoordinates: [
+      [6.7533635, 46.189763],
+      [6.7580, 46.1915],
+      [6.7635, 46.1940],
+      [6.767705, 46.196083]
+    ]
+  },
+  {
+    id: 'navette-morzine-prodains',
+    ref: 'Ligne A / AU',
+    name: 'Navette Morzine : Centre / Pléney ↔ Téléphérique Prodains (Avoriaz)',
+    mode: 'navette',
+    operator: 'Morzine Mobilité / PYSAE',
+    network: 'Navettes Morzine-Avoriaz',
+    route: 'Morzine Pléney ↔ Office de Tourisme ↔ Rond-Point Passerelle ↔ Les Prodains',
+    frequency: 'Toutes les 10 à 15 min (Gratuit)',
+    period: 'Saisons d\'été & d\'hiver',
+    stops: [
+      'Morzine Pléney / Mairie',
+      'Office de Tourisme',
+      'Rond-Point Passerelle',
+      'Pied de la Plagne',
+      'Les Prodains (Téléphérique 3S Avoriaz 1800)'
+    ],
+    color: '#ea580c',
+    url: 'https://www.morzine-avoriaz.com',
+    coords: '6.7083,46.1793;6.7150,46.1810;6.7320,46.1840;6.7533,46.1897'
+  },
+  {
+    id: 'navette-morzine-ardent',
+    ref: 'Ligne M',
+    name: 'Navette Morzine : Pléney ↔ Lac de Montriond ↔ Ardent (Télécabine Avoriaz)',
+    mode: 'navette',
+    operator: 'Morzine Mobilité / PYSAE',
+    network: 'Navettes Morzine-Avoriaz',
+    route: 'Morzine Pléney ↔ Montriond Village ↔ Lac de Montriond ↔ Ardent Téléphérique',
+    frequency: 'Toutes les 30 min (Gratuit)',
+    period: 'Saisons d\'été & d\'hiver',
+    stops: [
+      'Morzine Pléney',
+      'Montriond Chef-lieu',
+      'Lac de Montriond',
+      'Les Albertans',
+      'Ardent Téléphérique (Accès Lindarets & Avoriaz)'
+    ],
+    color: '#ea580c',
+    url: 'https://www.morzine-avoriaz.com',
+    coords: '6.7083,46.1793;6.6944,46.1968;6.7300,46.2050;6.7445,46.2160'
+  },
+  {
+    id: 'navette-morzine-manche',
+    ref: 'Ligne E',
+    name: 'Navette Vallée de la Manche : Morzine ↔ Nyon ↔ Lac des Mines d\'Or',
+    mode: 'navette',
+    operator: 'Morzine Mobilité / PYSAE',
+    network: 'Navettes Morzine-Avoriaz',
+    route: 'Morzine Pléney ↔ Téléphérique de Nyon ↔ L\'Érigné ↔ Lac des Mines d\'Or',
+    frequency: 'Toutes les 30 min (Gratuit)',
+    period: 'Saisons d\'été & d\'hiver',
+    stops: [
+      'Morzine Pléney',
+      'Téléphérique de Nyon',
+      'Les Meuniers',
+      'L\'Érigné',
+      'Lac des Mines d\'Or (Départ Randonnées Hauts-Forts & Col de Cou)'
+    ],
+    color: '#ea580c',
+    url: 'https://www.morzine-avoriaz.com',
+    coords: '6.7083,46.1793;6.7200,46.1650;6.7380,46.1480;6.7620,46.1340'
+  },
+  {
+    id: 'bus-baladaulps',
+    ref: 'Balad\'Aulps',
+    name: 'Balad\'Aulps Bus : Les Gets ↔ Morzine ↔ St-Jean-d\'Aulps ↔ Le Jotty / Bioge',
     mode: 'bus',
-    operator: 'Cars Région Haute-Savoie',
-    network: 'Cars Région',
-    route: 'Annecy ↔ Faverges ↔ Ugine ↔ Albertville',
-    frequency: 'Toutes les 30 à 60 min (Tous les jours)',
-    period: 'Toute l\'année',
-    stops: ['Annecy Gare Routière', 'Sévrier', 'Saint-Jorioz', 'Doussard', 'Faverges', 'Ugine', 'Albertville Gare'],
+    operator: 'CC Vallée d\'Aulps / Cars Région',
+    network: 'Balad\'Aulps Bus',
+    route: 'Les Gets (Les Perrières) ↔ Morzine ↔ Montriond ↔ Saint-Jean-d\'Aulps ↔ Le Biot ↔ Seytroux ↔ Le Jotty',
+    frequency: 'Liaisons régulières toute la journée',
+    period: 'Toute l\'année (Renfort saisonnier)',
+    stops: [
+      'Les Gets Les Perrières',
+      'Morzine Rond-Point Passerelle',
+      'Montriond Chef-lieu',
+      'Saint-Jean-d\'Aulps Abbaye',
+      'Le Biot Chef-lieu',
+      'Seytroux Pont Molliet',
+      'Le Jotty (Gorges du Pont du Diable)',
+      'Bioge (Liaison Thonon / Evian)'
+    ],
     color: '#10b981',
-    url: 'https://www.laregionvoustransporte.fr',
-    coords: '6.1296,45.8992;6.2215,45.7820;6.3150,45.7480;6.3927,45.6756'
+    url: 'https://www.valleedaulps.com',
+    coords: '6.6560,46.1488;6.6709,46.1609;6.7083,46.1793;6.6944,46.1968;6.6561,46.2325;6.6476,46.2434;6.6313,46.2638;6.6160,46.3038'
   },
   // ─────────────────────────────────────────────────────────
   // MASSIF DES ARAVIS : LE GRAND-BORNAND, LA CLUSAZ, THÔNES
   // ─────────────────────────────────────────────────────────
-  {
-    id: 'bus-y62',
-    ref: 'Y62',
-    name: 'Ligne Y62 : Annecy ↔ Veyrier ↔ Alex ↔ Thônes ↔ La Clusaz / Le Grand-Bornand',
-    mode: 'bus',
-    operator: 'Cars Région Haute-Savoie',
-    network: 'Cars Région Aravis',
-    route: 'Annecy Gare Routière ↔ Veyrier-du-Lac ↔ Menthon (Col de Bluffy) ↔ Alex ↔ Thônes ↔ Les Villards-sur-Thônes ↔ Saint-Jean-de-Sixt ↔ La Clusaz / Le Grand-Bornand',
-    frequency: 'Toutes les heures toute l\'année, renforts été/hiver (équipée porte-vélos)',
-    period: 'Toute l\'année (Liaison structurante du Massif des Aravis)',
-    stops: [
-      'Annecy (Gare Routière SNCF)',
-      'Annecy (Parmelan bd de Menthon)',
-      'Annecy (Albigny / Petit Port Chavoires)',
-      'Veyrier-du-Lac (Chavoires / Téléphérique / Chef-Lieu / Charmettes / Buvette)',
-      'Menthon-Saint-Bernard (Col de Bluffy)',
-      'Alex (Rond-Point / Le Pont)',
-      'Thônes (Morette / Thuy / Les Perrasses / Gare Routière 625 m / La Vacherie)',
-      'Les Villards-sur-Thônes (Luidefour / Les Perrils / La Villaz / Le Bourgeal)',
-      'Saint-Jean-de-Sixt (Forgeassoud / Chef-Lieu 960 m)',
-      'La Clusaz (Gare Routière 1040 m)',
-      'Le Grand-Bornand (Gare Routière 930 m)'
-    ],
-    color: '#0284c7',
-    url: 'https://www.laregionvoustransporte.fr',
-    timetable: {
-      headers: ['08:00', '09:25', '12:25', '15:25', '17:25', '18:25'],
-      rows: [
-        { stop: 'Annecy Gare Routière', times: ['08:00', '09:25', '12:25', '15:25', '17:25', '18:25'] },
-        { stop: 'Veyrier Chef-Lieu', times: ['08:20', '09:45', '12:45', '15:45', '17:45', '18:45'] },
-        { stop: 'Col de Bluffy', times: ['08:25', '09:50', '12:50', '15:50', '17:50', '18:50'] },
-        { stop: 'Thônes Gare Routière', times: ['08:50', '10:05', '13:05', '16:05', '18:05', '19:05'] },
-        { stop: 'St-Jean-de-Sixt Chef-Lieu', times: ['09:15', '10:30', '13:30', '16:15', '18:15', '19:15'] },
-        { stop: 'La Clusaz Gare Routière', times: ['09:25', '10:25', '13:25', '16:25', '18:25', '19:25'] },
-        { stop: 'Gd-Bornand Gare Routière', times: ['09:45', '10:35', '13:35', '16:35', '18:45', '19:45'] }
-      ],
-      note: 'Ligne régulière cadencée reliant la gare TGV d\'Annecy aux stations des Aravis. Correspondance avec le réseau Aravis Bus à Thônes, St-Jean-de-Sixt, La Clusaz et Le Grand-Bornand.'
-    },
-    coords: '6.1296,45.8992;6.1770,45.8820;6.2200,45.8670;6.2380,45.8890;6.3250,45.8820;6.3820,45.9080;6.4110,45.9220;6.4250,45.9050;6.4280,45.9420'
-  },
-  {
-    id: 'bus-y63',
-    ref: 'Y63',
-    name: 'Ligne Y63 : Annecy ↔ Dingy-Saint-Clair ↔ Thônes ↔ La Clusaz / Le Grand-Bornand',
-    mode: 'bus',
-    operator: 'Cars Région Haute-Savoie',
-    network: 'Cars Région Aravis',
-    route: 'Annecy Gare Routière ↔ Annecy-le-Vieux ↔ Dingy-Saint-Clair ↔ La Balme-de-Thuy ↔ Thônes ↔ Les Villards-sur-Thônes ↔ Saint-Jean-de-Sixt ↔ La Clusaz / Le Grand-Bornand',
-    frequency: 'Plusieurs liaisons quotidiennes en semaine et week-end',
-    period: 'Toute l\'année (Desserte de la vallée du Fier et du pied du Parmelan)',
-    stops: [
-      'Annecy (Gare Routière SNCF)',
-      'Annecy (Parmelan av. du Parmelan)',
-      'Annecy-le-Vieux (Buisson / Tilleuls / Entrée Parc)',
-      'Dingy-Saint-Clair (Glandon / Village / Provenat / Chessenay)',
-      'La Balme-de-Thuy (Charvex / Salignon / Chef-Lieu)',
-      'Thônes (Morette / Thuy / Gare Routière 625 m)',
-      'Les Villards-sur-Thônes (Le Bourgeal / La Villaz)',
-      'Saint-Jean-de-Sixt (Forgeassoud / Chef-Lieu 960 m)',
-      'La Clusaz (Gare Routière 1040 m)',
-      'Le Grand-Bornand (Gare Routière 930 m)'
-    ],
-    color: '#0369a1',
-    url: 'https://www.laregionvoustransporte.fr',
-    timetable: {
-      headers: ['06:50', '13:35', '16:25', '16:55', '18:10', '18:55'],
-      rows: [
-        { stop: 'Annecy Gare Routière', times: ['06:50', '13:35', '16:25', '16:55', '18:10', '18:55'] },
-        { stop: 'Dingy-St-Clair Village', times: ['07:39', '14:25', '17:15', '17:45', '19:00', '19:45'] },
-        { stop: 'La Balme-de-Thuy Chef-Lieu', times: ['07:45', '14:30', '17:20', '17:50', '19:06', '19:50'] },
-        { stop: 'Thônes Gare Routière', times: ['07:54', '14:50', '17:40', '18:10', '19:26', '20:10'] },
-        { stop: 'La Clusaz / Gd-Bornand', times: ['08:14', '15:05', '18:25', '18:55', '19:30', '20:35'] }
-      ],
-      note: 'Desserte alternative de la vallée des Aravis par Dingy-Saint-Clair et La Balme-de-Thuy au pied du plateau des Glières.'
-    },
-    coords: '6.1296,45.8992;6.1550,45.9200;6.2230,45.9120;6.2780,45.8990;6.3250,45.8820;6.4110,45.9220;6.4250,45.9050;6.4280,45.9420'
-  },
   {
     id: 'bus-proximiti-460',
     ref: 'Ligne 460',
@@ -420,55 +726,35 @@ const BUS_ROUTES = [
     url: 'https://www.aravisbus.fr',
     coords: '6.4280,45.9420;6.4480,45.9350;6.4720,45.9450;6.5120,45.9620'
   },
-  {
-    id: 'bus-y81',
-    ref: 'Y81',
-    name: 'Ligne Y81 : Cluses ↔ Chamonix-Mont-Blanc',
-    mode: 'bus',
-    operator: 'Cars Région Haute-Savoie',
-    network: 'Cars Région',
-    route: 'Cluses ↔ Sallanches ↔ Saint-Gervais ↔ Les Houches ↔ Chamonix',
-    frequency: 'Plusieurs liaisons par jour',
-    period: 'Toute l\'année',
-    stops: ['Cluses Gare', 'Sallanches', 'Le Fayet', 'Les Houches', 'Chamonix Sud'],
-    color: '#10b981',
-    url: 'https://www.laregionvoustransporte.fr',
-    coords: '6.5790,46.0601;6.6300,45.9380;6.7118,45.9080;6.8694,45.9237'
-  },
-  {
-    id: 'bus-y82',
-    ref: 'Y82',
-    name: 'Ligne Y82 : Chamonix ↔ Megève ↔ Praz-sur-Arly',
-    mode: 'bus',
-    operator: 'Cars Région Haute-Savoie',
-    network: 'Cars Région',
-    route: 'Chamonix ↔ Les Houches ↔ Saint-Gervais ↔ Megève ↔ Praz-sur-Arly',
-    frequency: 'Quotidien été & hiver',
-    period: 'Toute l\'année',
-    stops: ['Chamonix Sud', 'Les Houches', 'Saint-Gervais', 'Demi-Quartier', 'Megève Autogare', 'Praz-sur-Arly'],
-    color: '#10b981',
-    url: 'https://www.laregionvoustransporte.fr',
-    coords: '6.8694,45.9237;6.7978,45.8899;6.7118,45.8920;6.6178,45.8568;6.5740,45.8370'
-  },
-  {
-    id: 'bus-y92',
-    ref: 'Y92/Y93',
-    name: 'Ligne Y92/Y93 : Cluses ↔ Samoëns ↔ Sixt-Fer-à-Cheval',
-    mode: 'bus',
-    operator: 'Cars Région Haute-Savoie',
-    network: 'Cars Région',
-    route: 'Cluses ↔ Taninges ↔ Samoëns ↔ Sixt-Fer-à-Cheval (Vallée du Giffre)',
-    frequency: 'Quotidien',
-    period: 'Toute l\'année',
-    stops: ['Cluses Gare', 'Taninges', 'Morillon', 'Samoëns Gare Routière', 'Sixt-Fer-à-Cheval'],
-    color: '#10b981',
-    url: 'https://www.laregionvoustransporte.fr',
-    coords: '6.5790,46.0601;6.5910,46.1080;6.7275,46.0838;6.7770,46.0560'
-  },
   // ═══════════════════════════════════════════════════════
   // RÉSEAU OFFICIEL CHAMONIX MOBILITÉ / PYSAE (18 LIGNES DE BUS DE LA VALLÉE)
   // ═══════════════════════════════════════════════════════
   ...CHAMONIX_BUS_ROUTES,
+
+  // ═══════════════════════════════════════════════════════
+  // RÉSEAU INTERURBAIN CARS RÉGION EXPRESS (AURA) - 13 LIGNES OFFICIELLES GTFS
+  // ═══════════════════════════════════════════════════════
+  ...CARS_REGION_EXPRESS_ROUTES,
+
+  // ═══════════════════════════════════════════════════════
+  // RÉSEAU INTERURBAIN CARS RÉGION HAUTE-SAVOIE - 23 LIGNES OFFICIELLES GTFS
+  // ═══════════════════════════════════════════════════════
+  ...HAUTE_SAVOIE_ROUTES,
+
+  // ═══════════════════════════════════════════════════════
+  // RÉSEAU SAVOIE & STATIONS ALPINES (LES ARCS, MÉRIBEL, COURCHEVEL, BELLEVILLE, 2 ALPES, LA ROSIÈRE) - 29 LIGNES OFFICIELLES GTFS
+  // ═══════════════════════════════════════════════════════
+  ...RESORTS_SAVOIE_ROUTES,
+
+  // ═══════════════════════════════════════════════════════
+  // RÉSEAU DRÔME ALPINE & PRÉALPES (VERCORS, DIOIS, BARONNIES, VALENCE TGV) - 12 LIGNES OFFICIELLES GTFS
+  // ═══════════════════════════════════════════════════════
+  ...DROME_ALPINE_ROUTES,
+
+  // ═══════════════════════════════════════════════════════
+  // VAL D'ISÈRE, ALPE D'HUEZ & VALMOREL - 10 LIGNES & NAVETTES OFFICIELLES
+  // ═══════════════════════════════════════════════════════
+  ...MISSING_RESORTS_ROUTES,
   {
     id: 'navette-sixt-lignon',
     ref: 'Navette Giffre',
@@ -532,19 +818,223 @@ const BUS_ROUTES = [
     coords: '6.5317,45.4836;6.5050,45.3800;6.5360,45.3230;6.5800,45.2980'
   },
   {
-    id: 'bus-s14',
-    ref: 'S14',
-    name: 'Ligne S14 : Bourg-Saint-Maurice ↔ Tignes ↔ Val d\'Isère',
+    id: 'bus-s66',
+    ref: 'S66',
+    name: 'Ligne S66 : Moûtiers ↔ Bozel ↔ Champagny ↔ Pralognan',
+    mode: 'bus',
+    operator: 'Cars Région Savoie (Transdev)',
+    network: 'Cars Région',
+    route: 'Moûtiers Gare Routière SNCF TGV ↔ Brides-les-Bains ↔ Bozel ↔ Champagny-en-Vanoise ↔ Pralognan-la-Vanoise',
+    frequency: 'Quotidien toute l\'année (renforts saisonniers été & hiver)',
+    period: 'Toute l\'année (Artère centrale d\'accès au Parc National de la Vanoise)',
+    stops: [
+      'Moûtiers Gare Routière / SNCF',
+      'Salins-Fontaine',
+      'Brides-les-Bains Office de Tourisme',
+      'Bozel Centre / Mairie',
+      'Champagny-en-Vanoise Office de Tourisme / Télécabine',
+      'Le Villard du Plan',
+      'Pralognan-la-Vanoise Gare Routière'
+    ],
+    color: '#10b981',
+    url: 'https://www.cars-region-savoie.fr',
+    coords: '6.5317,45.4836;6.5680,45.4520;6.6490,45.4430;6.6940,45.4545;6.7210,45.3800',
+    timetable: {
+      headers: ['Matin (07h)', 'Matin (09h)', 'Midi (12h)', 'Après-midi (15h)', 'Soir (18h)'],
+      rows: [
+        { stop: 'Moûtiers Gare Routière / SNCF', times: ['07:15', '09:30', '12:15', '15:45', '18:15'] },
+        { stop: 'Brides-les-Bains Office de Tourisme', times: ['07:30', '09:45', '12:30', '16:00', '18:30'] },
+        { stop: 'Bozel Centre / Mairie', times: ['07:45', '10:00', '12:45', '16:15', '18:45'] },
+        { stop: 'Champagny-en-Vanoise Office de Tourisme / Télécabine', times: ['08:00', '10:15', '13:00', '16:30', '19:00'] },
+        { stop: 'Pralognan-la-Vanoise Gare Routière', times: ['08:25', '10:40', '13:25', '16:55', '19:25'] }
+      ],
+      note: 'Ligne officielle Cars Région Savoie S66 (Liaison régulière Moûtiers TGV ↔ Champagny & Vanoise)'
+    }
+  },
+  {
+    id: 'navette-vallee-bozel',
+    ref: 'Navette Bozel',
+    name: 'Navette Vallée de Bozel : Bozel ↔ Champagny ↔ Pralognan',
+    mode: 'navette',
+    operator: 'Communauté de Communes Val Vanoise',
+    network: 'Navettes Vanoise',
+    route: 'Bozel Centre (Plan d\'Eau) ↔ Champagny-en-Vanoise ↔ Pralognan-la-Vanoise',
+    frequency: 'Navettes régulières gratuites été & hiver',
+    period: 'Saisonnier Été & Hiver',
+    stops: [
+      'Bozel Centre',
+      'Le Chevril',
+      'Champagny-en-Vanoise Village (Télécabine)',
+      'La Croix',
+      'Pralognan-la-Vanoise Centre'
+    ],
+    color: '#f59e0b',
+    url: 'https://www.valvanoise.fr',
+    coords: '6.6490,45.4430;6.6940,45.4545;6.7210,45.3800'
+  },
+  // ─────────────────────────────────────────────────────────
+  // HAUTE-TARENTAISE : TIGNES & GLACIER DE LA GRANDE MOTTE
+  // ─────────────────────────────────────────────────────────
+  {
+    id: 'bus-s83-tignes',
+    ref: 'S83',
+    name: 'Ligne Régionale S83 : Bourg-Saint-Maurice TGV ↔ Tignes (Val Claret)',
     mode: 'bus',
     operator: 'Cars Région Savoie',
-    network: 'Cars Région',
-    route: 'Bourg-Saint-Maurice ↔ Sainte-Foy ↔ Tignes (Les Brévières, Le Lac, Val Claret) ↔ Val d\'Isère',
-    frequency: 'Toutes les heures en saison',
-    period: 'Toute l\'année',
-    stops: ['Bourg-Saint-Maurice Gare', 'Sainte-Foy Station', 'Tignes Les Boisses', 'Tignes Le Lac', 'Val d\'Isère Gare Routière'],
-    color: '#10b981',
+    network: 'Cars Région Haute-Tarentaise',
+    route: 'Gare TGV Bourg-Saint-Maurice ↔ Séez ↔ Sainte-Foy ↔ Tignes Les Brévières ↔ Tignes 1800 ↔ Tignes Le Lac ↔ Tignes Val Claret',
+    frequency: 'Quotidien cadencé (Correspondances directes TGV & Eurostar)',
+    period: 'Toute l\'année (Renforts fréquents en saison)',
+    stops: [
+      'Gare TGV de Bourg-Saint-Maurice (810 m)',
+      'Séez Chef-Lieu',
+      'Sainte-Foy-Tarentaise (La Thuile)',
+      'Tignes Les Brévières (1550 m)',
+      'Tignes 1800 (Les Boisses)',
+      'Tignes Le Lac (Gare Routière 2100 m)',
+      'Tignes Val Claret (Grande Motte 2120 m)'
+    ],
+    color: '#0284c7',
     url: 'https://www.laregionvoustransporte.fr',
-    coords: '6.7700,45.6180;6.8830,45.5490;6.9150,45.4980;6.9770,45.4480'
+    directCoordinates: fs.existsSync('scripts/data/tignes_rel_17013466.json')
+      ? JSON.parse(fs.readFileSync('scripts/data/tignes_rel_17013466.json', 'utf8'))
+      : null,
+    coords: '6.7718,45.6194;6.8000,45.6230;6.8836,45.5903;6.9200,45.5080;6.9250,45.4910;6.9075,45.4695;6.8985,45.4550'
+  },
+  {
+    id: 'bus-s82-valdisere',
+    ref: 'S82',
+    name: 'Ligne Régionale S82 : Bourg-Saint-Maurice TGV ↔ Val d\'Isère',
+    mode: 'bus',
+    operator: 'Cars Région Savoie',
+    network: 'Cars Région Haute-Tarentaise',
+    route: 'Gare TGV Bourg-Saint-Maurice ↔ Séez ↔ Sainte-Foy ↔ Barrage du Chevril ↔ Val d\'Isère Gare Routière',
+    frequency: 'Quotidien cadencé',
+    period: 'Toute l\'année',
+    stops: [
+      'Gare TGV de Bourg-Saint-Maurice (810 m)',
+      'Séez Chef-Lieu',
+      'Sainte-Foy-Tarentaise',
+      'Barrage du Chevril',
+      'La Daille (Val d\'Isère)',
+      'Val d\'Isère Gare Routière (1850 m)'
+    ],
+    color: '#0284c7',
+    url: 'https://www.laregionvoustransporte.fr',
+    coords: '6.7718,45.6194;6.8000,45.6230;6.8836,45.5903;6.9250,45.4910;6.9770,45.4480'
+  },
+  {
+    id: 'navette-tignes-circuit-2100',
+    ref: 'Navette 2100',
+    name: 'Navette Gratuite Tignes 2100 : Le Lavachet ↔ Le Lac ↔ Val Claret',
+    mode: 'navette',
+    operator: 'STGM / Commune de Tignes',
+    network: 'Navettes Tignes (Zenbus)',
+    route: 'Le Lavachet ↔ Le Lac (Gare Routière) ↔ Rond-Point des Pistes ↔ Val Claret (Grande Motte)',
+    frequency: 'Toutes les 5 à 10 min en journée, 24h/24 en saison (Gratuit)',
+    period: 'Saisons d\'hiver & d\'été (Départ sentiers Vanoise, Refuge de la Leisse & Palet)',
+    stops: [
+      'Tignes Le Lavachet (2050 m)',
+      'Tignes Le Lac (Gare Routière / Le Lagon)',
+      'Tignes Le Lac (Rond-Point des Pistes)',
+      'Tignes Val Claret (Les Balcons)',
+      'Tignes Val Claret (Écrin des Neiges)',
+      'Tignes Val Claret (Grande Motte / Funiculaire Perce-Neige)'
+    ],
+    color: '#06b6d4',
+    url: 'https://www.tignes.net',
+    directCoordinates: fs.existsSync('scripts/data/tignes_rel_2023055.json')
+      ? JSON.parse(fs.readFileSync('scripts/data/tignes_rel_2023055.json', 'utf8'))
+      : null,
+    coords: '6.9000,45.4600;6.9075,45.4695;6.9110,45.4680;6.9050,45.4600;6.8985,45.4550'
+  },
+  {
+    id: 'navette-tignes-circuit-1800',
+    ref: 'Navette 1800',
+    name: 'Navette Gratuite Tignes 1800 : Les Boisses ↔ Le Lac ↔ Val Claret',
+    mode: 'navette',
+    operator: 'STGM / Commune de Tignes',
+    network: 'Navettes Tignes (Zenbus)',
+    route: 'Tignes 1800 (Les Boisses) ↔ Barrage de Tignes (Chevril) ↔ Tignes Le Lac ↔ Tignes Val Claret',
+    frequency: 'Toutes les 30 min (Gratuit)',
+    period: 'Saisons d\'hiver & d\'été',
+    stops: [
+      'Tignes 1800 (Les Boisses)',
+      'Barrage de Tignes (Chevril)',
+      'Tignes Le Lac (Gare Routière 2100 m)',
+      'Tignes Val Claret (Grande Motte 2120 m)'
+    ],
+    color: '#06b6d4',
+    url: 'https://www.tignes.net',
+    directCoordinates: fs.existsSync('scripts/data/tignes_rel_3960475.json')
+      ? JSON.parse(fs.readFileSync('scripts/data/tignes_rel_3960475.json', 'utf8'))
+      : null,
+    coords: '6.9253,45.4907;6.9200,45.4780;6.9075,45.4695;6.8985,45.4550'
+  },
+  {
+    id: 'navette-tignes-brevieres',
+    ref: 'Navette Brévières',
+    name: 'Navette Tignes : Les Brévières (1550 m) ↔ Tignes 1800 (Les Boisses)',
+    mode: 'navette',
+    operator: 'STGM / Commune de Tignes',
+    network: 'Navettes Tignes',
+    route: 'Tignes Les Brévières (1550 m) ↔ Barrage du Chevril ↔ Tignes 1800 (Les Boisses)',
+    frequency: 'Régulier en journée (Gratuit)',
+    period: 'Saisons d\'hiver & d\'été',
+    stops: [
+      'Tignes Les Brévières (1550 m, Église / Télécabine)',
+      'Pied du Barrage (Lac du Chevril)',
+      'Tignes 1800 (Les Boisses)'
+    ],
+    color: '#14b8a6',
+    url: 'https://www.tignes.net',
+    coords: '6.9205,45.5085;6.9230,45.4980;6.9255,45.4910'
+  },
+  {
+    id: 'funiculaire-perce-neige',
+    ref: 'Perce-Neige',
+    name: 'Funiculaire Perce-Neige : Tignes Val Claret ↔ Glacier de la Grande Motte (3032 m)',
+    mode: 'funicular',
+    operator: 'STGM Tignes',
+    network: 'Tignes - Espace Killy',
+    route: 'Tignes Val Claret (2100 m) ↔ Glacier de la Grande Motte (3032 m) en 7 min (funiculaire souterrain)',
+    frequency: 'Toutes les 15 minutes en saison',
+    period: 'Ouvert été (ski d\'été & haute montagne) et hiver',
+    stops: [
+      'Tignes Val Claret (Gare Funiculaire 2100 m)',
+      'Gare d\'arrivée Glacier de la Grande Motte (3032 m)'
+    ],
+    color: '#ec4899',
+    url: 'https://www.tignes.net',
+    directCoordinates: [
+      [6.8985, 45.4545],
+      [6.9030, 45.4450],
+      [6.9065, 45.4350],
+      [6.9085, 45.4250],
+      [6.9095, 45.4200]
+    ]
+  },
+  {
+    id: 'tph-grande-motte',
+    ref: 'Grande Motte',
+    name: 'Téléphérique de la Grande Motte (Glacier 3032 m ↔ Sommet 3456 m)',
+    mode: 'cable_car',
+    operator: 'STGM Tignes',
+    network: 'Tignes - Espace Killy',
+    route: 'Glacier de la Grande Motte (3032 m) ↔ Belvédère Panoramic 3456 m (Terrasse "Roof Top" à 360°)',
+    frequency: 'En continu',
+    period: 'Été & Hiver (Panorama grandiose sur le Dôme de Chasseforêt, la Grande Casse et le Mont-Blanc)',
+    stops: [
+      'Gare du Glacier Grande Motte (3032 m)',
+      'Sommet Grande Motte (3456 m, Terrasse Panoramique)'
+    ],
+    color: '#ec4899',
+    url: 'https://www.tignes.net',
+    directCoordinates: [
+      [6.9095, 45.4200],
+      [6.8980, 45.4120],
+      [6.8850, 45.4050]
+    ]
   },
   {
     id: 'bus-s16',
@@ -1353,12 +1843,13 @@ const BUS_ROUTES = [
     period: 'Toute l\'année (Renforts quotidiens été & hiver)',
     stops: [
       'Névache Roubion (Grand Parking obligatoire & Foyer nordique)',
-      'Névache Village',
+      'Névache Sallé (Croix de Mission)',
+      'Névache Village (Ville-Basse & Le Bon Coin)',
       'Névache Ville-Haute (1600 m, Pôle navettes Haute Vallée)'
     ],
     color: '#06b6d4',
     url: 'https://www.monaltigo.fr',
-    coords: '6.6040,45.0200;6.5890,45.0250;6.5790,45.0270'
+    coords: '6.6319,45.0171;6.6216,45.0179;6.6128,45.0181;6.6050,45.0189'
   },
   {
     id: 'altigo-n4-claree',
@@ -1380,7 +1871,7 @@ const BUS_ROUTES = [
     ],
     color: '#10b981',
     url: 'https://www.monaltigo.fr',
-    coords: '6.5790,45.0270;6.5786,45.0189;6.5491,45.0318;6.5350,45.0450;6.5299,45.0575;6.5240,45.0680'
+    coords: '6.6050,45.0189;6.5785,45.0221;6.5451,45.0342;6.5380,45.0420;6.5340,45.0518;6.5256,45.0592'
   },
   {
     id: 'navette-vallee-etroite',
@@ -1392,10 +1883,10 @@ const BUS_ROUTES = [
     route: 'Névache ↔ Col de l\'Échelle (1762 m) ↔ Vallée Étroite (Granges de la Vallée Étroite, Refuges I Re Magi & Terzo Alpini)',
     frequency: 'Navettes estivales sur réservation',
     period: 'Été (Accès sentier des Lacs de Terre Rouge & Refuges italiens)',
-    stops: ['Névache Village', 'Col de l\'Échelle (1762 m)', 'Vallée Étroite (Granges de la Vallée Étroite 1650 m, Refuges I Re Magi & Terzo Alpini)'],
+    stops: ['Névache Village (Ville-Haute)', 'Col de l\'Échelle (1762 m)', 'Vallée Étroite (Granges de la Vallée Étroite 1650 m, Refuges I Re Magi & Terzo Alpini)'],
     color: '#f59e0b',
     url: 'https://www.nevache-tourisme.fr',
-    coords: '6.5370,44.9720;6.5660,45.0160;6.5920,45.0350'
+    coords: '6.6050,45.0189;6.6570,45.0270;6.6267,45.0695'
   },
   {
     id: 'navette-queyras-est',
@@ -1538,18 +2029,39 @@ const BUS_ROUTES = [
   },
   {
     id: 'navette-champagny-laisonnay',
-    ref: 'Navette Champagny',
-    name: 'Navette Champagny-en-Vanoise ↔ Le Laisonnay d\'en Bas',
+    ref: 'Navette Glière',
+    name: 'Navette Champagny : Village ↔ Champagny-le-Haut ↔ Le Laisonnay ↔ Refuge de la Glière (2010 m)',
     mode: 'navette',
-    operator: 'Mairie de Champagny-en-Vanoise',
+    operator: 'Commune de Champagny-en-Vanoise & Refuge de la Glière',
     network: 'Navettes Vanoise',
-    route: 'Champagny-le-Haut ↔ Le Laisonnay d\'en Bas (1570 m)',
-    frequency: 'Navettes estivales',
-    period: 'Été (Accès direct refuge de la Glière & cirque de Champagny)',
-    stops: ['Champagny-le-Haut', 'Le Laisonnay d\'en Bas (1570 m, refuge de la Glière & accès Col de la Vanoise)'],
+    route: 'Champagny Village (1250 m) ↔ Champagny-le-Haut ↔ Le Laisonnay ↔ Refuge de la Glière (2010 m)',
+    frequency: 'Navettes régulières estivales (Accès direct cœur de Vanoise)',
+    period: 'Été (Juin à Septembre)',
+    stops: [
+      'Champagny-en-Vanoise Centre (Office de Tourisme / Télécabine 1250 m)',
+      'La Chiserette (1430 m)',
+      'Champagny-le-Haut (Le Bois / Espace Glacial 1470 m)',
+      'Friburge',
+      'Le Laisonnay d\'en Bas (1570 m, Cascade du Py)',
+      'Le Laisonnay d\'en Haut (1580 m)',
+      'Refuge de la Glière (2010 m, Lac de la Glière & départ sentier Col de la Vanoise)'
+    ],
     color: '#f59e0b',
     url: 'https://www.champagny.com',
-    coords: '6.7080,45.4280;6.7110,45.3970'
+    directCoordinates: fs.existsSync('scripts/data/champagny_gliere_full.json')
+      ? JSON.parse(fs.readFileSync('scripts/data/champagny_gliere_full.json', 'utf8'))
+      : null,
+    timetable: {
+      headers: ['Matin (08h)', 'Matin (10h)', 'Midi (12h)', 'Après-midi (14h)', 'Fin d\'après-midi (17h)'],
+      rows: [
+        { stop: 'Champagny-en-Vanoise Centre (Office de Tourisme / Télécabine 1250 m)', times: ['08:30', '10:00', '12:00', '14:30', '17:00'] },
+        { stop: 'La Chiserette (1430 m)', times: ['08:40', '10:10', '12:10', '14:40', '17:10'] },
+        { stop: 'Champagny-le-Haut (Le Bois / Espace Glacial 1470 m)', times: ['08:50', '10:20', '12:20', '14:50', '17:20'] },
+        { stop: 'Le Laisonnay d\'en Bas (1570 m, Cascade du Py)', times: ['09:05', '10:35', '12:35', '15:05', '17:35'] },
+        { stop: 'Refuge de la Glière (2010 m, Lac de la Glière & départ sentier Col de la Vanoise)', times: ['09:30', '11:00', '13:00', '15:30', '18:00'] }
+      ],
+      note: 'Liaison estivale du vallon de Champagny-le-Haut jusqu\'au Refuge de la Glière (Correspondances bus S66)'
+    }
   },
   // (Ancienne navette Termignon-Bellecombe remplacée par Ligne 2 HMV officielle)
   {
@@ -1583,54 +2095,6 @@ const BUS_ROUTES = [
     coords: '6.3440,45.2760;6.2420,45.2360;6.2230,45.2110;6.2290,45.2270'
   },
 
-  // ═══════════════════════════════════════════════════════
-  // NAVETTES MANQUANTES - HAUTE-SAVOIE (CONTAMINES, MORZINE, VALLORCINE)
-  // ═══════════════════════════════════════════════════════
-  {
-    id: 'bus-y71',
-    ref: 'Y71',
-    name: 'Ligne Y71 : Thonon-les-Bains ↔ Morzine ↔ Avoriaz',
-    mode: 'bus',
-    operator: 'Cars Région Haute-Savoie',
-    network: 'Cars Région',
-    route: 'Thonon-les-Bains ↔ Bioge ↔ Saint-Jean-d\'Aulps ↔ Morzine ↔ Avoriaz (1800 m)',
-    frequency: 'Plusieurs allers-retours quotidiens',
-    period: 'Toute l\'année',
-    stops: ['Thonon-les-Bains Gare Routière', 'Bioge', 'Saint-Jean-d\'Aulps', 'Morzine Office de Tourisme', 'Avoriaz Station (1800 m)'],
-    color: '#10b981',
-    url: 'https://www.laregionvoustransporte.fr',
-    coords: '6.4770,46.3720;6.5810,46.2430;6.7060,46.1770;6.7720,46.1810;6.7740,46.1940'
-  },
-  {
-    id: 'bus-y72',
-    ref: 'Y72',
-    name: 'Ligne Y72 : Cluses ↔ Taninges ↔ Les Gets ↔ Morzine',
-    mode: 'bus',
-    operator: 'Cars Région Haute-Savoie',
-    network: 'Cars Région',
-    route: 'Cluses ↔ Châtillon-sur-Cluses ↔ Taninges ↔ Les Gets ↔ Morzine',
-    frequency: 'Quotidien',
-    period: 'Toute l\'année',
-    stops: ['Cluses Gare', 'Châtillon-sur-Cluses', 'Taninges Centre', 'Les Gets Village (1172 m)', 'Morzine Office de Tourisme'],
-    color: '#10b981',
-    url: 'https://www.laregionvoustransporte.fr',
-    coords: '6.5790,46.0601;6.5790,46.0870;6.5910,46.1080;6.6690,46.1540;6.7060,46.1770'
-  },
-  {
-    id: 'bus-y91',
-    ref: 'Y91',
-    name: 'Ligne Y91 : Annecy ↔ Talloires ↔ Col de la Forclaz (Parapente)',
-    mode: 'bus',
-    operator: 'Cars Région Haute-Savoie',
-    network: 'Cars Région',
-    route: 'Annecy ↔ Veyrier-du-Lac ↔ Menthon-Saint-Bernard ↔ Talloires ↔ Col de la Forclaz',
-    frequency: 'Quotidien',
-    period: 'Toute l\'année (Accès site de parapente emblématique)',
-    stops: ['Annecy Gare', 'Veyrier-du-Lac', 'Menthon-Saint-Bernard (Château)', 'Talloires-Montmin', 'Col de la Forclaz (1150 m, envol parapente)'],
-    color: '#10b981',
-    url: 'https://www.laregionvoustransporte.fr',
-    coords: '6.1296,45.8992;6.1630,45.8780;6.1930,45.8580;6.2090,45.8420;6.2150,45.8240'
-  },
   {
     id: 'navette-sat-courmayeur',
     ref: 'SAT Courmayeur',
@@ -1784,21 +2248,6 @@ const BUS_ROUTES = [
     coords: '5.5525,45.0726;5.5270,45.0310;5.4410,45.0230;5.4160,44.9680'
   },
   {
-    id: 'bus-d05',
-    ref: 'D05',
-    name: 'Ligne D05 : Valence ↔ Romans ↔ Pont-en-Royans ↔ La Chapelle ↔ Vassieux-en-Vercors',
-    mode: 'bus',
-    operator: 'Cars Région Drôme',
-    network: 'Cars Région Drôme / Vercors',
-    route: 'Valence Gare ↔ Romans Gare ↔ Saint-Nazaire-en-Royans ↔ Pont-en-Royans ↔ Les Grands Goulets ↔ La Chapelle-en-Vercors ↔ Vassieux-en-Vercors',
-    frequency: 'Quotidien',
-    period: 'Toute l\'année (Accès Vercors Drômois, Musée de la Préhistoire & Mémorial de la Résistance)',
-    stops: ['Valence Ville', 'Romans-sur-Isère Gare', 'Saint-Nazaire-en-Royans', 'Pont-en-Royans', 'La Chapelle-en-Vercors', 'Vassieux-en-Vercors (1048 m)'],
-    color: '#d97706',
-    url: 'https://www.auvergnerhonealpes.fr',
-    coords: '4.8920,44.9330;5.0500,45.0460;5.2490,45.0600;5.3420,45.0610;5.4160,44.9680;5.3710,44.8960'
-  },
-  {
     id: 'bus-gresse',
     ref: 'Navette Gresse',
     name: 'Navette Vercors : Monestier-de-Clermont ↔ Gresse-en-Vercors',
@@ -1891,59 +2340,6 @@ const BUS_ROUTES = [
     url: 'https://carsisere.auvergnerhonealpes.fr',
     coords: '5.5850,45.5360;5.5640,45.5250;5.6150,45.4140;5.5900,45.3620'
   },
-  {
-    id: 'bus-s04',
-    ref: 'S04',
-    name: 'Ligne S04 : Saint-Pierre-d\'Entremont ↔ Col du Granier ↔ Chambéry',
-    mode: 'bus',
-    operator: 'Cars Région Savoie',
-    network: 'Cars Région Savoie / Chartreuse',
-    route: 'Saint-Pierre-d\'Entremont (73) ↔ Entremont-le-Vieux ↔ Col du Granier (1134 m) ↔ Apremont ↔ Saint-Cassin ↔ Chambéry Gare',
-    frequency: 'Quotidien du lundi au samedi',
-    period: 'Toute l\'année (Accès Mont Granier 1933 m & Vallon des Entremonts)',
-    stops: [
-      'Saint-Pierre-d\'Entremont Centre',
-      'Entremont-le-Vieux (Espace Nordique du Désert)',
-      'Col du Granier (1134 m, départ falaise nord Granier)',
-      'Apremont',
-      'Saint-Cassin',
-      'Chambéry Gare Routière / SNCF'
-    ],
-    color: '#2563eb',
-    url: 'https://www.laregionvoustransporte.fr',
-    coords: '5.8600,45.4180;5.8820,45.4520;5.9010,45.4820;5.8970,45.5380;5.9200,45.5710'
-  },
-  {
-    id: 'bus-s03',
-    ref: 'S03',
-    name: 'Ligne S03 : Pontcharra ↔ Valgelon-La Rochette ↔ Chamoux-sur-Gelon',
-    mode: 'bus',
-    operator: 'Cars Région Savoie / Isère',
-    network: 'Cars Région Belledonne Nord',
-    route: 'Pontcharra Gare SNCF ↔ Détrier ↔ Valgelon-La Rochette ↔ Arvillard ↔ Chamoux-sur-Gelon',
-    frequency: 'Liaison quotidienne',
-    period: 'Toute l\'année (Accès Belledonne Nord, vallée du Gelon & sentiers)',
-    stops: ['Pontcharra-sur-Bréda Gare', 'Détrier', 'Valgelon-La Rochette', 'Chamoux-sur-Gelon'],
-    color: '#2563eb',
-    url: 'https://www.laregionvoustransporte.fr',
-    coords: '6.0170,45.4340;6.0960,45.4430;6.1200,45.4580;6.2160,45.5330'
-  },
-  {
-    id: 'bus-s05',
-    ref: 'S05',
-    name: 'Ligne S05 : Chambéry ↔ Montmélian ↔ Pontcharra ↔ Chamoux-sur-Gelon',
-    mode: 'bus',
-    operator: 'Cars Région Savoie',
-    network: 'Cars Région Savoie',
-    route: 'Chambéry Gare Routière ↔ Montmélian Gare ↔ Pontcharra Gare ↔ Détrier ↔ Chamoux-sur-Gelon',
-    frequency: 'Quotidien',
-    period: 'Toute l\'année',
-    stops: ['Chambéry Gare', 'Montmélian Gare', 'Pontcharra Gare', 'Chamoux-sur-Gelon'],
-    color: '#1d4ed8',
-    url: 'https://www.laregionvoustransporte.fr',
-    coords: '5.9200,45.5710;6.0590,45.5010;6.0170,45.4340;6.2160,45.5330'
-  },
-
   // ═══════════════════════════════════════════════════════
   // ISÈRE : MATHEYSINE, TRIÈVES & SUD-ISÈRE (CARS RÉGION 2025-2026)
   // ═══════════════════════════════════════════════════════
@@ -2750,11 +3146,12 @@ const BUS_ROUTES = [
       'Val-des-Prés (Le Rosier, La Vachette)',
       'Plampinet (Auberge de la Clarée, départ Col des Thures)',
       'Névache Roubion (Foyer nordique)',
+      'Névache Village (Ville-Basse)',
       'Névache Ville-Haute (1600 m, Pôle d\'échange des navettes de la Haute Clarée)'
     ],
     color: '#ec4899',
     url: 'https://www.monaltigo.fr',
-    coords: '6.6340,44.8980;6.6430,44.8990;6.6730,44.9160;6.6770,44.9490;6.6617,45.0031;6.6040,45.0200;6.5790,45.0270'
+    coords: '6.6340,44.8980;6.6430,44.8990;6.6730,44.9160;6.6770,44.9490;6.6617,45.0031;6.6319,45.0171;6.6128,45.0181;6.6050,45.0189'
   },
   {
     id: 'altigo-ld',
@@ -3034,6 +3431,9 @@ const BUS_ROUTES = [
     ],
     color: '#06b6d4',
     url: 'https://www.cc-paysdesecrins.fr',
+    directCoordinates: fs.existsSync('scripts/data/estibus_madame_carle_full.json')
+      ? JSON.parse(fs.readFileSync('scripts/data/estibus_madame_carle_full.json', 'utf8'))
+      : null,
     coords: '6.4880,44.8640;6.4710,44.8640;6.4620,44.8710;6.4550,44.8780;6.4500,44.8820;6.4460,44.8860;6.4440,44.8870;6.4180,44.9180'
   },
   {
@@ -3267,8 +3667,8 @@ const STATIONS = [
   { id: 'st-chambery', name: 'Gare de Chambéry - Challes-les-Eaux', mode: 'station', alt: 270, lat: 45.5714, lng: 5.9200, lines: ['TGV InOui / TGV Milan', 'TER Maurienne', 'TER Tarentaise', 'TER Annecy/Genève'] },
   { id: 'st-annecy', name: 'Gare d\'Annecy', mode: 'station', alt: 448, lat: 45.8992, lng: 6.1296, lines: ['TGV InOui', 'Léman Express', 'TER AURA', 'Cars Région Y51/Y62/Y91'] },
   { id: 'st-modane', name: 'Gare de Modane (Frontière Fr/It)', mode: 'station', alt: 1057, lat: 45.2020, lng: 6.6710, lines: ['TGV Paris-Milan', 'TER Maurienne', 'Cars Région S52/S53 (Val Cenis & Vanoise)'] },
-  { id: 'st-bsm', name: 'Gare de Bourg-Saint-Maurice', mode: 'station', alt: 810, lat: 45.6180, lng: 6.7700, lines: ['TGV des Neiges / Eurostar', 'TER Tarentaise', 'Funiculaire Arc-en-Ciel', 'Cars S14/S15/S16'] },
-  { id: 'st-moutiers', name: 'Gare de Moûtiers - Salins - Brides-les-Bains', mode: 'station', alt: 480, lat: 45.4836, lng: 6.5317, lines: ['TGV des Neiges', 'TER Tarentaise', 'Cars S10 (Courchevel)/S11 (Méribel)/S12 (Val Thorens)'] },
+  { id: 'st-bsm', name: 'Gare de Bourg-Saint-Maurice', mode: 'station', alt: 810, lat: 45.6180, lng: 6.7700, lines: ['TGV des Neiges / Eurostar', 'TER Tarentaise', 'Funiculaire Arc-en-Ciel', 'Cars Région S83 (Tignes)', 'Cars Région S82 (Val d\'Isère)', 'Cars S15 (Peisey)'] },
+  { id: 'st-moutiers', name: 'Gare de Moûtiers - Salins - Brides-les-Bains', mode: 'station', alt: 480, lat: 45.4836, lng: 6.5317, lines: ['TGV des Neiges / Eurostar', 'TER Tarentaise', 'Cars S10 (Courchevel)', 'Cars S11 (Méribel)', 'Cars S12 (Val Thorens)', 'Cars S66 (Champagny & Pralognan)'] },
   { id: 'st-albertville', name: 'Gare d\'Albertville', mode: 'station', alt: 340, lat: 45.6756, lng: 6.3927, lines: ['TER Tarentaise', 'Cars Région Y51 (Annecy)', 'Cars S20 (Beaufort)'] },
   { id: 'st-briancon', name: 'Gare de Briançon (1204 m)', mode: 'station', alt: 1204, lat: 44.8980, lng: 6.6340, lines: ['Train de nuit Intercités Paris-Briançon', 'TER Val de Durance', 'ZOU! 54/55/57', 'Navette Clarée'] },
   { id: 'st-gap', name: 'Gare de Gap', mode: 'station', alt: 745, lat: 44.5630, lng: 6.0790, lines: ['TER Valence-Briançon', 'TER Marseille-Briançon', 'Ligne des Alpes', 'ZOU! 51/52/Dévoluy'] },
@@ -3285,11 +3685,26 @@ const STATIONS = [
   { id: 'st-nevache', name: 'Pôle Navettes de Névache (Vallée de la Clarée)', mode: 'station', alt: 1600, lat: 44.9720, lng: 6.5370, lines: ['Navette Vallée de la Clarée', 'Navette Haute Clarée (Fontcouverte)', 'Navette Vallée Étroite'] },
   { id: 'st-st-dalmas', name: 'Gare de Saint-Dalmas-de-Tende', mode: 'station', alt: 710, lat: 44.0520, lng: 7.5950, lines: ['Train des Merveilles (Ligne de Tende)', 'Navette Vallée des Merveilles'] },
   { id: 'st-barcelonnette', name: 'Gare Routière de Barcelonnette', mode: 'station', alt: 1132, lat: 44.3860, lng: 6.6510, lines: ['ZOU! 51 (Gap-Embrun)', 'ZOU! Digne', 'Navette Haute Ubaye (Maljasset/Fouillouse)'] },
-  { id: 'hub-madame-carle', name: 'Pôle Navettes Pré de Madame Carle', mode: 'station', alt: 1874, lat: 44.9180, lng: 6.4180, lines: ['Navette Écrins (Vallouise - Ailefroide - Madame Carle)', 'Départ direct refuges Glacier Blanc & Cézanne'] },
-  { id: 'hub-pralognan', name: 'Pôle Navettes Pralognan-la-Vanoise', mode: 'station', alt: 1410, lat: 45.3800, lng: 6.7210, lines: ['Navette Parc Vanoise Les Prioux', 'Départ refuges Félix Faure, Péclet-Polset, Roc de la Pêche'] },
+  { id: 'hub-madame-carle', name: 'Pôle Navettes Pré de Madame Carle', mode: 'station', alt: 1874, lat: 44.9175, lng: 6.4160, lines: ['ESTIBUS A : Vallouise-Pelvoux ↔ Ailefroide ↔ Pré de Madame Carle (1874 m)', 'Navette Estibus Écrins', 'Départ direct refuges Glacier Blanc & Cézanne'] },
+  { id: 'hub-champagny', name: 'Pôle Mobilité Champagny-en-Vanoise (1250 m)', mode: 'station', alt: 1250, lat: 45.4545, lng: 6.6940, lines: ['Cars Région S66 (Moûtiers TGV)', 'Navette Champagny-le-Haut & Le Laisonnay', 'Télécabine Champagny ↔ La Plagne Paradiski', 'Navette Vallée de Bozel'], color: '#10b981' },
+  { id: 'hub-pralognan', name: 'Pôle Navettes Pralognan-la-Vanoise', mode: 'station', alt: 1410, lat: 45.3800, lng: 6.7210, lines: ['Cars Région S66 (Moûtiers TGV)', 'Navette Parc Vanoise Les Prioux', 'Navette Vallée de Bozel', 'Départ refuges Félix Faure, Péclet-Polset, Roc de la Pêche'] },
   { id: 'hub-berarde', name: 'Pôle Navettes La Bérarde (Écrins)', mode: 'station', alt: 1727, lat: 44.9330, lng: 6.2940, lines: ['Navette Oisans Saint-Christophe / Bourg-d\'Oisans', 'Départ refuges Promontoire, Châtelleret, Carrelet'] },
   { id: 'hub-gioberney', name: 'Pôle Navettes Gioberney (Valgaudemar)', mode: 'station', alt: 1640, lat: 44.7680, lng: 6.2750, lines: ['Navette Valgaudemar', 'Départ refuges Xavier Blanc & Vallonpierre'] },
   { id: 'hub-notre-dame-gorge', name: 'Pôle Navettes Notre-Dame de la Gorge', mode: 'station', alt: 1210, lat: 45.7870, lng: 6.7130, lines: ['Navette Les Contamines', 'Départ Tour du Mont-Blanc & refuge Nant Borrant'] },
+  // Pôles et Gares Cars Région Express & Haute-Savoie
+  { id: 'st-annemasse', name: 'Gare d\'Annemasse (Léman Express & TGV)', mode: 'station', alt: 435, lat: 46.1996, lng: 6.2381, lines: ['Léman Express L1/L2/L3/L4', 'TER AURA', 'Cars Région Y02/Y04'] },
+  { id: 'st-bellegarde', name: 'Gare de Bellegarde-sur-Valserine (TGV)', mode: 'station', alt: 350, lat: 46.1106, lng: 5.8250, lines: ['TGV Lyria (Paris-Genève)', 'Léman Express', 'Cars Express X33 (Ferney/Divonne)', 'Cars Express X36 (Nurieux/Bourg)'] },
+  { id: 'st-valence-tgv', name: 'Gare de Valence TGV Rhône-Alpes Sud', mode: 'station', alt: 160, lat: 44.9919, lng: 4.9786, lines: ['TGV Méditerranée', 'TER Valence - Grenoble', 'Ligne des Alpes'] },
+  // Pôles et Gares Drôme Alpine & Savoie
+  { id: 'st-aix-bains', name: 'Gare d\'Aix-les-Bains-Le Revard', mode: 'station', alt: 244, lat: 45.6880, lng: 5.9090, lines: ['TGV InOui', 'TER AURA', 'Cars Région S10, S11 (Revard), S12 (Aillon)'] },
+  { id: 'st-crest', name: 'Gare de Crest', mode: 'station', alt: 195, lat: 44.7290, lng: 5.0210, lines: ['TER Livron-Veynes', 'Cars Région D24, D25, D27, D28, D52, D53'] },
+  { id: 'st-die', name: 'Gare de Die (Diois / Vercors Sud)', mode: 'station', alt: 410, lat: 44.7570, lng: 5.3690, lines: ['TER Livron-Veynes / Train de nuit', 'Cars Région D28 (Crest), D29 (Luc-en-Diois)'] },
+  { id: 'st-nyons', name: 'Gare Routière de Nyons (Baronnies Provençales)', mode: 'station', alt: 270, lat: 44.3590, lng: 5.1380, lines: ['Cars Région D36, D37, D38, D44'] },
+  // Pôles et Gares de Tignes & Haute-Tarentaise
+  { id: 'hub-tignes-lac', name: 'Gare Routière de Tignes Le Lac (2100 m)', mode: 'station', alt: 2100, lat: 45.4695, lng: 6.9075, lines: ['Navette Gratuite 2100', 'Navette Gratuite 1800', 'Cars Région S83 (Bourg-St-Maurice)', 'Cars Région S82 (Val d\'Isère)'], color: '#06b6d4' },
+  { id: 'hub-tignes-val-claret', name: 'Pôle Tignes Val Claret - Grande Motte (2120 m)', mode: 'station', alt: 2120, lat: 45.4550, lng: 6.8985, lines: ['Funiculaire Perce-Neige (Glacier 3032 m)', 'Navette Gratuite 2100', 'Navette Gratuite 1800', 'Cars Région S83', 'Départ Tour des Glaciers de la Vanoise & Refuges Leisse / Palet'], color: '#06b6d4' },
+  { id: 'hub-tignes-1800', name: 'Pôle Tignes 1800 - Les Boisses', mode: 'station', alt: 1800, lat: 45.4910, lng: 6.9255, lines: ['Navette Gratuite 1800', 'Navette Les Brévières', 'Cars Région S83', 'Télécabine des Boisses'], color: '#06b6d4' },
+  { id: 'hub-tignes-brevieres', name: 'Pôle Tignes Les Brévières (1550 m)', mode: 'station', alt: 1550, lat: 45.5085, lng: 6.9205, lines: ['Navette Les Brévières', 'Cars Région S83', 'Télécabine des Brévières', 'Accès sentiers Dôme de la Sache'], color: '#06b6d4' },
   // Pôles et Arrêts Navettes de Val Thorens (Saison 2025-2026)
   { id: 'hub-val-thorens', name: 'Gare Routière de Val Thorens (P1, 2300 m)', mode: 'station', alt: 2300, lat: 45.2977, lng: 6.5800, lines: ['Circuit Intervillage (Boucle Station)', 'Navette Parkings P3/P4/P5', 'Cars Région S12 (Moûtiers)', 'Départ 3 Vallées & Cime Caron'], color: '#ea580c' },
   { id: 'stop-vt-montagnettes', name: 'Val Thorens - Les Montagnettes', mode: 'navette', alt: 2300, lat: 45.2966, lng: 6.5804, lines: ['Circuit Intervillage (Boucle Station)'], color: '#ea580c' },
@@ -3417,6 +3832,98 @@ const STATIONS = [
     lng: 6.3730, 
     lines: ['Léman Express L3', 'TER Auvergne-Rhône-Alpes', 'Proxim\'iTi 460/461 (Glières ↔ St-Jean ↔ Grand-Bornand)'], 
     color: '#6366f1' 
+  },
+
+  // Pôles et Gares du Chablais, Morzine & Avoriaz
+  {
+    id: 'hub-avoriaz',
+    name: 'Avoriaz 1800 - Place Jean Vuarnet & Accueil Station (1800 m)',
+    mode: 'station',
+    alt: 1800,
+    lat: 46.1961,
+    lng: 6.7677,
+    lines: ['Téléphérique 3S Prodains Express', 'Cars Région Y91/Y92 (Saison)', 'Domaine Portes du Soleil', 'Accès Hauts-Forts (2466 m)'],
+    color: '#0284c7'
+  },
+  {
+    id: 'hub-prodains',
+    name: 'Gare Inférieure des Prodains (1180 m)',
+    mode: 'station',
+    alt: 1180,
+    lat: 46.1898,
+    lng: 6.7534,
+    lines: ['Téléphérique 3S Prodains Express (Avoriaz)', 'Navette Ligne A / AU (Morzine Pléney)', 'Cars Région Y91 (Thonon)', 'Cars Région Y92 (Cluses)'],
+    color: '#0284c7'
+  },
+  {
+    id: 'hub-morzine',
+    name: 'Gare Routière de Morzine (1000 m)',
+    mode: 'station',
+    alt: 1000,
+    lat: 46.1793,
+    lng: 6.7083,
+    lines: ['Cars Région Y91 (Thonon)', 'Cars Région Y92 (Cluses)', 'Navette A (Prodains/Avoriaz)', 'Navette M (Montriond/Ardent)', 'Navette E (Mines d\'Or)', 'Balad\'Aulps Bus'],
+    color: '#0284c7'
+  },
+  {
+    id: 'hub-les-gets',
+    name: 'Gare Routière des Gets (1172 m)',
+    mode: 'station',
+    alt: 1172,
+    lat: 46.1598,
+    lng: 6.6686,
+    lines: ['Cars Région Y92 (Cluses ↔ Morzine)', 'Balad\'Aulps Bus', 'Télécabine des Chavannes', 'Télécabine du Mont Chéry'],
+    color: '#0284c7'
+  },
+  {
+    id: 'hub-ardent',
+    name: 'Pôle Lac de Montriond / Ardent (1060 m)',
+    mode: 'station',
+    alt: 1060,
+    lat: 46.2160,
+    lng: 6.7445,
+    lines: ['Télécabine d\'Ardent (Avoriaz / Lindarets)', 'Navette M (Morzine Pléney)', 'Accès Lac de Montriond & Cascade d\'Ardent'],
+    color: '#10b981'
+  },
+  {
+    id: 'hub-valdisere-centre',
+    name: 'Pôle Val d\'Isère - Gare Routière (1850 m)',
+    mode: 'station',
+    alt: 1850,
+    lat: 45.45045,
+    lng: 6.97688,
+    lines: ['Cars Région S82 (Bourg-St-Maurice TGV)', 'Navette Train Rouge (La Daille ↔ Le Fornet)', 'Accès Col de l\'Iseran & Parc de la Vanoise'],
+    color: '#dc2626'
+  },
+  {
+    id: 'hub-alpe-huez-sports',
+    name: 'Pôle Alpe d\'Huez - Palais des Sports (1860 m)',
+    mode: 'station',
+    alt: 1860,
+    lat: 45.0920,
+    lng: 6.0694,
+    lines: ['Cars Région Isère T76 (Bourg-d\'Oisans)', 'Navettes Citron, Pomme, Fraise, Myrtille', 'Télécentre / Alpe Express'],
+    color: '#059669'
+  },
+  {
+    id: 'hub-valmorel-bourg',
+    name: 'Pôle Valmorel - Le Bourg & Crève-Cœur (1400 m)',
+    mode: 'station',
+    alt: 1400,
+    lat: 45.4623,
+    lng: 6.4437,
+    lines: ['Cars Région Savoie S62 (Moûtiers TGV)', 'Vallée\'BUS (Notre-Dame-de-Briançon)', 'Télébourg'],
+    color: '#ea580c'
+  },
+  {
+    id: 'hub-doucy-station',
+    name: 'Pôle Doucy-Station (Valmorel 1250 m)',
+    mode: 'station',
+    alt: 1250,
+    lat: 45.4746,
+    lng: 6.4674,
+    lines: ['Cars Région Savoie S61 (Moûtiers TGV)', 'Télésiège de Doucy'],
+    color: '#d97706'
   }
 ];
 
@@ -3617,12 +4124,115 @@ async function main() {
       stops: ['Nice-Ville', 'Drap-Cantaron', 'L\'Escarène', 'Sospel', 'Breil-sur-Roya', 'Fontan-Saorge', 'Saint-Dalmas-de-Tende', 'Tende', 'Vievola', 'Cuneo'],
       color: '#6366f1',
       url: 'https://zou.maregionsud.fr'
+    },
+    'Ligne de Valence à Moirans': {
+      ref: 'TGV / TER',
+      name: 'Ligne Valence ↔ Grenoble (TGV Paris & TER Sillon Alpin)',
+      mode: 'train',
+      operator: 'SNCF Voyageurs',
+      network: 'TGV InOui & TER AURA',
+      route: 'Valence TGV ↔ Valence Ville ↔ Romans ↔ Saint-Marcellin ↔ Moirans ↔ Grenoble',
+      frequency: 'Toutes les 30 à 60 min (TGV direct Paris-Gare de Lyon & TER cadencé)',
+      period: 'Toute l\'année',
+      stops: ['Valence TGV', 'Valence Ville', 'Romans-Bourg-de-Péage', 'Saint-Marcellin', 'Moirans', 'Grenoble'],
+      color: '#7c3aed',
+      url: 'https://www.sncf-connect.com'
+    },
+    'Ligne Annecy - Aix-les-Bains': {
+      ref: 'TGV / TER',
+      name: 'Ligne TGV & TER : Aix-les-Bains ↔ Annecy',
+      mode: 'train',
+      operator: 'SNCF Voyageurs',
+      network: 'TGV InOui & TER AURA',
+      route: 'Paris Gare de Lyon / Lyon ↔ Aix-les-Bains ↔ Rumilly ↔ Annecy',
+      frequency: 'Nombreux TGV quotidiens & TER cadencés',
+      period: 'Toute l\'année',
+      stops: ['Aix-les-Bains', 'Rumilly', 'Annecy'],
+      color: '#7c3aed',
+      url: 'https://www.sncf-connect.com'
+    },
+    'Ligne de Livron à Aspres-sur-Buëch': {
+      ref: 'TER / Train de Nuit',
+      name: 'Ligne du Diois : Livron ↔ Crest ↔ Die ↔ Luc-en-Diois ↔ Veynes',
+      mode: 'train',
+      operator: 'SNCF Voyageurs',
+      network: 'TER AURA & Intercités Nuit',
+      route: 'Valence / Livron ↔ Crest ↔ Die ↔ Luc-en-Diois ↔ Aspres-sur-Buëch ↔ Veynes (Accès Briançon)',
+      frequency: 'Quotidien (Train de nuit direct Paris-Austerlitz ↔ Briançon & TER)',
+      period: 'Toute l\'année',
+      stops: ['Valence Ville', 'Crest', 'Die', 'Luc-en-Diois', 'Aspres-sur-Buëch', 'Veynes-Dévoluy'],
+      color: '#6366f1',
+      url: 'https://www.sncf-connect.com'
     }
+  };
+
+  const RAIL_STATION_COORDS = {
+    'Paris Gare de Lyon': [2.3730, 48.8443],
+    'Paris-Austerlitz': [2.3660, 48.8415],
+    'Lyon-Part-Dieu': [4.8590, 45.7606],
+    'Grenoble': [5.7145, 45.1915],
+    'Grenoble Universités Gières': [5.7820, 45.1870],
+    'Pont-de-Claix': [5.6980, 45.1230],
+    'Vif': [5.6700, 45.0550],
+    'Monestier-de-Clermont': [5.6350, 44.9180],
+    'Clelles-Mens': [5.6260, 44.8260],
+    'Lus-la-Croix-Haute': [5.6980, 44.6640],
+    'Aspres-sur-Buëch': [5.7500, 44.5200],
+    'Veynes-Dévoluy': [5.8230, 44.5330],
+    'Chambéry': [5.9200, 45.5710],
+    'Aix-les-Bains': [5.9080, 45.6880],
+    'Annecy': [6.1210, 45.9015],
+    'Albertville': [6.3927, 45.6756],
+    'Notre-Dame-de-Briançon': [6.4710, 45.5250],
+    'Moûtiers-Salins-Brides-les-Bains': [6.5310, 45.4830],
+    'Aime-la-Plagne': [6.6490, 45.5560],
+    'Landry': [6.7410, 45.5700],
+    'Bourg-Saint-Maurice': [6.7680, 45.6180],
+    'Saint-Jean-de-Maurienne': [6.3530, 45.2780],
+    'Saint-Michel-de-Maurienne': [6.4710, 45.2170],
+    'Modane': [6.6660, 45.2010],
+    'Saint-Pierre-d\'Albigny': [6.1550, 45.5680],
+    'Montmélian': [6.0590, 45.5020],
+    'Brignoud': [5.8980, 45.2580],
+    'Pontcharra-sur-Bréda': [6.0150, 45.4320],
+    'Saint-Gervais Le Fayet': [6.7020, 45.9070],
+    'Chamonix-Mont-Blanc': [6.8690, 45.9230],
+    'Les Praz': [6.8850, 45.9400],
+    'Argentière': [6.9270, 45.9810],
+    'Vallorcine': [6.9320, 46.0310],
+    'Gap': [6.0880, 44.5670],
+    'Chorges': [6.2770, 44.5450],
+    'Embrun': [6.4950, 44.5630],
+    'Montdauphin-Guillestre': [6.6180, 44.6710],
+    'L\'Argentière-les-Écrins': [6.5590, 44.7890],
+    'Briançon': [6.6320, 44.8920],
+    'Valence TGV': [4.9780, 44.9900],
+    'Valence Ville': [4.8920, 44.9280],
+    'Romans-Bourg-de-Péage': [5.0510, 45.0450],
+    'Saint-Marcellin': [5.3160, 45.1530],
+    'Moirans': [5.5680, 45.3260],
+    'Rumilly': [5.9470, 45.8670],
+    'Crest': [5.0210, 44.7310],
+    'Luc-en-Diois': [5.4520, 44.6150],
+    'Nice-Ville': [7.2620, 43.7040],
+    'Sospel': [7.4470, 43.8770],
+    'Breil-sur-Roya': [7.5140, 43.9400],
+    'Fontan-Saorge': [7.5520, 43.9980],
+    'Saint-Dalmas-de-Tende': [7.5890, 44.0560],
+    'Tende': [7.5930, 44.0880]
   };
 
   for (const [name, g] of Object.entries(railGroups)) {
     const meta = RAIL_METADATA[name];
     if (!meta) continue; // On ne garde que les grandes lignes voyageurs nommées
+
+    const railStopPoints = (meta.stops || []).map(s => {
+      const coord = RAIL_STATION_COORDS[s];
+      if (!coord) return null;
+      // Projeter la gare avec précision mathématique directement SUR la voie ferrée
+      const snapped = projectPointOnMultiPolyline(coord, g.coords);
+      return { name: s, lng: snapped[0], lat: snapped[1] };
+    }).filter(Boolean);
 
     features.push({
       type: 'Feature',
@@ -3638,6 +4248,7 @@ async function main() {
         frequency: meta.frequency || 'Quotidien',
         period: meta.period || 'Toute l\'année',
         stops: meta.stops || [],
+        stopPoints: railStopPoints,
         color: meta.color || '#6366f1',
         url: meta.url || 'https://www.sncf.com'
       },
@@ -3807,6 +4418,19 @@ async function main() {
       stops: ['Plan Bouchet (2300 m)', 'Cime Caron (3195 m)'],
       color: '#ec4899',
       url: 'https://www.valthorens.com'
+    },
+    'Champagny': {
+      ref: 'TC Champagny',
+      name: 'Télécabine de Champagny : Champagny (1250 m) ↔ La Plagne (2000 m)',
+      mode: 'cable_car',
+      operator: 'SAP La Plagne',
+      network: 'La Plagne Paradiski',
+      route: 'Champagny-en-Vanoise (1250 m) ↔ Roc des Blanchets (2000 m, Domaine de La Plagne)',
+      frequency: 'Continu en saison',
+      period: 'Été & Hiver (Liaison directe piétons, VTT & randonneurs entre Vanoise et Paradiski)',
+      stops: ['Champagny-en-Vanoise Village (1250 m)', 'Gare d\'arrivée Sommet des Blanchets (2000 m)'],
+      color: '#ec4899',
+      url: 'https://www.la-plagne.com'
     }
   };
 
@@ -3843,6 +4467,9 @@ async function main() {
     const routeDef = BUS_ROUTES[i];
     process.stdout.write(`[${i+1}/${BUS_ROUTES.length}] ${routeDef.ref} : ${routeDef.name.slice(0, 30)}... `);
     let coords = null;
+    if (ARAVIS_SHAPES[routeDef.id]) {
+      routeDef.directCoordinates = ARAVIS_SHAPES[routeDef.id];
+    }
     if (routeDef.directCoordinates && routeDef.directCoordinates.length > 0) {
       coords = routeDef.directCoordinates;
       console.log(`OK (Tracé officiel GTFS ${coords.length} points)`);
@@ -3850,6 +4477,73 @@ async function main() {
       coords = await fetchRoute(routeDef.coords);
       if (coords && coords.length > 0) {
         console.log(`OK (${coords.length} points)`);
+      }
+    }
+
+    // Injection automatique de la grille horaire GTFS si disponible et non manuellement définie
+    if (!routeDef.timetable && GTFS_TIMETABLES[routeDef.ref]) {
+      routeDef.timetable = GTFS_TIMETABLES[routeDef.ref];
+    }
+    if (routeDef.timetable && !routeDef.timetable.headers && Array.isArray(routeDef.timetable.rows) && routeDef.timetable.rows.length > 0) {
+      const maxCols = Math.max(...routeDef.timetable.rows.map(r => (Array.isArray(r.times) ? r.times.length : 0)), 0);
+      routeDef.timetable.headers = Array.from({ length: maxCols }, (_, idx) => `Dép. ${idx + 1}`);
+    }
+
+    // Calcul des stopPoints géolocalisés avec snapping strict sur la ligne et interpolation d'arc
+    const activeLinePoly = coords || (routeDef.coords ? routeDef.coords.split(';').map(pt => pt.split(',').map(Number)) : []);
+    let stopPoints = [];
+    if (Array.isArray(routeDef.stops) && routeDef.stops.length > 0 && activeLinePoly && activeLinePoly.length > 1) {
+      stopPoints = computeAccurateStopPoints(routeDef.stops, activeLinePoly, RAIL_STATION_COORDS);
+    } else if (routeDef.stopPoints) {
+      stopPoints = routeDef.stopPoints;
+    }
+
+    // Remplir les horaires spécifiques aux arrêts si le tableau timetable est fourni
+    if (routeDef.timetable?.rows) {
+      stopPoints.forEach(sp => {
+        const row = routeDef.timetable.rows.find(r => r.stop && stopMatches(r.stop, sp.name));
+        if (row && row.times && row.times.length > 0) {
+          sp.time = row.times.filter(t => t && t !== '-').join(' | ');
+        }
+      });
+    }
+
+    // Gestion et calcul des deux directions Aller / Retour
+    let directions = routeDef.directions || null;
+    if (!directions && (routeDef.name.includes('↔') || routeDef.name.includes('<=>'))) {
+      const parts = routeDef.name.replace(/^Ligne\s+[A-Za-z0-9/_-]+\s*:\s*/i, '').split(/↔|<=>/).map(s => s.trim());
+      if (parts.length === 2) {
+        const origin = parts[0];
+        const dest = parts[1];
+        const allerStops = routeDef.stops || [];
+        const retourStops = [...allerStops].reverse();
+        const allerStopPoints = stopPoints || [];
+        const retourStopPoints = [...allerStopPoints].reverse();
+
+        directions = [
+          {
+            id: 'aller',
+            name: `Vers ${dest}`,
+            origin,
+            destination: dest,
+            stops: allerStops,
+            stopPoints: allerStopPoints,
+            timetable: routeDef.timetable
+          },
+          {
+            id: 'retour',
+            name: `Vers ${origin}`,
+            origin: dest,
+            destination: origin,
+            stops: retourStops,
+            stopPoints: retourStopPoints,
+            timetable: routeDef.timetable ? {
+              title: `Horaires Retour (Vers ${origin})`,
+              headers: routeDef.timetable.headers,
+              rows: Array.isArray(routeDef.timetable.rows) ? [...routeDef.timetable.rows].reverse() : []
+            } : null
+          }
+        ];
       }
     }
 
@@ -3868,9 +4562,11 @@ async function main() {
           frequency: routeDef.frequency,
           period: routeDef.period,
           stops: routeDef.stops,
+          stopPoints: stopPoints,
           color: routeDef.color,
           url: routeDef.url,
-          timetable: routeDef.timetable || null
+          timetable: routeDef.timetable || null,
+          directions: directions || null
         },
         geometry: {
           type: 'LineString',
@@ -3895,9 +4591,11 @@ async function main() {
           frequency: routeDef.frequency,
           period: routeDef.period,
           stops: routeDef.stops,
+          stopPoints: stopPoints,
           color: routeDef.color,
           url: routeDef.url,
-          timetable: routeDef.timetable || null
+          timetable: routeDef.timetable || null,
+          directions: directions || null
         },
         geometry: {
           type: 'LineString',
@@ -3911,9 +4609,33 @@ async function main() {
     }
   }
 
-  // 3. Ajouter les gares et pôles d'échange alpins
+  // 3. Ajouter les gares et pôles d'échange alpins (snappés sur le tracé de ligne le plus proche)
   console.log(`Ajout de ${STATIONS.length} gares et pôles de transport alpins...`);
   for (const st of STATIONS) {
+    let finalCoord = [st.lng, st.lat];
+    let bestDist = Infinity;
+    // Trouver la ligne la plus proche pour projeter exactement le point de gare sur le rail ou la route
+    for (const f of features) {
+      if (f.geometry.type === 'LineString') {
+        const poly = f.geometry.coordinates;
+        if (!poly || poly.length < 2) continue;
+        const { lateralDistMeters } = getDistanceOfProjectedPoint(poly, getPolylineCumulativeDistances(poly).cum, [st.lng, st.lat]);
+        if (lateralDistMeters < bestDist && lateralDistMeters < 500) {
+          bestDist = lateralDistMeters;
+          finalCoord = projectPointOnPolyline([st.lng, st.lat], poly);
+        }
+      } else if (f.geometry.type === 'MultiLineString') {
+        for (const poly of f.geometry.coordinates) {
+          if (!poly || poly.length < 2) continue;
+          const { lateralDistMeters } = getDistanceOfProjectedPoint(poly, getPolylineCumulativeDistances(poly).cum, [st.lng, st.lat]);
+          if (lateralDistMeters < bestDist && lateralDistMeters < 500) {
+            bestDist = lateralDistMeters;
+            finalCoord = projectPointOnPolyline([st.lng, st.lat], poly);
+          }
+        }
+      }
+    }
+
     features.push({
       type: 'Feature',
       id: st.id,
@@ -3934,10 +4656,178 @@ async function main() {
       },
       geometry: {
         type: 'Point',
-        coordinates: [st.lng, st.lat]
+        coordinates: [Number(finalCoord[0].toFixed(6)), Number(finalCoord[1].toFixed(6))]
       }
     });
   }
+
+  // 3.8. Assurer la présence des deux directions Aller / Retour pour toutes les lignes bidirectionnelles
+  console.log('Enrichissement des directions Aller / Retour pour toutes les lignes des Alpes...');
+  features.forEach(f => {
+    if (f.geometry.type !== 'LineString' && f.geometry.type !== 'MultiLineString') return;
+    const p = f.properties;
+    if (p.directions && p.directions.length >= 2) return; // Déjà configuré
+
+    let origin = null;
+    let dest = null;
+    const routeStr = p.route || '';
+    const nameStr = p.name || '';
+
+    if (routeStr.includes('↔')) {
+      const parts = routeStr.split('↔').map(s => s.trim().replace(/\s*\(\d+\s*m\)/g, '')).filter(Boolean);
+      if (parts.length >= 2) {
+        origin = parts[0];
+        dest = parts[parts.length - 1];
+      }
+    } else if (nameStr.includes('↔')) {
+      const cleanName = nameStr.replace(/^(Ligne|Navette|Car|Train|TER)\s+[A-Za-z0-9/_-]+\s*:\s*/i, '');
+      const parts = cleanName.split('↔').map(s => s.trim().replace(/\s*\(\d+\s*m\)/g, '')).filter(Boolean);
+      if (parts.length >= 2) {
+        origin = parts[0];
+        dest = parts[parts.length - 1];
+      }
+    } else if (nameStr.includes(' à ') && (nameStr.startsWith('Ligne de ') || nameStr.startsWith('Ligne '))) {
+      const match = nameStr.match(/Ligne\s+(?:de\s+)?(.+?)\s+à\s+(.+?)(?:\s+\(|$)/i);
+      if (match) {
+        origin = match[1].trim();
+        dest = match[2].trim();
+      }
+    }
+
+    if (origin && dest && origin !== dest) {
+      const allerStops = Array.isArray(p.stops) ? p.stops : [];
+      const retourStops = [...allerStops].reverse();
+      const allerStopPoints = Array.isArray(p.stopPoints) ? p.stopPoints : [];
+      const retourStopPoints = [...allerStopPoints].reverse();
+
+      let retourTimetable = null;
+      if (p.timetable && Array.isArray(p.timetable.rows) && p.timetable.rows.length > 0) {
+        retourTimetable = {
+          title: `Horaires Retour (Vers ${origin})`,
+          headers: p.timetable.headers || [],
+          rows: [...p.timetable.rows].reverse()
+        };
+      }
+
+      p.directions = [
+        {
+          id: 'aller',
+          name: `Vers ${dest}`,
+          origin,
+          destination: dest,
+          stops: allerStops,
+          stopPoints: allerStopPoints,
+          timetable: p.timetable || null
+        },
+        {
+          id: 'retour',
+          name: `Vers ${origin}`,
+          origin: dest,
+          destination: origin,
+          stops: retourStops,
+          stopPoints: retourStopPoints,
+          timetable: retourTimetable
+        }
+      ];
+    }
+  });
+
+  // 4. Calcul des décalages parallèles (Offset) pour afficher les lignes superposées côte à côte
+  console.log('Calcul des décalages parallèles pour les tracés routiers superposés...');
+  const lineFeatures = features.filter(f => (f.geometry.type === 'LineString' || f.geometry.type === 'MultiLineString') && f.properties?.mode !== 'cable_car' && f.properties?.mode !== 'funicular');
+
+  function getCoords(f) {
+    if (f.geometry.type === 'LineString') return f.geometry.coordinates;
+    return f.geometry.coordinates.flat();
+  }
+
+  function getBbox(coords) {
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (const c of coords) {
+      if (!c || c.length < 2) continue;
+      if (c[0] < minX) minX = c[0];
+      if (c[0] > maxX) maxX = c[0];
+      if (c[1] < minY) minY = c[1];
+      if (c[1] > maxY) maxY = c[1];
+    }
+    return [minX, minY, maxX, maxY];
+  }
+
+  function bboxesOverlap(b1, b2, margin = 0.005) {
+    return !(b1[2] + margin < b2[0] || b1[0] - margin > b2[2] || b1[3] + margin < b2[1] || b1[1] - margin > b2[3]);
+  }
+
+  function distSqMeters(c1, c2) {
+    const dx = (c1[0] - c2[0]) * Math.cos((c1[1] + c2[1]) * 0.5 * Math.PI / 180) * 111320;
+    const dy = (c1[1] - c2[1]) * 110574;
+    return dx * dx + dy * dy;
+  }
+
+  function checkOverlap(l1, l2) {
+    // 1. Si deux lignes partagent au moins 2 arrêts identiques, elles sont sur le même couloir
+    const s1 = new Set((l1.properties.stops || []).map(s => typeof s === 'string' ? s.toLowerCase().trim() : (s.name || '').toLowerCase().trim()));
+    const s2 = new Set((l2.properties.stops || []).map(s => typeof s === 'string' ? s.toLowerCase().trim() : (s.name || '').toLowerCase().trim()));
+    let commonStops = 0;
+    s1.forEach(s => {
+      if (s && s2.has(s)) commonStops++;
+    });
+    if (commonStops >= 2) return true;
+
+    // 2. Vérification géométrique de proximité des tracés
+    const c1 = getCoords(l1);
+    const c2 = getCoords(l2);
+    if (!c1 || !c2 || c1.length < 2 || c2.length < 2) return false;
+
+    const step1 = Math.max(1, Math.floor(c1.length / 50));
+    const step2 = Math.max(1, Math.floor(c2.length / 50));
+    let shared = 0;
+    for (let i = 0; i < c1.length; i += step1) {
+      for (let j = 0; j < c2.length; j += step2) {
+        if (distSqMeters(c1[i], c2[j]) < 75 * 75) {
+          shared++;
+          break;
+        }
+      }
+    }
+    return shared >= 2;
+  }
+
+  const bboxes = lineFeatures.map(l => ({ feat: l, bbox: getBbox(getCoords(l)) }));
+  const adj = new Map();
+  lineFeatures.forEach(l => adj.set(l.id, new Set()));
+
+  for (let i = 0; i < bboxes.length; i++) {
+    for (let j = i + 1; j < bboxes.length; j++) {
+      if (bboxesOverlap(bboxes[i].bbox, bboxes[j].bbox)) {
+        if (checkOverlap(bboxes[i].feat, bboxes[j].feat)) {
+          adj.get(bboxes[i].feat.id).add(bboxes[j].feat.id);
+          adj.get(bboxes[j].feat.id).add(bboxes[i].feat.id);
+        }
+      }
+    }
+  }
+
+  const offsets = {};
+  const SPACING = 3.5; // Espacement côte à côte en pixels (mode collé)
+
+  lineFeatures.forEach(l => {
+    const id = l.id;
+    const neighbors = adj.get(id);
+    const usedSlots = new Set();
+    neighbors?.forEach(nid => {
+      if (offsets[nid] !== undefined) usedSlots.add(offsets[nid]);
+    });
+
+    let candidate = 0;
+    let step = 1;
+    while (usedSlots.has(candidate)) {
+      candidate = (step % 2 === 1) ? Math.ceil(step / 2) : -Math.ceil(step / 2);
+      step++;
+    }
+    offsets[id] = candidate;
+    l.properties.offset = candidate * SPACING;
+  });
+  console.log(`Décalages parallèles calculés pour ${lineFeatures.length} lignes.`);
 
   const outputGeoJSON = {
     type: 'FeatureCollection',

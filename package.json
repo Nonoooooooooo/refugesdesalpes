@@ -11,7 +11,9 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
+    "@turf/turf": "^7.4.0",
     "leaflet": "^1.9.4",
+    "leaflet-polylineoffset": "^1.1.1",
     "lucide-react": "^1.52.0",
     "maplibre-gl": "^6.13.0",
     "react": "^19.2.8",

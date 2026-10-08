@@ -15,6 +15,7 @@ import TransportLayer from './features/transport/TransportLayer.jsx'
 import TransportSidebar from './features/transport/TransportSidebar.jsx'
 import OverpassLayer from './features/overpass/OverpassLayer.jsx'
 import WebcamLayer from './features/webcams/WebcamLayer.jsx'
+import ErrorBoundary from './components/ErrorBoundary.jsx'
 
 const MIN_ZOOM_FETCH = 9
 const IMAGERY_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
@@ -164,8 +165,9 @@ export default function App() {
   const handleSelectTransport = useCallback((t) => {
     setShowTransports(true)
     setSelected(t)
-    const lat = t.centerLat || t.lat
-    const lng = t.centerLng || t.lng
+    if (t?.skipFlyTo) return
+    const lat = t?.centerLat || t?.lat
+    const lng = t?.centerLng || t?.lng
     if (lat && lng) {
       setFlyTarget({ lat, lng, zoom: t.mode === 'station' ? 13 : 11, t: Date.now() })
     }
@@ -333,12 +335,19 @@ export default function App() {
         )}
       </div>
 
-      {selected &&
-        (selected.isTransport ? (
-          <TransportSidebar transport={selected} onClose={() => setSelected(null)} />
-        ) : (
-          <Sidebar point={selected} onClose={() => setSelected(null)} />
-        ))}
+      {selected && (
+        <ErrorBoundary onReset={() => setSelected(null)}>
+          {selected.isTransport ? (
+            <TransportSidebar
+              transport={selected}
+              onClose={() => setSelected(null)}
+              onSelectTransport={handleSelectTransport}
+            />
+          ) : (
+            <Sidebar point={selected} onClose={() => setSelected(null)} />
+          )}
+        </ErrorBoundary>
+      )}
     </div>
   )
 }
