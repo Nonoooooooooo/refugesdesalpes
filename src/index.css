@@ -145,8 +145,8 @@ html, body, #root {
 }
 
 .parking-pin {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border-radius: 6px;
   background: #2563eb;
   color: #ffffff;
@@ -156,12 +156,50 @@ html, body, #root {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 2px 7px rgba(0, 0, 0, 0.45);
   border: 1.5px solid rgba(255, 255, 255, 0.95);
-  transition: transform 0.15s;
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: pointer;
 }
 .parking-pin:hover {
-  transform: scale(1.2);
+  transform: scale(1.25);
+  background: #1d4ed8;
+}
+
+.parking-cluster-marker {
+  background: none !important;
+  border: none !important;
+}
+
+.parking-cluster {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  border: 2px solid rgba(255, 255, 255, 0.95);
+  border-radius: 9999px;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+  transition: transform 0.15s ease;
+  user-select: none;
+  font-weight: 700;
+}
+.parking-cluster:hover {
+  transform: scale(1.12);
+}
+.parking-cluster-badge {
+  font-size: 9px;
+  font-weight: 900;
+  background: rgba(255, 255, 255, 0.25);
+  padding: 1px 3.5px;
+  border-radius: 4px;
+  line-height: 1;
+}
+.parking-cluster-count {
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
 }
 
 .overpass-label-marker {

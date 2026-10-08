@@ -1,16 +1,50 @@
-const OVERPASS_ENDPOINTS = [
+const FALLBACK_OVERPASS_ENDPOINTS = [
   'https://overpass-api.de/api/interpreter',
   'https://lz4.overpass-api.de/api/interpreter',
   'https://z.overpass-api.de/api/interpreter',
+  'https://overpass.kumi.systems/api/interpreter',
 ]
 
+// Cache client en mémoire pour éviter de refaire la même requête au pan/zoom
+const clientCache = new Map()
+const CLIENT_CACHE_TTL = 4 * 60 * 1000 // 4 minutes
+
 /**
- * Exécute une requête QL sur l'API Overpass avec basculement automatique en cas d'erreur
+ * Exécute une requête QL sur l'API Overpass :
+ * 1. Essaie via le proxy local / Vercel (/api/overpass)
+ * 2. Si non disponible, bascule sur les miroirs publics
  */
 async function queryOverpass(qlQuery, signal) {
-  let lastError = null
+  const cached = clientCache.get(qlQuery)
+  if (cached && Date.now() - cached.timestamp < CLIENT_CACHE_TTL) {
+    return cached.data
+  }
 
-  for (const endpoint of OVERPASS_ENDPOINTS) {
+  // 1. Essai via le proxy /api/overpass
+  try {
+    const res = await fetch('/api/overpass', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ data: qlQuery }),
+      signal,
+    })
+
+    if (res.ok) {
+      const data = await res.json()
+      const elements = data.elements || []
+      clientCache.set(qlQuery, { timestamp: Date.now(), data: elements })
+      return elements
+    }
+  } catch (e) {
+    if (e.name === 'AbortError') throw e
+    console.warn('Proxy /api/overpass indisponible, tentative en direct...', e)
+  }
+
+  // 2. Basculement sur les miroirs publics directs
+  let lastError = null
+  for (const endpoint of FALLBACK_OVERPASS_ENDPOINTS) {
     if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
 
     try {
@@ -18,7 +52,6 @@ async function queryOverpass(qlQuery, signal) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-          'Accept': 'application/json, text/plain, */*',
         },
         body: 'data=' + encodeURIComponent(qlQuery),
         signal,
@@ -26,21 +59,23 @@ async function queryOverpass(qlQuery, signal) {
 
       if (res.ok) {
         const data = await res.json()
-        return data.elements || []
+        const elements = data.elements || []
+        clientCache.set(qlQuery, { timestamp: Date.now(), data: elements })
+        return elements
       }
-      lastError = new Error(`Overpass ${endpoint} returned status ${res.status}`)
+      lastError = new Error(`Overpass ${endpoint} status ${res.status}`)
     } catch (e) {
       if (e.name === 'AbortError') throw e
       lastError = e
     }
   }
 
-  throw lastError || new Error('All Overpass endpoints failed')
+  throw lastError || new Error('Impossible de joindre les serveurs Overpass')
 }
 
 /**
- * Récupère les parkings dans la bounding box (zoom >= 13)
- * Inclut les points (node) et les zones/surfaces de parking (way, relation)
+ * Récupère les parkings dans la bounding box (zoom >= 12)
+ * Inclut les points (node), les zones (way) et les relations (relation)
  * @param {[number, number, number, number]} bounds [south, west, north, east]
  */
 export async function fetchOverpassParkings([south, west, north, east], signal) {
@@ -49,7 +84,7 @@ export async function fetchOverpassParkings([south, west, north, east], signal) 
   const n = north.toFixed(5)
   const e = east.toFixed(5)
 
-  const ql = `[out:json][timeout:25];(node["amenity"="parking"](${s},${w},${n},${e});way["amenity"="parking"](${s},${w},${n},${e}););out center;`
+  const ql = `[out:json][timeout:25];(node["amenity"="parking"](${s},${w},${n},${e});way["amenity"="parking"](${s},${w},${n},${e});relation["amenity"="parking"](${s},${w},${n},${e}););out center;`
   const elements = await queryOverpass(ql, signal)
 
   return elements
@@ -60,7 +95,20 @@ export async function fetchOverpassParkings([south, west, north, east], signal) 
 
       if (lat == null || lng == null) return null
 
-      const name = tags.name || tags.operator || (tags.parking === 'underground' ? 'Parking souterrain' : 'Parking')
+      // Exclure les accès strictement privés pour éviter d'envoyer les randonneurs chez des particuliers
+      if (tags.access === 'private' || tags.access === 'no') return null
+
+      let name = tags.name || tags.operator || tags.description
+      if (!name) {
+        if (tags.parking === 'underground' || tags.parking === 'multi-storey') {
+          name = 'Parking couvert'
+        } else if (tags.fee === 'no') {
+          name = 'Parking gratuit'
+        } else {
+          name = 'Parking'
+        }
+      }
+
       const fee = tags.fee === 'yes' ? 'Payant' : tags.fee === 'no' ? 'Gratuit' : null
 
       return {
@@ -72,13 +120,14 @@ export async function fetchOverpassParkings([south, west, north, east], signal) 
         fee,
         surface: tags.surface || null,
         access: tags.access || null,
+        parkingType: tags.parking || null,
       }
     })
     .filter(Boolean)
 }
 
 /**
- * Récupère les sommets et cols dans la bounding box (zoom >= 13)
+ * Récupère les sommets et cols dans la bounding box (zoom >= 12)
  * @param {[number, number, number, number]} bounds [south, west, north, east]
  */
 export async function fetchOverpassPeaksAndPasses([south, west, north, east], signal) {
