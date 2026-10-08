@@ -4505,6 +4505,45 @@ async function main() {
       });
     }
 
+    // Gestion et calcul des deux directions Aller / Retour
+    let directions = routeDef.directions || null;
+    if (!directions && (routeDef.name.includes('↔') || routeDef.name.includes('<=>'))) {
+      const parts = routeDef.name.replace(/^Ligne\s+[A-Za-z0-9/_-]+\s*:\s*/i, '').split(/↔|<=>/).map(s => s.trim());
+      if (parts.length === 2) {
+        const origin = parts[0];
+        const dest = parts[1];
+        const allerStops = routeDef.stops || [];
+        const retourStops = [...allerStops].reverse();
+        const allerStopPoints = stopPoints || [];
+        const retourStopPoints = [...allerStopPoints].reverse();
+
+        directions = [
+          {
+            id: 'aller',
+            name: `Vers ${dest}`,
+            origin,
+            destination: dest,
+            stops: allerStops,
+            stopPoints: allerStopPoints,
+            timetable: routeDef.timetable
+          },
+          {
+            id: 'retour',
+            name: `Vers ${origin}`,
+            origin: dest,
+            destination: origin,
+            stops: retourStops,
+            stopPoints: retourStopPoints,
+            timetable: routeDef.timetable ? {
+              title: `Horaires Retour (Vers ${origin})`,
+              headers: routeDef.timetable.headers,
+              rows: Array.isArray(routeDef.timetable.rows) ? [...routeDef.timetable.rows].reverse() : []
+            } : null
+          }
+        ];
+      }
+    }
+
     if (coords && coords.length > 0) {
       features.push({
         type: 'Feature',
@@ -4523,7 +4562,8 @@ async function main() {
           stopPoints: stopPoints,
           color: routeDef.color,
           url: routeDef.url,
-          timetable: routeDef.timetable || null
+          timetable: routeDef.timetable || null,
+          directions: directions || null
         },
         geometry: {
           type: 'LineString',
@@ -4551,7 +4591,8 @@ async function main() {
           stopPoints: stopPoints,
           color: routeDef.color,
           url: routeDef.url,
-          timetable: routeDef.timetable || null
+          timetable: routeDef.timetable || null,
+          directions: directions || null
         },
         geometry: {
           type: 'LineString',
@@ -4616,6 +4657,174 @@ async function main() {
       }
     });
   }
+
+  // 3.8. Assurer la présence des deux directions Aller / Retour pour toutes les lignes bidirectionnelles
+  console.log('Enrichissement des directions Aller / Retour pour toutes les lignes des Alpes...');
+  features.forEach(f => {
+    if (f.geometry.type !== 'LineString' && f.geometry.type !== 'MultiLineString') return;
+    const p = f.properties;
+    if (p.directions && p.directions.length >= 2) return; // Déjà configuré
+
+    let origin = null;
+    let dest = null;
+    const routeStr = p.route || '';
+    const nameStr = p.name || '';
+
+    if (routeStr.includes('↔')) {
+      const parts = routeStr.split('↔').map(s => s.trim().replace(/\s*\(\d+\s*m\)/g, '')).filter(Boolean);
+      if (parts.length >= 2) {
+        origin = parts[0];
+        dest = parts[parts.length - 1];
+      }
+    } else if (nameStr.includes('↔')) {
+      const cleanName = nameStr.replace(/^(Ligne|Navette|Car|Train|TER)\s+[A-Za-z0-9/_-]+\s*:\s*/i, '');
+      const parts = cleanName.split('↔').map(s => s.trim().replace(/\s*\(\d+\s*m\)/g, '')).filter(Boolean);
+      if (parts.length >= 2) {
+        origin = parts[0];
+        dest = parts[parts.length - 1];
+      }
+    } else if (nameStr.includes(' à ') && (nameStr.startsWith('Ligne de ') || nameStr.startsWith('Ligne '))) {
+      const match = nameStr.match(/Ligne\s+(?:de\s+)?(.+?)\s+à\s+(.+?)(?:\s+\(|$)/i);
+      if (match) {
+        origin = match[1].trim();
+        dest = match[2].trim();
+      }
+    }
+
+    if (origin && dest && origin !== dest) {
+      const allerStops = Array.isArray(p.stops) ? p.stops : [];
+      const retourStops = [...allerStops].reverse();
+      const allerStopPoints = Array.isArray(p.stopPoints) ? p.stopPoints : [];
+      const retourStopPoints = [...allerStopPoints].reverse();
+
+      let retourTimetable = null;
+      if (p.timetable && Array.isArray(p.timetable.rows) && p.timetable.rows.length > 0) {
+        retourTimetable = {
+          title: `Horaires Retour (Vers ${origin})`,
+          headers: p.timetable.headers || [],
+          rows: [...p.timetable.rows].reverse()
+        };
+      }
+
+      p.directions = [
+        {
+          id: 'aller',
+          name: `Vers ${dest}`,
+          origin,
+          destination: dest,
+          stops: allerStops,
+          stopPoints: allerStopPoints,
+          timetable: p.timetable || null
+        },
+        {
+          id: 'retour',
+          name: `Vers ${origin}`,
+          origin: dest,
+          destination: origin,
+          stops: retourStops,
+          stopPoints: retourStopPoints,
+          timetable: retourTimetable
+        }
+      ];
+    }
+  });
+
+  // 4. Calcul des décalages parallèles (Offset) pour afficher les lignes superposées côte à côte
+  console.log('Calcul des décalages parallèles pour les tracés routiers superposés...');
+  const lineFeatures = features.filter(f => (f.geometry.type === 'LineString' || f.geometry.type === 'MultiLineString') && f.properties?.mode !== 'cable_car' && f.properties?.mode !== 'funicular');
+
+  function getCoords(f) {
+    if (f.geometry.type === 'LineString') return f.geometry.coordinates;
+    return f.geometry.coordinates.flat();
+  }
+
+  function getBbox(coords) {
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (const c of coords) {
+      if (!c || c.length < 2) continue;
+      if (c[0] < minX) minX = c[0];
+      if (c[0] > maxX) maxX = c[0];
+      if (c[1] < minY) minY = c[1];
+      if (c[1] > maxY) maxY = c[1];
+    }
+    return [minX, minY, maxX, maxY];
+  }
+
+  function bboxesOverlap(b1, b2, margin = 0.005) {
+    return !(b1[2] + margin < b2[0] || b1[0] - margin > b2[2] || b1[3] + margin < b2[1] || b1[1] - margin > b2[3]);
+  }
+
+  function distSqMeters(c1, c2) {
+    const dx = (c1[0] - c2[0]) * Math.cos((c1[1] + c2[1]) * 0.5 * Math.PI / 180) * 111320;
+    const dy = (c1[1] - c2[1]) * 110574;
+    return dx * dx + dy * dy;
+  }
+
+  function checkOverlap(l1, l2) {
+    // 1. Si deux lignes partagent au moins 2 arrêts identiques, elles sont sur le même couloir
+    const s1 = new Set((l1.properties.stops || []).map(s => typeof s === 'string' ? s.toLowerCase().trim() : (s.name || '').toLowerCase().trim()));
+    const s2 = new Set((l2.properties.stops || []).map(s => typeof s === 'string' ? s.toLowerCase().trim() : (s.name || '').toLowerCase().trim()));
+    let commonStops = 0;
+    s1.forEach(s => {
+      if (s && s2.has(s)) commonStops++;
+    });
+    if (commonStops >= 2) return true;
+
+    // 2. Vérification géométrique de proximité des tracés
+    const c1 = getCoords(l1);
+    const c2 = getCoords(l2);
+    if (!c1 || !c2 || c1.length < 2 || c2.length < 2) return false;
+
+    const step1 = Math.max(1, Math.floor(c1.length / 50));
+    const step2 = Math.max(1, Math.floor(c2.length / 50));
+    let shared = 0;
+    for (let i = 0; i < c1.length; i += step1) {
+      for (let j = 0; j < c2.length; j += step2) {
+        if (distSqMeters(c1[i], c2[j]) < 75 * 75) {
+          shared++;
+          break;
+        }
+      }
+    }
+    return shared >= 2;
+  }
+
+  const bboxes = lineFeatures.map(l => ({ feat: l, bbox: getBbox(getCoords(l)) }));
+  const adj = new Map();
+  lineFeatures.forEach(l => adj.set(l.id, new Set()));
+
+  for (let i = 0; i < bboxes.length; i++) {
+    for (let j = i + 1; j < bboxes.length; j++) {
+      if (bboxesOverlap(bboxes[i].bbox, bboxes[j].bbox)) {
+        if (checkOverlap(bboxes[i].feat, bboxes[j].feat)) {
+          adj.get(bboxes[i].feat.id).add(bboxes[j].feat.id);
+          adj.get(bboxes[j].feat.id).add(bboxes[i].feat.id);
+        }
+      }
+    }
+  }
+
+  const offsets = {};
+  const SPACING = 3.5; // Espacement côte à côte en pixels (mode collé)
+
+  lineFeatures.forEach(l => {
+    const id = l.id;
+    const neighbors = adj.get(id);
+    const usedSlots = new Set();
+    neighbors?.forEach(nid => {
+      if (offsets[nid] !== undefined) usedSlots.add(offsets[nid]);
+    });
+
+    let candidate = 0;
+    let step = 1;
+    while (usedSlots.has(candidate)) {
+      candidate = (step % 2 === 1) ? Math.ceil(step / 2) : -Math.ceil(step / 2);
+      step++;
+    }
+    offsets[id] = candidate;
+    l.properties.offset = candidate * SPACING;
+  });
+  console.log(`Décalages parallèles calculés pour ${lineFeatures.length} lignes.`);
 
   const outputGeoJSON = {
     type: 'FeatureCollection',

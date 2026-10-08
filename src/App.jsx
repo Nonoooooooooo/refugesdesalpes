@@ -163,8 +163,9 @@ export default function App() {
   const handleSelectTransport = useCallback((t) => {
     setShowTransports(true)
     setSelected(t)
-    const lat = t.centerLat || t.lat
-    const lng = t.centerLng || t.lng
+    if (t?.skipFlyTo) return
+    const lat = t?.centerLat || t?.lat
+    const lng = t?.centerLng || t?.lng
     if (lat && lng) {
       setFlyTarget({ lat, lng, zoom: t.mode === 'station' ? 13 : 11, t: Date.now() })
     }
@@ -328,7 +329,11 @@ export default function App() {
       {selected && (
         <ErrorBoundary onReset={() => setSelected(null)}>
           {selected.isTransport ? (
-            <TransportSidebar transport={selected} onClose={() => setSelected(null)} />
+            <TransportSidebar
+              transport={selected}
+              onClose={() => setSelected(null)}
+              onSelectTransport={handleSelectTransport}
+            />
           ) : (
             <Sidebar point={selected} onClose={() => setSelected(null)} />
           )}
