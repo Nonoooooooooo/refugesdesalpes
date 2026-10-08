@@ -5,6 +5,10 @@ const CHAMONIX_BUS_ROUTES = fs.existsSync('scripts/data/chamonix_bus.json')
   ? JSON.parse(fs.readFileSync('scripts/data/chamonix_bus.json', 'utf8'))
   : [];
 
+const CARS_REGION_EXPRESS_ROUTES = fs.existsSync('scripts/data/cars_region_express_final.json')
+  ? JSON.parse(fs.readFileSync('scripts/data/cars_region_express_final.json', 'utf8'))
+  : [];
+
 const OSRM_URL = 'https://router.project-osrm.org/route/v1/driving/';
 
 function fetchRoute(coords) {
@@ -918,6 +922,11 @@ const BUS_ROUTES = [
   // RÉSEAU OFFICIEL CHAMONIX MOBILITÉ / PYSAE (18 LIGNES DE BUS DE LA VALLÉE)
   // ═══════════════════════════════════════════════════════
   ...CHAMONIX_BUS_ROUTES,
+
+  // ═══════════════════════════════════════════════════════
+  // RÉSEAU INTERURBAIN CARS RÉGION EXPRESS (AURA) - 13 LIGNES OFFICIELLES GTFS
+  // ═══════════════════════════════════════════════════════
+  ...CARS_REGION_EXPRESS_ROUTES,
   {
     id: 'navette-sixt-lignon',
     ref: 'Navette Giffre',
@@ -3968,6 +3977,9 @@ const STATIONS = [
   { id: 'hub-berarde', name: 'Pôle Navettes La Bérarde (Écrins)', mode: 'station', alt: 1727, lat: 44.9330, lng: 6.2940, lines: ['Navette Oisans Saint-Christophe / Bourg-d\'Oisans', 'Départ refuges Promontoire, Châtelleret, Carrelet'] },
   { id: 'hub-gioberney', name: 'Pôle Navettes Gioberney (Valgaudemar)', mode: 'station', alt: 1640, lat: 44.7680, lng: 6.2750, lines: ['Navette Valgaudemar', 'Départ refuges Xavier Blanc & Vallonpierre'] },
   { id: 'hub-notre-dame-gorge', name: 'Pôle Navettes Notre-Dame de la Gorge', mode: 'station', alt: 1210, lat: 45.7870, lng: 6.7130, lines: ['Navette Les Contamines', 'Départ Tour du Mont-Blanc & refuge Nant Borrant'] },
+  // Pôles et Gares Cars Région Express
+  { id: 'st-bellegarde', name: 'Gare de Bellegarde-sur-Valserine (TGV)', mode: 'station', alt: 350, lat: 46.1106, lng: 5.8250, lines: ['TGV Lyria (Paris-Genève)', 'Léman Express', 'Cars Express X33 (Ferney/Divonne)', 'Cars Express X36 (Nurieux/Bourg)'] },
+  { id: 'st-valence-tgv', name: 'Gare de Valence TGV Rhône-Alpes Sud', mode: 'station', alt: 160, lat: 44.9919, lng: 4.9786, lines: ['TGV Méditerranée', 'Cars Express X73 (Aubenas)', 'Cars Express X74 (Les Vans)', 'Cars Express X76 (Vallon-Pont-d\'Arc)'] },
   // Pôles et Gares de Tignes & Haute-Tarentaise
   { id: 'hub-tignes-lac', name: 'Gare Routière de Tignes Le Lac (2100 m)', mode: 'station', alt: 2100, lat: 45.4695, lng: 6.9075, lines: ['Navette Gratuite 2100', 'Navette Gratuite 1800', 'Cars Région S83 (Bourg-St-Maurice)', 'Cars Région S82 (Val d\'Isère)'], color: '#06b6d4' },
   { id: 'hub-tignes-val-claret', name: 'Pôle Tignes Val Claret - Grande Motte (2120 m)', mode: 'station', alt: 2120, lat: 45.4550, lng: 6.8985, lines: ['Funiculaire Perce-Neige (Glacier 3032 m)', 'Navette Gratuite 2100', 'Navette Gratuite 1800', 'Cars Région S83', 'Départ Tour des Glaciers de la Vanoise & Refuges Leisse / Palet'], color: '#06b6d4' },

@@ -35,3 +35,4 @@ Thumbs.db
 scratch/
 scripts/*.zip
 scripts/gtfs_*/
+imports/
