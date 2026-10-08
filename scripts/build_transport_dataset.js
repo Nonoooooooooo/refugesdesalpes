@@ -2030,34 +2030,38 @@ const BUS_ROUTES = [
   },
   {
     id: 'navette-champagny-laisonnay',
-    ref: 'Navette Champagny',
-    name: 'Navette Champagny : Village ↔ Champagny-le-Haut ↔ Le Laisonnay',
+    ref: 'Navette Glière',
+    name: 'Navette Champagny : Village ↔ Champagny-le-Haut ↔ Le Laisonnay ↔ Refuge de la Glière (2010 m)',
     mode: 'navette',
-    operator: 'Commune de Champagny-en-Vanoise',
+    operator: 'Commune de Champagny-en-Vanoise & Refuge de la Glière',
     network: 'Navettes Vanoise',
-    route: 'Champagny Village (1250 m) ↔ Champagny-le-Haut (1470 m) ↔ Le Laisonnay d\'en Bas (1570 m)',
-    frequency: 'Toutes les heures en saison estivale (Navette gratuite)',
-    period: 'Été (Accès direct porte du Parc National de la Vanoise, cascades & refuge de la Glière)',
+    route: 'Champagny Village (1250 m) ↔ Champagny-le-Haut ↔ Le Laisonnay ↔ Refuge de la Glière (2010 m)',
+    frequency: 'Navettes régulières estivales (Accès direct cœur de Vanoise)',
+    period: 'Été (Juin à Septembre)',
     stops: [
       'Champagny-en-Vanoise Centre (Office de Tourisme / Télécabine 1250 m)',
-      'La Chiserette',
-      'Le Bois',
-      'Champagny-le-Haut (Espace Glacial / Pôle Nordique 1470 m)',
+      'La Chiserette (1430 m)',
+      'Champagny-le-Haut (Le Bois / Espace Glacial 1470 m)',
       'Friburge',
-      'Le Laisonnay d\'en Bas (1570 m, refuge de la Glière & accès Col de la Vanoise)'
+      'Le Laisonnay d\'en Bas (1570 m, Cascade du Py)',
+      'Le Laisonnay d\'en Haut (1580 m)',
+      'Refuge de la Glière (2010 m, Lac de la Glière & départ sentier Col de la Vanoise)'
     ],
     color: '#f59e0b',
     url: 'https://www.champagny.com',
-    coords: '6.6940,45.4545;6.7280,45.4370;6.7460,45.4300;6.7640,45.4230',
+    directCoordinates: fs.existsSync('scripts/data/champagny_gliere_full.json')
+      ? JSON.parse(fs.readFileSync('scripts/data/champagny_gliere_full.json', 'utf8'))
+      : null,
     timetable: {
       headers: ['Matin (08h)', 'Matin (10h)', 'Midi (12h)', 'Après-midi (14h)', 'Fin d\'après-midi (17h)'],
       rows: [
         { stop: 'Champagny-en-Vanoise Centre (Office de Tourisme / Télécabine 1250 m)', times: ['08:30', '10:00', '12:00', '14:30', '17:00'] },
-        { stop: 'La Chiserette', times: ['08:40', '10:10', '12:10', '14:40', '17:10'] },
-        { stop: 'Champagny-le-Haut (Espace Glacial / Pôle Nordique 1470 m)', times: ['08:50', '10:20', '12:20', '14:50', '17:20'] },
-        { stop: 'Le Laisonnay d\'en Bas (1570 m, refuge de la Glière & accès Col de la Vanoise)', times: ['09:05', '10:35', '12:35', '15:05', '17:35'] }
+        { stop: 'La Chiserette (1430 m)', times: ['08:40', '10:10', '12:10', '14:40', '17:10'] },
+        { stop: 'Champagny-le-Haut (Le Bois / Espace Glacial 1470 m)', times: ['08:50', '10:20', '12:20', '14:50', '17:20'] },
+        { stop: 'Le Laisonnay d\'en Bas (1570 m, Cascade du Py)', times: ['09:05', '10:35', '12:35', '15:05', '17:35'] },
+        { stop: 'Refuge de la Glière (2010 m, Lac de la Glière & départ sentier Col de la Vanoise)', times: ['09:30', '11:00', '13:00', '15:30', '18:00'] }
       ],
-      note: 'Navette estivale gratuite de la vallée de Champagny-le-Haut (Correspondances bus S66)'
+      note: 'Liaison estivale du vallon de Champagny-le-Haut jusqu\'au Refuge de la Glière (Correspondances bus S66)'
     }
   },
   // (Ancienne navette Termignon-Bellecombe remplacée par Ligne 2 HMV officielle)
