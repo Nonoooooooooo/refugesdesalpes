@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 120" width="540" height="120" fill="none">
+  <defs>
+    <linearGradient id="fr-body" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#991b1b"/>
+      <stop offset="20%" stop-color="#dc2626"/>
+      <stop offset="65%" stop-color="#ef4444"/>
+      <stop offset="85%" stop-color="#e2e8f0"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <linearGradient id="fr-glass" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <filter id="fr-shadow" x="-5%" y="-5%" width="110%" height="130%">
+      <feDropShadow dx="0" dy="5" stdDeviation="5" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#fr-shadow)">
+    <!-- Aerodynamic Frecciarossa 1000 lead car silhouette -->
+    <!-- Nosecone and lower body -->
+    <path d="M 25 82 C 45 82, 85 81, 130 81 L 515 81 C 522 81, 526 77, 526 71 L 526 40 C 526 35, 520 32, 510 32 L 205 32 C 160 32, 110 35, 75 48 C 50 58, 30 70, 25 82 Z" fill="#b91c1c"/>
+
+    <!-- Upper body silver/red aero roof -->
+    <path d="M 75 48 C 110 35, 160 32, 205 32 L 510 32 C 518 32, 524 35, 526 40 L 526 50 L 175 50 C 130 50, 95 53, 75 60 Z" fill="#1e293b" opacity="0.3"/>
+
+    <!-- Distinctive Trenitalia Green brand stripe along the high-speed body -->
+    <path d="M 40 76 C 55 74, 90 73, 140 73 L 526 73 L 526 77 L 138 77 C 88 77, 52 78, 38 80 Z" fill="#10b981"/>
+    <!-- Italian tricolore white accent -->
+    <path d="M 50 72 C 65 71, 100 70, 150 70 L 526 70 L 526 72 L 148 72 C 98 72, 62 73, 48 74 Z" fill="#ffffff" opacity="0.9"/>
+
+    <!-- Cab Windshield (Aero curved glass) -->
+    <path d="M 72 50 C 90 44, 115 42, 140 42 L 165 42 L 158 54 L 88 56 C 80 54, 75 52, 72 50 Z" fill="url(#fr-glass)" stroke="#334155" stroke-width="1.5"/>
+
+    <!-- Passenger panoramic tinted windows -->
+    <rect x="185" y="44" width="30" height="13" rx="2.5" fill="url(#fr-glass)"/>
+    <rect x="225" y="44" width="34" height="13" rx="2.5" fill="url(#fr-glass)"/>
+    <rect x="268" y="44" width="34" height="13" rx="2.5" fill="url(#fr-glass)"/>
+    <rect x="311" y="44" width="34" height="13" rx="2.5" fill="url(#fr-glass)"/>
+    <rect x="354" y="44" width="34" height="13" rx="2.5" fill="url(#fr-glass)"/>
+    <rect x="397" y="44" width="34" height="13" rx="2.5" fill="url(#fr-glass)"/>
+    <rect x="440" y="44" width="34" height="13" rx="2.5" fill="url(#fr-glass)"/>
+    <rect x="483" y="44" width="28" height="13" rx="2.5" fill="url(#fr-glass)"/>
+
+    <!-- Frecciarossa nose speed graphic & headlights -->
+    <ellipse cx="38" cy="79" rx="6" ry="2.5" fill="#fef08a"/>
+    <ellipse cx="38" cy="79" rx="3" ry="1.2" fill="#ffffff"/>
+
+    <!-- Bogies / Wheelsets underneath -->
+    <rect x="90" y="81" width="55" height="7" rx="3" fill="#0f172a"/>
+    <circle cx="103" cy="85" r="4.5" fill="#334155" stroke="#64748b" stroke-width="1.5"/>
+    <circle cx="132" cy="85" r="4.5" fill="#334155" stroke="#64748b" stroke-width="1.5"/>
+
+    <rect x="445" y="81" width="55" height="7" rx="3" fill="#0f172a"/>
+    <circle cx="458" cy="85" r="4.5" fill="#334155" stroke="#64748b" stroke-width="1.5"/>
+    <circle cx="487" cy="85" r="4.5" fill="#334155" stroke="#64748b" stroke-width="1.5"/>
+
+    <!-- Trenitalia / Frecciarossa nose badge text -->
+    <text x="185" y="66" font-family="system-ui, -apple-system, sans-serif" font-size="7.5" font-weight="900" letter-spacing="1" fill="#ffffff">
+      FRECCIAROSSA 1000
+    </text>
+    <text x="315" y="66" font-family="system-ui, -apple-system, sans-serif" font-size="7" font-weight="800" letter-spacing="1" fill="#86efac">
+      TRENITALIA
+    </text>
+  </g>
+</svg>

@@ -147,9 +147,9 @@ const newTgvRoutes = [
     operator: 'Trenitalia France',
     network: 'Trenitalia - Frecciarossa 1000',
     route: 'Paris Gare de Lyon ↔ Lyon Part-Dieu ↔ Chambéry ↔ Saint-Jean-de-Maurienne ↔ Modane ↔ Turin ↔ Milan Centrale',
-    frequency: 'Liaisons quotidiennes à grande vitesse (jusqu\'à 300 km/h)',
+    frequency: 'Liaisons quotidiennes à grande vitesse',
     period: 'Toute l\'année',
-    color: '#dc2626',
+    color: '#059669',
     stationKeys: ['paris_lyon', 'lyon_part_dieu', 'chambery', 'st_jean_maurienne', 'modane', 'oulx', 'turin_porta_susa', 'milan_centrale'],
     coordinates: [...CORRIDORS.paris_to_lyon, ...CORRIDORS.lyon_to_chambery.slice(1), ...CORRIDORS.chambery_to_milan.slice(1)],
     url: 'https://www.trenitalia.com'
@@ -285,7 +285,7 @@ const newTgvRoutes = [
     route: 'Lille-Europe ↔ Aéroport CDG 2 TGV ↔ Marne-la-Vallée Chessy ↔ Lyon Saint-Exupéry ↔ Chambéry ↔ Albertville ↔ Moûtiers ↔ Bourg-Saint-Maurice',
     frequency: 'Liaisons directes contournant Paris (très prisées en hiver)',
     period: 'Toute l\'année (Renfort hivernal stations de ski)',
-    color: '#059669',
+    color: '#4338ca',
     stationKeys: ['lille_europe', 'cdg_tgv', 'marne_vallee', 'lyon_st_exupery', 'chambery', 'albertville', 'moutiers', 'aime', 'landry', 'bourg_st_maurice'],
     coordinates: [
       [3.0757, 50.6389], // Lille
@@ -359,7 +359,8 @@ const createdFeatures = newTgvRoutes.map((routeDef) => {
       stops,
       stopPoints,
       directions,
-      isTGV: true,
+      isTGV: routeDef.ref === 'TGV INOUI',
+      isTrenitalia: routeDef.ref === 'Frecciarossa',
       url: routeDef.url
     }
   };

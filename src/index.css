@@ -157,6 +157,22 @@ html, body, #root {
 .leaflet-tooltip-left.refuge-tooltip-inoui::before { border-left-color: #e11d48 !important; }
 .leaflet-tooltip-right.refuge-tooltip-inoui::before { border-right-color: #e11d48 !important; }
 
+/* Tooltip Thème Officiel Trenitalia Vert */
+.refuge-tooltip-trenitalia {
+  background: #022c22 !important;
+  border: 1.5px solid rgba(16, 185, 129, 0.45) !important;
+  border-radius: 14px !important;
+  padding: 0 !important;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.65), 0 0 20px rgba(5, 150, 105, 0.3) !important;
+  overflow: hidden !important;
+  white-space: normal !important;
+  pointer-events: none !important;
+}
+.leaflet-tooltip-top.refuge-tooltip-trenitalia::before { border-top-color: #059669 !important; }
+.leaflet-tooltip-bottom.refuge-tooltip-trenitalia::before { border-bottom-color: #022c22 !important; }
+.leaflet-tooltip-left.refuge-tooltip-trenitalia::before { border-left-color: #059669 !important; }
+.leaflet-tooltip-right.refuge-tooltip-trenitalia::before { border-right-color: #059669 !important; }
+
 /* Tracés TGV SNCF & Trenitalia */
 .tgv-sncf-polyline {
   filter: drop-shadow(0 0 2.5px rgba(225, 29, 72, 0.65));
@@ -165,12 +181,12 @@ html, body, #root {
 .tgv-sncf-polyline:hover {
   filter: drop-shadow(0 0 6px rgba(225, 29, 72, 0.95)) drop-shadow(0 0 2px #fff);
 }
-.frecciarossa-polyline {
-  filter: drop-shadow(0 0 2.5px rgba(220, 38, 38, 0.65));
+.trenitalia-polyline, .frecciarossa-polyline {
+  filter: drop-shadow(0 0 2.5px rgba(5, 150, 105, 0.75));
   transition: filter 0.2s ease;
 }
-.frecciarossa-polyline:hover {
-  filter: drop-shadow(0 0 6px rgba(220, 38, 38, 0.95)) drop-shadow(0 0 2px #fff);
+.trenitalia-polyline:hover, .frecciarossa-polyline:hover {
+  filter: drop-shadow(0 0 6px rgba(16, 185, 129, 0.95)) drop-shadow(0 0 2px #fff);
 }
 
 /* ─── Styles Overpass (Parkings & Sommets/Cols) ─── */

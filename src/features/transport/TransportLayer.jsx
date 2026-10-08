@@ -169,7 +169,13 @@ const HIGH_SPEED_EXTERNAL_HUBS = {
 
 function isHighSpeedLine(feature) {
   const props = feature?.properties || {};
-  return Boolean(props.isTGV || props.ref === 'TGV INOUI' || props.ref === 'Frecciarossa');
+  return Boolean(
+    props.isTGV ||
+    props.ref === 'TGV INOUI' ||
+    props.ref === 'Frecciarossa' ||
+    props.isTrenitalia ||
+    props.id === 'trenitalia-frecciarossa-paris-milan'
+  );
 }
 
 function isOriginInFrame(feature, map) {
@@ -208,12 +214,26 @@ function ensureSvgGradients(renderer) {
         <stop offset="60%" stop-color="#fb7185" stop-opacity="1"/>
         <stop offset="100%" stop-color="#f472b6" stop-opacity="1"/>
       </linearGradient>
-      <!-- Dégradé Frecciarossa Trenitalia Rouge Course Italien -->
+      <!-- Dégradé Officiel Trenitalia Vert Signature -->
+      <linearGradient id="trenitalia-gradient" x1="0%" y1="0%" x2="100%" y2="100%" gradientUnits="objectBoundingBox">
+        <stop offset="0%" stop-color="#064e3b" stop-opacity="1"/>
+        <stop offset="30%" stop-color="#047857" stop-opacity="1"/>
+        <stop offset="70%" stop-color="#059669" stop-opacity="1"/>
+        <stop offset="100%" stop-color="#10b981" stop-opacity="1"/>
+      </linearGradient>
+      <!-- Dégradé Trenitalia Vert Survol / Sélection -->
+      <linearGradient id="trenitalia-gradient-hover" x1="0%" y1="0%" x2="100%" y2="100%" gradientUnits="objectBoundingBox">
+        <stop offset="0%" stop-color="#047857" stop-opacity="1"/>
+        <stop offset="30%" stop-color="#059669" stop-opacity="1"/>
+        <stop offset="70%" stop-color="#10b981" stop-opacity="1"/>
+        <stop offset="100%" stop-color="#34d399" stop-opacity="1"/>
+      </linearGradient>
+      <!-- Dégradé Frecciarossa compatibilité vert -->
       <linearGradient id="frecciarossa-gradient" x1="0%" y1="0%" x2="100%" y2="100%" gradientUnits="objectBoundingBox">
-        <stop offset="0%" stop-color="#991b1b" stop-opacity="1"/>
-        <stop offset="35%" stop-color="#dc2626" stop-opacity="1"/>
-        <stop offset="75%" stop-color="#ef4444" stop-opacity="1"/>
-        <stop offset="100%" stop-color="#f87171" stop-opacity="1"/>
+        <stop offset="0%" stop-color="#064e3b" stop-opacity="1"/>
+        <stop offset="30%" stop-color="#047857" stop-opacity="1"/>
+        <stop offset="70%" stop-color="#059669" stop-opacity="1"/>
+        <stop offset="100%" stop-color="#10b981" stop-opacity="1"/>
       </linearGradient>
     `;
   }
@@ -261,15 +281,15 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
     const isCable = mode === 'cable_car' || mode === 'funicular';
     const isTrain = mode === 'train' || mode === 'mountain_train';
     const isNavette = mode === 'navette';
-    const isTGV = props.isTGV || props.ref === 'TGV INOUI';
-    const isFreccia = props.ref === 'Frecciarossa';
+    const isFreccia = props.ref === 'Frecciarossa' || props.id === 'trenitalia-frecciarossa-paris-milan' || props.isTrenitalia;
+    const isTGV = (props.isTGV || props.ref === 'TGV INOUI') && !isFreccia;
 
     let baseColor =
       props.color || (isTrain ? '#6366f1' : isNavette ? '#f59e0b' : '#10b981');
     if (isTGV) {
       baseColor = 'url(#sncf-tgv-gradient)';
     } else if (isFreccia) {
-      baseColor = 'url(#frecciarossa-gradient)';
+      baseColor = 'url(#trenitalia-gradient)';
     }
 
     const zoom = typeof currentZoom === 'number' ? currentZoom : map ? map.getZoom() : 12;
@@ -282,7 +302,7 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
           color: isTGV
             ? 'url(#sncf-tgv-gradient-hover)'
             : isFreccia
-            ? 'url(#frecciarossa-gradient)'
+            ? 'url(#trenitalia-gradient-hover)'
             : baseColor,
           weight: isTGV || isFreccia ? 7.5 : isCable ? 6 : 7,
           opacity: 1,
@@ -290,19 +310,19 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
           lineCap: 'round',
           lineJoin: 'round',
           offset: offset,
-          className: isTGV ? 'tgv-sncf-polyline' : isFreccia ? 'frecciarossa-polyline' : undefined,
+          className: isTGV ? 'tgv-sncf-polyline' : isFreccia ? 'trenitalia-polyline' : undefined,
         };
       } else {
         // Lignes non sélectionnées : estompées / sous-brillance
         return {
-          color: isTGV ? '#881337' : isFreccia ? '#7f1d1d' : baseColor,
+          color: isTGV ? '#881337' : isFreccia ? '#064e3b' : baseColor,
           weight: isCable ? 2 : 2.5,
           opacity: 0.2,
           dashArray: isCable ? '6, 6' : null,
           lineCap: 'round',
           lineJoin: 'round',
           offset: offset,
-          className: isTGV ? 'tgv-sncf-polyline' : isFreccia ? 'frecciarossa-polyline' : undefined,
+          className: isTGV ? 'tgv-sncf-polyline' : isFreccia ? 'trenitalia-polyline' : undefined,
         };
       }
     }
@@ -316,7 +336,7 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
       lineCap: 'round',
       lineJoin: 'round',
       offset: offset,
-      className: isTGV ? 'tgv-sncf-polyline' : isFreccia ? 'frecciarossa-polyline' : undefined,
+      className: isTGV ? 'tgv-sncf-polyline' : isFreccia ? 'trenitalia-polyline' : undefined,
     };
   };
 
@@ -325,8 +345,9 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
 
   const createStopTooltipContent = (sp, lineProps) => {
     const stopName = sp.name || 'Arrêt';
-    const isTGV = lineProps.isTGV || lineProps.ref === 'TGV INOUI';
-    const lineBadge = isTGV ? 'TGV INOUI' : (lineProps.ref || (lineProps.mode === 'train' ? 'TER' : 'Ligne'));
+    const isFreccia = lineProps.ref === 'Frecciarossa' || lineProps.id === 'trenitalia-frecciarossa-paris-milan' || lineProps.isTrenitalia;
+    const isTGV = (lineProps.isTGV || lineProps.ref === 'TGV INOUI') && !isFreccia;
+    const lineBadge = isFreccia ? 'FRECCIAROSSA' : isTGV ? 'TGV INOUI' : (lineProps.ref || (lineProps.mode === 'train' ? 'TER' : 'Ligne'));
     const timeInfo = sp.time ? `Passage : ${sp.time.split('|')[0].trim()}` : '';
 
     return `
@@ -387,10 +408,69 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
     const currentZoom = map.getZoom();
     const isOffsetActive = currentZoom >= ZOOM_OFFSET_THRESHOLD;
 
-    // Tooltip formaté pour les lignes avec thème inOui / TGV et Frecciarossa
+    // Tooltip formaté pour les lignes avec thème inOui / TGV et Frecciarossa Trenitalia
     const createTooltipContent = (props) => {
-      const isFreccia = props.ref === 'Frecciarossa';
-      const isTGV = props.isTGV || props.ref === 'TGV INOUI';
+      const isFreccia = props.ref === 'Frecciarossa' || props.id === 'trenitalia-frecciarossa-paris-milan' || props.isTrenitalia;
+      const isTGV = (props.isTGV || props.ref === 'TGV INOUI') && !isFreccia;
+
+      if (isFreccia) {
+        const originName = props.stopPoints?.[0]?.name || 'Paris Gare de Lyon';
+        const destName = props.stopPoints?.[props.stopPoints.length - 1]?.name || 'Milano Centrale';
+        const stopCount = (props.stopPoints || []).length;
+
+        return `
+          <div style="font-family: inherit; width: 300px; max-width: 320px; overflow: hidden; border-radius: 12px; color: #fff;">
+            <!-- Bandeau Thème Officiel Trenitalia Vert avec logo -->
+            <div style="background: linear-gradient(180deg, #022c22 0%, #064e3b 100%); border-bottom: 2px solid #059669; padding: 10px 12px 8px 12px; text-align: center;">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px;">
+                <span style="font-size: 9.5px; font-weight: 800; letter-spacing: 0.6px; color: #34d399; text-transform: uppercase;">
+                  FS Italiane &bull; TRENITALIA
+                </span>
+                <span style="background: rgba(5, 150, 105, 0.25); border: 1px solid rgba(16, 185, 129, 0.5); color: #a7f3d0; font-size: 9px; font-weight: 700; padding: 1.5px 7px; border-radius: 9999px;">
+                  Frecciarossa 1000
+                </span>
+              </div>
+              <div style="height: 52px; display: flex; align-items: center; justify-content: center; margin: 3px 0;">
+                <img src="/icons/trenitalia_logo.svg" alt="Trenitalia" style="width: 100%; max-height: 48px; object-fit: contain; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5)); display: block; margin: 0 auto;" />
+              </div>
+              <div style="display: flex; align-items: center; justify-content: space-between; font-size: 10px; color: rgba(167, 243, 208, 0.95); font-weight: 600; padding-top: 3px; border-top: 1px solid rgba(5, 150, 105, 0.3);">
+                <span>Rame Frecciarossa 1000</span>
+                <span>Liaison Transalpine &bull; France ↔ Italie</span>
+              </div>
+            </div>
+
+            <!-- Informations Ligne -->
+            <div style="background: rgba(2, 44, 34, 0.95); padding: 10px 12px 12px 12px;">
+              <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+                <span style="background: linear-gradient(135deg, #047857, #059669); color: #fff; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px;">
+                  Frecciarossa
+                </span>
+                <span style="color: #cbd5e1; font-size: 11px; font-weight: 700;">
+                  ${props.ref || 'Frecciarossa'}
+                </span>
+                <span style="margin-left: auto; color: rgba(255,255,255,0.45); font-size: 10px;">
+                  ${stopCount} gares
+                </span>
+              </div>
+
+              <div style="font-weight: 700; font-size: 12.5px; color: #fff; line-height: 1.35;">
+                ${props.name}
+              </div>
+
+              <div style="margin-top: 8px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 11px;">
+                <div style="color: #a7f3d0; font-weight: 600; display: flex; align-items: center; gap: 4px;">
+                  <span style="color: #34d399; font-size: 9.5px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.3px;">Liaison :</span>
+                  <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${originName} &rarr; ${destName}</span>
+                </div>
+                <div style="display: flex; align-items: center; justify-content: space-between; color: rgba(255,255,255,0.5); font-size: 10px; margin-top: 3px;">
+                  <span>${props.operator || 'Trenitalia France'}</span>
+                  <span style="color: #34d399; font-weight: 600;">Cliquer pour détails &rarr;</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
 
       if (isTGV) {
         const originName = props.stopPoints?.[0]?.name || 'Paris Gare de Lyon';
@@ -444,50 +524,6 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
                 <div style="display: flex; align-items: center; justify-content: space-between; color: rgba(255,255,255,0.5); font-size: 10px; margin-top: 3px;">
                   <span>${props.operator || 'SNCF Voyageurs'}</span>
                   <span style="color: #fb7185; font-weight: 600;">Cliquer pour détails &rarr;</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        `;
-      }
-
-      if (isFreccia) {
-        const originName = props.stopPoints?.[0]?.name || 'Paris Gare de Lyon';
-        const destName = props.stopPoints?.[props.stopPoints.length - 1]?.name || 'Milan Centrale';
-        const stopCount = (props.stopPoints || []).length;
-
-        return `
-          <div style="font-family: inherit; width: 295px; max-width: 320px; overflow: hidden; border-radius: 12px; color: #fff;">
-            <div style="background: linear-gradient(180deg, #200508 0%, #3e0910 100%); border-bottom: 2px solid #dc2626; padding: 10px 12px 8px 12px; text-align: center;">
-              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
-                <span style="font-size: 9.5px; font-weight: 800; letter-spacing: 0.6px; color: #f87171; text-transform: uppercase;">
-                  Trenitalia Alta Velocità
-                </span>
-                <span style="background: rgba(220, 38, 38, 0.25); border: 1px solid rgba(220, 38, 38, 0.5); color: #fca5a5; font-size: 9px; font-weight: 700; padding: 1.5px 7px; border-radius: 9999px;">
-                  Frecciarossa
-                </span>
-              </div>
-              <div style="padding: 6px 0; font-size: 14px; font-weight: 900; letter-spacing: 1px; color: #ffffff; text-transform: uppercase;">
-                FRECCIAROSSA 1000
-              </div>
-              <div style="display: flex; align-items: center; justify-content: space-between; font-size: 10px; color: rgba(254, 202, 202, 0.9); font-weight: 600; padding-top: 3px; border-top: 1px solid rgba(220, 38, 38, 0.3);">
-                <span>Liaison Transalpine</span>
-                <span>France &bull; Italie</span>
-              </div>
-            </div>
-
-            <div style="background: rgba(24, 7, 9, 0.95); padding: 10px 12px 12px 12px;">
-              <div style="font-weight: 700; font-size: 12.5px; color: #fff; line-height: 1.35;">
-                ${props.name}
-              </div>
-              <div style="margin-top: 8px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 11px;">
-                <div style="color: #fca5a5; font-weight: 600; display: flex; align-items: center; gap: 4px;">
-                  <span style="color: #f87171; font-size: 9.5px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.3px;">Liaison :</span>
-                  <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${originName} &rarr; ${destName}</span>
-                </div>
-                <div style="display: flex; align-items: center; justify-content: space-between; color: rgba(255,255,255,0.5); font-size: 10px; margin-top: 3px;">
-                  <span>${props.operator || 'Trenitalia'}</span>
-                  <span style="color: #f87171; font-weight: 600;">Cliquer pour détails &rarr;</span>
                 </div>
               </div>
             </div>
@@ -563,11 +599,16 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
               });
             }
 
-            const isTGV = props.isTGV || props.ref === 'TGV INOUI';
+            const isFreccia = props.ref === 'Frecciarossa' || props.id === 'trenitalia-frecciarossa-paris-milan' || props.isTrenitalia;
+            const isTGV = (props.isTGV || props.ref === 'TGV INOUI') && !isFreccia;
             layer.bindTooltip(createTooltipContent(props), {
-              className: isTGV ? 'refuge-tooltip refuge-tooltip-inoui' : 'refuge-tooltip',
+              className: isTGV
+                ? 'refuge-tooltip refuge-tooltip-inoui'
+                : isFreccia
+                ? 'refuge-tooltip refuge-tooltip-trenitalia'
+                : 'refuge-tooltip',
               sticky: true,
-              offset: isTGV ? [14, 14] : [10, 10],
+              offset: isTGV || isFreccia ? [14, 14] : [10, 10],
             });
 
             layer.on({
@@ -589,15 +630,13 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
 
                 if (target.setStyle) {
                   const isCable = props.mode === 'cable_car' || props.mode === 'funicular';
-                  const isTGV = props.isTGV || props.ref === 'TGV INOUI';
-                  const isFreccia = props.ref === 'Frecciarossa';
                   target.setStyle({
                     weight: isTGV || isFreccia ? 8 : isCable ? 6 : 7,
                     opacity: 1,
                     color: isTGV
                       ? 'url(#sncf-tgv-gradient-hover)'
                       : isFreccia
-                      ? 'url(#frecciarossa-gradient)'
+                      ? 'url(#trenitalia-gradient-hover)'
                       : undefined,
                     offset: map.getZoom() >= ZOOM_OFFSET_THRESHOLD ? rawOffset : 0,
                   });
@@ -643,14 +682,14 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
             if (seenLineStopKeys.has(stopKey)) return;
             seenLineStopKeys.add(stopKey);
 
+            const isFreccia = props.ref === 'Frecciarossa' || props.id === 'trenitalia-frecciarossa-paris-milan' || props.isTrenitalia;
+            const isTGV = (props.isTGV || props.ref === 'TGV INOUI') && !isFreccia;
             const segData = findClosestSegment(sp.lat, sp.lng, feature.geometry);
-            const isTGV = props.isTGV || props.ref === 'TGV INOUI';
-            const isFreccia = props.ref === 'Frecciarossa';
 
             const stopMarker = new LineStopMarker([sp.lat, sp.lng], {
               renderer: canvasRenderer,
               radius: isHighSpeed ? UNIFORM_STOP_RADIUS + 0.5 : UNIFORM_STOP_RADIUS,
-              fillColor: isTGV ? '#be123c' : isFreccia ? '#dc2626' : (props.color || '#3b82f6'),
+              fillColor: isTGV ? '#be123c' : isFreccia ? '#059669' : (props.color || '#3b82f6'),
               color: '#ffffff',
               weight: 1.5,
               opacity: 1,
@@ -1068,13 +1107,16 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
         // 1. Tracé spécifique à la direction si des coordonnées dédiées existent
         if (activeDir?.coordinates && activeDir.coordinates.length >= 2) {
           const latlngs = activeDir.coordinates.map((c) => [c[1], c[0]]);
-          const isTGV = selectedTransport.isTGV || selectedTransport.ref === 'TGV INOUI';
-          const isFreccia = selectedTransport.ref === 'Frecciarossa';
+          const isFreccia =
+            selectedTransport.ref === 'Frecciarossa' ||
+            selectedTransport.isTrenitalia ||
+            selectedTransport.id === 'trenitalia-frecciarossa-paris-milan';
+          const isTGV = (selectedTransport.isTGV || selectedTransport.ref === 'TGV INOUI') && !isFreccia;
           const dirLine = L.polyline(latlngs, {
             color: isTGV
               ? 'url(#sncf-tgv-gradient-hover)'
               : isFreccia
-              ? 'url(#frecciarossa-gradient)'
+              ? 'url(#trenitalia-gradient-hover)'
               : selectedTransport.color || '#3b82f6',
             weight: isTGV || isFreccia ? 7.5 : 7,
             opacity: 1,

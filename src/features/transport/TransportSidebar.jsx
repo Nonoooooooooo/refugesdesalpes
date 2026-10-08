@@ -18,17 +18,20 @@ import {
 } from 'lucide-react';
 
 function getModeInfo(mode, transport = {}) {
-  const isTGV = transport.isTGV || transport.ref === 'Frecciarossa' || transport.ref === 'TGV INOUI';
-  const isFreccia = transport.ref === 'Frecciarossa';
+  const isFreccia =
+    transport.ref === 'Frecciarossa' ||
+    transport.isTrenitalia ||
+    transport.id === 'trenitalia-frecciarossa-paris-milan';
+  const isTGV = (transport.isTGV || transport.ref === 'TGV INOUI') && !isFreccia;
 
   switch (mode) {
     case 'train':
       if (isFreccia) {
         return {
-          label: 'Train Grande Vitesse (Frecciarossa 1000)',
+          label: 'Train Grande Vitesse (Trenitalia Frecciarossa 1000)',
           Icon: Train,
-          color: '#dc2626',
-          bgGradient: 'from-red-600/30 to-rose-600/20',
+          color: '#059669',
+          bgGradient: 'from-emerald-600/30 to-teal-600/20',
         };
       }
       if (isTGV) {
@@ -94,9 +97,15 @@ function getModeInfo(mode, transport = {}) {
 export default function TransportSidebar({ transport, onClose, onSelectTransport }) {
   if (!transport) return null;
 
+  const isFreccia =
+    transport.ref === 'Frecciarossa' ||
+    transport.isTrenitalia ||
+    transport.id === 'trenitalia-frecciarossa-paris-milan';
+  const isTGV = (transport.isTGV || transport.ref === 'TGV INOUI') && !isFreccia;
+
   const modeInfo = getModeInfo(transport.mode, transport);
   const { label, Icon } = modeInfo;
-  const displayColor = transport.color || modeInfo.color;
+  const displayColor = isFreccia ? '#059669' : transport.color || modeInfo.color;
 
   // État local de la direction active (0 = Aller, 1 = Retour)
   const [activeDirIndex, setActiveDirIndex] = useState(
@@ -230,8 +239,34 @@ export default function TransportSidebar({ transport, onClose, onSelectTransport
 
       {/* Corps du panneau */}
       <div className="flex flex-col gap-5 p-5">
+        {/* En-tête exclusif Trenitalia Frecciarossa avec thème vert officiel et logo */}
+        {isFreccia && (
+          <div className="relative overflow-hidden rounded-2xl border border-emerald-500/40 bg-gradient-to-br from-[#022c22] via-[#064e3b] to-[#022c22] p-3.5 shadow-xl">
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-1.5 text-[10.5px] font-black uppercase tracking-wider text-emerald-300">
+                <span className="inline-block h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]" />
+                FS Italiane &bull; TRENITALIA
+              </span>
+              <span className="rounded-full border border-emerald-500/40 bg-emerald-500/20 px-2.5 py-0.5 text-[9.5px] font-bold text-emerald-200">
+                Frecciarossa 1000
+              </span>
+            </div>
+            <div className="my-2.5 flex h-14 items-center justify-center">
+              <img
+                src="/icons/trenitalia_logo.svg"
+                alt="Trenitalia Frecciarossa 1000"
+                className="h-full w-full object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.7)]"
+              />
+            </div>
+            <div className="flex items-center justify-between border-t border-emerald-500/25 pt-2 text-[11px] text-emerald-200/90">
+              <span className="font-medium">Rame Frecciarossa 1000</span>
+              <span className="font-bold text-emerald-300">Liaison Transalpine France ↔ Italie</span>
+            </div>
+          </div>
+        )}
+
         {/* En-tête exclusif TGV inOui avec pictogramme officiel conforme au modèle exact */}
-        {Boolean(transport.isTGV || transport.ref === 'TGV INOUI') && (
+        {isTGV && (
           <div className="relative overflow-hidden rounded-2xl border border-rose-500/35 bg-gradient-to-br from-[#1b081d] via-[#2f0827] to-[#160517] p-3.5 shadow-xl">
             <div className="flex items-center justify-between">
               <span className="flex items-center gap-1.5 text-[10.5px] font-black uppercase tracking-wider text-rose-300">
