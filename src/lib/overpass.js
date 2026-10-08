@@ -1,13 +1,12 @@
 const FALLBACK_OVERPASS_ENDPOINTS = [
-  'https://overpass-api.de/api/interpreter',
   'https://lz4.overpass-api.de/api/interpreter',
   'https://z.overpass-api.de/api/interpreter',
-  'https://overpass.kumi.systems/api/interpreter',
+  'https://overpass-api.de/api/interpreter',
 ]
 
 // Cache client en mémoire pour éviter de refaire la même requête au pan/zoom
 const clientCache = new Map()
-const CLIENT_CACHE_TTL = 4 * 60 * 1000 // 4 minutes
+const CLIENT_CACHE_TTL = 8 * 60 * 1000 // 8 minutes
 
 /**
  * Exécute une requête QL sur l'API Overpass :
@@ -39,10 +38,10 @@ async function queryOverpass(qlQuery, signal) {
     }
   } catch (e) {
     if (e.name === 'AbortError') throw e
-    console.warn('Proxy /api/overpass indisponible, tentative en direct...', e)
+    console.warn('Proxy /api/overpass indisponible, tentative directe...', e)
   }
 
-  // 2. Basculement sur les miroirs publics directs
+  // 2. Basculement sur les miroirs publics directs (lz4 en premier)
   let lastError = null
   for (const endpoint of FALLBACK_OVERPASS_ENDPOINTS) {
     if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
@@ -75,16 +74,18 @@ async function queryOverpass(qlQuery, signal) {
 
 /**
  * Récupère les parkings dans la bounding box (zoom >= 12)
- * Inclut les points (node), les zones (way) et les relations (relation)
+ * Quantifie les coordonnées sur une grille (~4.4km) pour maximiser le cache
  * @param {[number, number, number, number]} bounds [south, west, north, east]
  */
 export async function fetchOverpassParkings([south, west, north, east], signal) {
-  const s = south.toFixed(5)
-  const w = west.toFixed(5)
-  const n = north.toFixed(5)
-  const e = east.toFixed(5)
+  // Grille quantifiée (0.04° ~ 4.4 km) pour réutiliser le cache lors des micro-déplacements
+  const STEP = 0.04
+  const s = (Math.floor(south / STEP) * STEP).toFixed(4)
+  const w = (Math.floor(west / STEP) * STEP).toFixed(4)
+  const n = (Math.ceil(north / STEP) * STEP).toFixed(4)
+  const e = (Math.ceil(east / STEP) * STEP).toFixed(4)
 
-  const ql = `[out:json][timeout:25];(node["amenity"="parking"](${s},${w},${n},${e});way["amenity"="parking"](${s},${w},${n},${e});relation["amenity"="parking"](${s},${w},${n},${e}););out center;`
+  const ql = `[out:json][timeout:12];(node["amenity"="parking"](${s},${w},${n},${e});way["amenity"="parking"](${s},${w},${n},${e}););out center;`
   const elements = await queryOverpass(ql, signal)
 
   return elements
@@ -131,12 +132,13 @@ export async function fetchOverpassParkings([south, west, north, east], signal) 
  * @param {[number, number, number, number]} bounds [south, west, north, east]
  */
 export async function fetchOverpassPeaksAndPasses([south, west, north, east], signal) {
-  const s = south.toFixed(5)
-  const w = west.toFixed(5)
-  const n = north.toFixed(5)
-  const e = east.toFixed(5)
+  const STEP = 0.05
+  const s = (Math.floor(south / STEP) * STEP).toFixed(4)
+  const w = (Math.floor(west / STEP) * STEP).toFixed(4)
+  const n = (Math.ceil(north / STEP) * STEP).toFixed(4)
+  const e = (Math.ceil(east / STEP) * STEP).toFixed(4)
 
-  const ql = `[out:json][timeout:25];(node["natural"="peak"](${s},${w},${n},${e});node["natural"="saddle"](${s},${w},${n},${e});node["mountain_pass"="yes"](${s},${w},${n},${e}););out;`
+  const ql = `[out:json][timeout:12];(node["natural"="peak"](${s},${w},${n},${e});node["natural"="saddle"](${s},${w},${n},${e});node["mountain_pass"="yes"](${s},${w},${n},${e}););out;`
   const elements = await queryOverpass(ql, signal)
 
   return elements

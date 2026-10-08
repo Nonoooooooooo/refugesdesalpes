@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useMap, useMapEvents, Marker, Tooltip, Popup } from 'react-leaflet'
 import MarkerClusterGroup from 'react-leaflet-cluster'
 import L from 'leaflet'
-import { Loader2, ZoomIn, Navigation, SquareParking } from 'lucide-react'
+import { Loader2, ZoomIn, Navigation } from 'lucide-react'
 import { fetchOverpassParkings, fetchOverpassPeaksAndPasses } from '../../lib/overpass'
 
 const MIN_ZOOM = 12
@@ -63,8 +63,13 @@ export default function OverpassLayer({ showParkings, showPeaks }) {
   const [peaks, setPeaks] = useState([])
   const [loading, setLoading] = useState(false)
   const [zoomLevel, setZoomLevel] = useState(() => map.getZoom())
+
   const abortRef = useRef(null)
   const timerRef = useRef(null)
+  const inFlightRef = useRef(false)
+  const pendingRunRef = useRef(false)
+  const lastCenterRef = useRef(null)
+  const lastZoomRef = useRef(null)
 
   // Zoom automatique vers le niveau minimal si l'utilisateur active les parkings depuis un dézoom
   useEffect(() => {
@@ -75,17 +80,21 @@ export default function OverpassLayer({ showParkings, showPeaks }) {
 
   // Nettoyage ciblé lors de la désactivation
   useEffect(() => {
-    if (!showParkings) setParkings([])
+    if (!showParkings) {
+      setParkings([])
+      lastCenterRef.current = null
+    }
   }, [showParkings])
 
   useEffect(() => {
-    if (!showPeaks) setPeaks([])
+    if (!showPeaks) {
+      setPeaks([])
+    }
   }, [showPeaks])
 
   const fetchLayers = useCallback(() => {
-    abortRef.current?.abort()
-
     const currentZoom = map.getZoom()
+    const currentCenter = map.getCenter()
     setZoomLevel(currentZoom)
 
     // Si aucun calque actif
@@ -100,12 +109,32 @@ export default function OverpassLayer({ showParkings, showPeaks }) {
       return
     }
 
-    const b = map.getBounds()
-    const bounds = [b.getSouth(), b.getWest(), b.getNorth(), b.getEast()]
+    // Vérifier si le déplacement est suffisant pour justifier un appel API
+    if (lastCenterRef.current && lastZoomRef.current === currentZoom) {
+      const distanceMoved = map.distance(lastCenterRef.current, currentCenter)
+      // Si déplacé de moins de 1200 mètres sans changement de zoom, on évite de spammer l'API
+      if (distanceMoved < 1200) {
+        return
+      }
+    }
+
+    // Protection anti-concurrence : maximum 1 requête active à la fois
+    if (inFlightRef.current) {
+      pendingRunRef.current = true
+      return
+    }
+
+    abortRef.current?.abort()
     const ctrl = new AbortController()
     abortRef.current = ctrl
+    inFlightRef.current = true
     setLoading(true)
 
+    lastCenterRef.current = currentCenter
+    lastZoomRef.current = currentZoom
+
+    const b = map.getBounds()
+    const bounds = [b.getSouth(), b.getWest(), b.getNorth(), b.getEast()]
     const promises = []
 
     // 1. Requête Parkings si actif
@@ -113,7 +142,7 @@ export default function OverpassLayer({ showParkings, showPeaks }) {
       const p1 = fetchOverpassParkings(bounds, ctrl.signal)
         .then((incoming) => {
           setParkings((prev) => {
-            const mapById = new Map(prev.slice(-1000).map((item) => [item.id, item]))
+            const mapById = new Map(prev.slice(-1200).map((item) => [item.id, item]))
             incoming.forEach((item) => mapById.set(item.id, item))
             return [...mapById.values()]
           })
@@ -141,16 +170,23 @@ export default function OverpassLayer({ showParkings, showPeaks }) {
     }
 
     Promise.allSettled(promises).finally(() => {
+      inFlightRef.current = false
       if (!ctrl.signal.aborted) {
         setLoading(false)
+      }
+      // Si un déplacement a eu lieu pendant la requête, on planifie la suivante
+      if (pendingRunRef.current) {
+        pendingRunRef.current = false
+        clearTimeout(timerRef.current)
+        timerRef.current = setTimeout(fetchLayers, 400)
       }
     })
   }, [map, showParkings, showPeaks])
 
-  // Écoute des déplacements de carte avec debounce
+  // Débouncé à 650ms pour laisser l'utilisateur terminer son geste de pan/zoom
   const schedule = useCallback(() => {
     clearTimeout(timerRef.current)
-    timerRef.current = setTimeout(fetchLayers, 320)
+    timerRef.current = setTimeout(fetchLayers, 650)
   }, [fetchLayers])
 
   useMapEvents({
@@ -294,5 +330,3 @@ export default function OverpassLayer({ showParkings, showPeaks }) {
     </>
   )
 }
-
-
