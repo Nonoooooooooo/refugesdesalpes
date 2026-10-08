@@ -15,6 +15,14 @@ const HAUTE_SAVOIE_DATA = fs.existsSync('scripts/data/haute_savoie_final.json')
 const HAUTE_SAVOIE_ROUTES = HAUTE_SAVOIE_DATA.routes || [];
 const ARAVIS_SHAPES = HAUTE_SAVOIE_DATA.aravisShapes || {};
 
+const RESORTS_SAVOIE_ROUTES = fs.existsSync('scripts/data/resorts_savoie_final.json')
+  ? JSON.parse(fs.readFileSync('scripts/data/resorts_savoie_final.json', 'utf8'))
+  : [];
+
+const DROME_ALPINE_ROUTES = fs.existsSync('scripts/data/drome_alpine_final.json')
+  ? JSON.parse(fs.readFileSync('scripts/data/drome_alpine_final.json', 'utf8'))
+  : [];
+
 const OSRM_URL = 'https://router.project-osrm.org/route/v1/driving/';
 
 function fetchRoute(coords) {
@@ -727,6 +735,16 @@ const BUS_ROUTES = [
   // RÉSEAU INTERURBAIN CARS RÉGION HAUTE-SAVOIE - 23 LIGNES OFFICIELLES GTFS
   // ═══════════════════════════════════════════════════════
   ...HAUTE_SAVOIE_ROUTES,
+
+  // ═══════════════════════════════════════════════════════
+  // RÉSEAU SAVOIE & STATIONS ALPINES (LES ARCS, MÉRIBEL, COURCHEVEL, BELLEVILLE, 2 ALPES, LA ROSIÈRE) - 29 LIGNES OFFICIELLES GTFS
+  // ═══════════════════════════════════════════════════════
+  ...RESORTS_SAVOIE_ROUTES,
+
+  // ═══════════════════════════════════════════════════════
+  // RÉSEAU DRÔME ALPINE & PRÉALPES (VERCORS, DIOIS, BARONNIES, VALENCE TGV) - 12 LIGNES OFFICIELLES GTFS
+  // ═══════════════════════════════════════════════════════
+  ...DROME_ALPINE_ROUTES,
   {
     id: 'navette-sixt-lignon',
     ref: 'Navette Giffre',
@@ -2219,21 +2237,6 @@ const BUS_ROUTES = [
     coords: '5.5525,45.0726;5.5270,45.0310;5.4410,45.0230;5.4160,44.9680'
   },
   {
-    id: 'bus-d05',
-    ref: 'D05',
-    name: 'Ligne D05 : Valence ↔ Romans ↔ Pont-en-Royans ↔ La Chapelle ↔ Vassieux-en-Vercors',
-    mode: 'bus',
-    operator: 'Cars Région Drôme',
-    network: 'Cars Région Drôme / Vercors',
-    route: 'Valence Gare ↔ Romans Gare ↔ Saint-Nazaire-en-Royans ↔ Pont-en-Royans ↔ Les Grands Goulets ↔ La Chapelle-en-Vercors ↔ Vassieux-en-Vercors',
-    frequency: 'Quotidien',
-    period: 'Toute l\'année (Accès Vercors Drômois, Musée de la Préhistoire & Mémorial de la Résistance)',
-    stops: ['Valence Ville', 'Romans-sur-Isère Gare', 'Saint-Nazaire-en-Royans', 'Pont-en-Royans', 'La Chapelle-en-Vercors', 'Vassieux-en-Vercors (1048 m)'],
-    color: '#d97706',
-    url: 'https://www.auvergnerhonealpes.fr',
-    coords: '4.8920,44.9330;5.0500,45.0460;5.2490,45.0600;5.3420,45.0610;5.4160,44.9680;5.3710,44.8960'
-  },
-  {
     id: 'bus-gresse',
     ref: 'Navette Gresse',
     name: 'Navette Vercors : Monestier-de-Clermont ↔ Gresse-en-Vercors',
@@ -2326,59 +2329,6 @@ const BUS_ROUTES = [
     url: 'https://carsisere.auvergnerhonealpes.fr',
     coords: '5.5850,45.5360;5.5640,45.5250;5.6150,45.4140;5.5900,45.3620'
   },
-  {
-    id: 'bus-s04',
-    ref: 'S04',
-    name: 'Ligne S04 : Saint-Pierre-d\'Entremont ↔ Col du Granier ↔ Chambéry',
-    mode: 'bus',
-    operator: 'Cars Région Savoie',
-    network: 'Cars Région Savoie / Chartreuse',
-    route: 'Saint-Pierre-d\'Entremont (73) ↔ Entremont-le-Vieux ↔ Col du Granier (1134 m) ↔ Apremont ↔ Saint-Cassin ↔ Chambéry Gare',
-    frequency: 'Quotidien du lundi au samedi',
-    period: 'Toute l\'année (Accès Mont Granier 1933 m & Vallon des Entremonts)',
-    stops: [
-      'Saint-Pierre-d\'Entremont Centre',
-      'Entremont-le-Vieux (Espace Nordique du Désert)',
-      'Col du Granier (1134 m, départ falaise nord Granier)',
-      'Apremont',
-      'Saint-Cassin',
-      'Chambéry Gare Routière / SNCF'
-    ],
-    color: '#2563eb',
-    url: 'https://www.laregionvoustransporte.fr',
-    coords: '5.8600,45.4180;5.8820,45.4520;5.9010,45.4820;5.8970,45.5380;5.9200,45.5710'
-  },
-  {
-    id: 'bus-s03',
-    ref: 'S03',
-    name: 'Ligne S03 : Pontcharra ↔ Valgelon-La Rochette ↔ Chamoux-sur-Gelon',
-    mode: 'bus',
-    operator: 'Cars Région Savoie / Isère',
-    network: 'Cars Région Belledonne Nord',
-    route: 'Pontcharra Gare SNCF ↔ Détrier ↔ Valgelon-La Rochette ↔ Arvillard ↔ Chamoux-sur-Gelon',
-    frequency: 'Liaison quotidienne',
-    period: 'Toute l\'année (Accès Belledonne Nord, vallée du Gelon & sentiers)',
-    stops: ['Pontcharra-sur-Bréda Gare', 'Détrier', 'Valgelon-La Rochette', 'Chamoux-sur-Gelon'],
-    color: '#2563eb',
-    url: 'https://www.laregionvoustransporte.fr',
-    coords: '6.0170,45.4340;6.0960,45.4430;6.1200,45.4580;6.2160,45.5330'
-  },
-  {
-    id: 'bus-s05',
-    ref: 'S05',
-    name: 'Ligne S05 : Chambéry ↔ Montmélian ↔ Pontcharra ↔ Chamoux-sur-Gelon',
-    mode: 'bus',
-    operator: 'Cars Région Savoie',
-    network: 'Cars Région Savoie',
-    route: 'Chambéry Gare Routière ↔ Montmélian Gare ↔ Pontcharra Gare ↔ Détrier ↔ Chamoux-sur-Gelon',
-    frequency: 'Quotidien',
-    period: 'Toute l\'année',
-    stops: ['Chambéry Gare', 'Montmélian Gare', 'Pontcharra Gare', 'Chamoux-sur-Gelon'],
-    color: '#1d4ed8',
-    url: 'https://www.laregionvoustransporte.fr',
-    coords: '5.9200,45.5710;6.0590,45.5010;6.0170,45.4340;6.2160,45.5330'
-  },
-
   // ═══════════════════════════════════════════════════════
   // ISÈRE : MATHEYSINE, TRIÈVES & SUD-ISÈRE (CARS RÉGION 2025-2026)
   // ═══════════════════════════════════════════════════════
@@ -3733,6 +3683,11 @@ const STATIONS = [
   { id: 'st-annemasse', name: 'Gare d\'Annemasse (Léman Express & TGV)', mode: 'station', alt: 435, lat: 46.1996, lng: 6.2381, lines: ['Léman Express L1/L2/L3/L4', 'TER AURA', 'Cars Région Y02/Y04'] },
   { id: 'st-bellegarde', name: 'Gare de Bellegarde-sur-Valserine (TGV)', mode: 'station', alt: 350, lat: 46.1106, lng: 5.8250, lines: ['TGV Lyria (Paris-Genève)', 'Léman Express', 'Cars Express X33 (Ferney/Divonne)', 'Cars Express X36 (Nurieux/Bourg)'] },
   { id: 'st-valence-tgv', name: 'Gare de Valence TGV Rhône-Alpes Sud', mode: 'station', alt: 160, lat: 44.9919, lng: 4.9786, lines: ['TGV Méditerranée', 'Cars Express X73 (Aubenas)', 'Cars Express X74 (Les Vans)', 'Cars Express X76 (Vallon-Pont-d\'Arc)'] },
+  // Pôles et Gares Drôme Alpine & Savoie
+  { id: 'st-aix-bains', name: 'Gare d\'Aix-les-Bains-Le Revard', mode: 'station', alt: 244, lat: 45.6880, lng: 5.9090, lines: ['TGV InOui', 'TER AURA', 'Cars Région S10, S11 (Revard), S12 (Aillon)'] },
+  { id: 'st-crest', name: 'Gare de Crest', mode: 'station', alt: 195, lat: 44.7290, lng: 5.0210, lines: ['TER Livron-Veynes', 'Cars Région D24, D25, D27, D28, D52, D53'] },
+  { id: 'st-die', name: 'Gare de Die (Diois / Vercors Sud)', mode: 'station', alt: 410, lat: 44.7570, lng: 5.3690, lines: ['TER Livron-Veynes / Train de nuit', 'Cars Région D28 (Crest), D29 (Luc-en-Diois)'] },
+  { id: 'st-nyons', name: 'Gare Routière de Nyons (Baronnies Provençales)', mode: 'station', alt: 270, lat: 44.3590, lng: 5.1380, lines: ['Cars Région Express X71', 'Cars Région D36, D37, D38, D44'] },
   // Pôles et Gares de Tignes & Haute-Tarentaise
   { id: 'hub-tignes-lac', name: 'Gare Routière de Tignes Le Lac (2100 m)', mode: 'station', alt: 2100, lat: 45.4695, lng: 6.9075, lines: ['Navette Gratuite 2100', 'Navette Gratuite 1800', 'Cars Région S83 (Bourg-St-Maurice)', 'Cars Région S82 (Val d\'Isère)'], color: '#06b6d4' },
   { id: 'hub-tignes-val-claret', name: 'Pôle Tignes Val Claret - Grande Motte (2120 m)', mode: 'station', alt: 2120, lat: 45.4550, lng: 6.8985, lines: ['Funiculaire Perce-Neige (Glacier 3032 m)', 'Navette Gratuite 2100', 'Navette Gratuite 1800', 'Cars Région S83', 'Départ Tour des Glaciers de la Vanoise & Refuges Leisse / Palet'], color: '#06b6d4' },
