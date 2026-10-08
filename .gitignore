@@ -33,3 +33,5 @@ dist-ssr
 *.sw?
 Thumbs.db
 scratch/
+scripts/*.zip
+scripts/gtfs_*/

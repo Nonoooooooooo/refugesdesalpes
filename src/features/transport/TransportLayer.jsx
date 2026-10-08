@@ -242,6 +242,51 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
           layersMapRef.current.set(featId, { type: 'line', layer: line, feature, props });
         }
         group.addLayer(line);
+
+        // 2b. Afficher chaque arrêt sous forme d'un petit point de la même couleur que le trait
+        if (Array.isArray(props.stopPoints) && props.stopPoints.length > 0) {
+          props.stopPoints.forEach((sp) => {
+            if (sp.lat == null || sp.lng == null) return;
+            const stopMarker = L.circleMarker([sp.lat, sp.lng], {
+              renderer: canvasRenderer,
+              radius: 3.5,
+              fillColor: props.color || '#3b82f6',
+              color: '#ffffff',
+              weight: 1.5,
+              fillOpacity: 1,
+            });
+
+            const stopTooltipHtml = `
+              <div style="font-family: inherit; min-width: 140px; padding: 2px;">
+                <div style="display: flex; align-items: center; gap: 5px; margin-bottom: 2px;">
+                  <span style="background: ${props.color || '#3b82f6'}; color: #fff; font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 4px; text-transform: uppercase;">
+                    ${props.ref || 'Arrêt'}
+                  </span>
+                  <span style="font-size: 10px; color: rgba(255,255,255,0.7);">${props.name}</span>
+                </div>
+                <div style="font-weight: 700; font-size: 12px; color: #fff; line-height: 1.3;">
+                  ${sp.name}
+                </div>
+                ${sp.time ? `<div style="font-size: 10px; color: #38bdf8; font-weight: 600; margin-top: 3px;">🕒 Horaires : ${sp.time}</div>` : ''}
+              </div>
+            `;
+
+            stopMarker.bindTooltip(stopTooltipHtml, {
+              className: 'refuge-tooltip',
+              direction: 'top',
+              offset: [0, -6],
+            });
+
+            stopMarker.on('click', (e) => {
+              L.DomEvent.stopPropagation(e);
+              if (onSelectTransport) {
+                onSelectTransport({ ...props, selectedStop: sp, isTransport: true });
+              }
+            });
+
+            group.addLayer(stopMarker);
+          });
+        }
       }
     });
 

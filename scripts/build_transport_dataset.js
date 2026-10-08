@@ -3829,12 +3829,112 @@ async function main() {
       stops: ['Nice-Ville', 'Drap-Cantaron', 'L\'Escarène', 'Sospel', 'Breil-sur-Roya', 'Fontan-Saorge', 'Saint-Dalmas-de-Tende', 'Tende', 'Vievola', 'Cuneo'],
       color: '#6366f1',
       url: 'https://zou.maregionsud.fr'
+    },
+    'Ligne de Valence à Moirans': {
+      ref: 'TGV / TER',
+      name: 'Ligne Valence ↔ Grenoble (TGV Paris & TER Sillon Alpin)',
+      mode: 'train',
+      operator: 'SNCF Voyageurs',
+      network: 'TGV InOui & TER AURA',
+      route: 'Valence TGV ↔ Valence Ville ↔ Romans ↔ Saint-Marcellin ↔ Moirans ↔ Grenoble',
+      frequency: 'Toutes les 30 à 60 min (TGV direct Paris-Gare de Lyon & TER cadencé)',
+      period: 'Toute l\'année',
+      stops: ['Valence TGV', 'Valence Ville', 'Romans-Bourg-de-Péage', 'Saint-Marcellin', 'Moirans', 'Grenoble'],
+      color: '#7c3aed',
+      url: 'https://www.sncf-connect.com'
+    },
+    'Ligne Annecy - Aix-les-Bains': {
+      ref: 'TGV / TER',
+      name: 'Ligne TGV & TER : Aix-les-Bains ↔ Annecy',
+      mode: 'train',
+      operator: 'SNCF Voyageurs',
+      network: 'TGV InOui & TER AURA',
+      route: 'Paris Gare de Lyon / Lyon ↔ Aix-les-Bains ↔ Rumilly ↔ Annecy',
+      frequency: 'Nombreux TGV quotidiens & TER cadencés',
+      period: 'Toute l\'année',
+      stops: ['Aix-les-Bains', 'Rumilly', 'Annecy'],
+      color: '#7c3aed',
+      url: 'https://www.sncf-connect.com'
+    },
+    'Ligne de Livron à Aspres-sur-Buëch': {
+      ref: 'TER / Train de Nuit',
+      name: 'Ligne du Diois : Livron ↔ Crest ↔ Die ↔ Luc-en-Diois ↔ Veynes',
+      mode: 'train',
+      operator: 'SNCF Voyageurs',
+      network: 'TER AURA & Intercités Nuit',
+      route: 'Valence / Livron ↔ Crest ↔ Die ↔ Luc-en-Diois ↔ Aspres-sur-Buëch ↔ Veynes (Accès Briançon)',
+      frequency: 'Quotidien (Train de nuit direct Paris-Austerlitz ↔ Briançon & TER)',
+      period: 'Toute l\'année',
+      stops: ['Valence Ville', 'Crest', 'Die', 'Luc-en-Diois', 'Aspres-sur-Buëch', 'Veynes-Dévoluy'],
+      color: '#6366f1',
+      url: 'https://www.sncf-connect.com'
     }
+  };
+
+  const RAIL_STATION_COORDS = {
+    'Paris Gare de Lyon': [2.3730, 48.8443],
+    'Paris-Austerlitz': [2.3660, 48.8415],
+    'Lyon-Part-Dieu': [4.8590, 45.7606],
+    'Grenoble': [5.7145, 45.1915],
+    'Grenoble Universités Gières': [5.7820, 45.1870],
+    'Pont-de-Claix': [5.6980, 45.1230],
+    'Vif': [5.6700, 45.0550],
+    'Monestier-de-Clermont': [5.6350, 44.9180],
+    'Clelles-Mens': [5.6260, 44.8260],
+    'Lus-la-Croix-Haute': [5.6980, 44.6640],
+    'Aspres-sur-Buëch': [5.7500, 44.5200],
+    'Veynes-Dévoluy': [5.8230, 44.5330],
+    'Chambéry': [5.9200, 45.5710],
+    'Aix-les-Bains': [5.9080, 45.6880],
+    'Annecy': [6.1210, 45.9015],
+    'Albertville': [6.3927, 45.6756],
+    'Notre-Dame-de-Briançon': [6.4710, 45.5250],
+    'Moûtiers-Salins-Brides-les-Bains': [6.5310, 45.4830],
+    'Aime-la-Plagne': [6.6490, 45.5560],
+    'Landry': [6.7410, 45.5700],
+    'Bourg-Saint-Maurice': [6.7680, 45.6180],
+    'Saint-Jean-de-Maurienne': [6.3530, 45.2780],
+    'Saint-Michel-de-Maurienne': [6.4710, 45.2170],
+    'Modane': [6.6660, 45.2010],
+    'Saint-Pierre-d\'Albigny': [6.1550, 45.5680],
+    'Montmélian': [6.0590, 45.5020],
+    'Brignoud': [5.8980, 45.2580],
+    'Pontcharra-sur-Bréda': [6.0150, 45.4320],
+    'Saint-Gervais Le Fayet': [6.7020, 45.9070],
+    'Chamonix-Mont-Blanc': [6.8690, 45.9230],
+    'Les Praz': [6.8850, 45.9400],
+    'Argentière': [6.9270, 45.9810],
+    'Vallorcine': [6.9320, 46.0310],
+    'Gap': [6.0880, 44.5670],
+    'Chorges': [6.2770, 44.5450],
+    'Embrun': [6.4950, 44.5630],
+    'Montdauphin-Guillestre': [6.6180, 44.6710],
+    'L\'Argentière-les-Écrins': [6.5590, 44.7890],
+    'Briançon': [6.6320, 44.8920],
+    'Valence TGV': [4.9780, 44.9900],
+    'Valence Ville': [4.8920, 44.9280],
+    'Romans-Bourg-de-Péage': [5.0510, 45.0450],
+    'Saint-Marcellin': [5.3160, 45.1530],
+    'Moirans': [5.5680, 45.3260],
+    'Rumilly': [5.9470, 45.8670],
+    'Crest': [5.0210, 44.7310],
+    'Luc-en-Diois': [5.4520, 44.6150],
+    'Nice-Ville': [7.2620, 43.7040],
+    'Sospel': [7.4470, 43.8770],
+    'Breil-sur-Roya': [7.5140, 43.9400],
+    'Fontan-Saorge': [7.5520, 43.9980],
+    'Saint-Dalmas-de-Tende': [7.5890, 44.0560],
+    'Tende': [7.5930, 44.0880]
   };
 
   for (const [name, g] of Object.entries(railGroups)) {
     const meta = RAIL_METADATA[name];
     if (!meta) continue; // On ne garde que les grandes lignes voyageurs nommées
+
+    const railStopPoints = (meta.stops || []).map(s => {
+      const coord = RAIL_STATION_COORDS[s];
+      return coord ? { name: s, lng: coord[0], lat: coord[1] } : null;
+    }).filter(Boolean);
 
     features.push({
       type: 'Feature',
@@ -3850,6 +3950,7 @@ async function main() {
         frequency: meta.frequency || 'Quotidien',
         period: meta.period || 'Toute l\'année',
         stops: meta.stops || [],
+        stopPoints: railStopPoints,
         color: meta.color || '#6366f1',
         url: meta.url || 'https://www.sncf.com'
       },
@@ -4065,6 +4166,25 @@ async function main() {
       }
     }
 
+    // Calcul des stopPoints géolocalisés pour chaque arrêt de la ligne
+    const coordsList = routeDef.coords ? routeDef.coords.split(';').map(pt => pt.split(',').map(Number)) : (routeDef.directCoordinates || []);
+    let stopPoints = routeDef.stopPoints || [];
+    if (stopPoints.length === 0 && Array.isArray(routeDef.stops) && coordsList.length > 0) {
+      stopPoints = routeDef.stops.map((name, idx) => {
+        const pt = coordsList[idx] || coordsList[Math.floor((idx / Math.max(1, routeDef.stops.length - 1)) * (coordsList.length - 1))];
+        return pt ? { name, lng: pt[0], lat: pt[1] } : null;
+      }).filter(Boolean);
+    }
+    // Remplir les horaires spécifiques aux arrêts si le tableau timetable est fourni
+    if (routeDef.timetable?.rows) {
+      stopPoints.forEach(sp => {
+        const row = routeDef.timetable.rows.find(r => r.stop && (r.stop.toLowerCase().includes(sp.name.toLowerCase()) || sp.name.toLowerCase().includes(r.stop.toLowerCase())));
+        if (row && row.times && row.times.length > 0) {
+          sp.time = row.times.filter(t => t && t !== '-').join(' | ');
+        }
+      });
+    }
+
     if (coords && coords.length > 0) {
       features.push({
         type: 'Feature',
@@ -4080,6 +4200,7 @@ async function main() {
           frequency: routeDef.frequency,
           period: routeDef.period,
           stops: routeDef.stops,
+          stopPoints: stopPoints,
           color: routeDef.color,
           url: routeDef.url,
           timetable: routeDef.timetable || null
@@ -4107,6 +4228,7 @@ async function main() {
           frequency: routeDef.frequency,
           period: routeDef.period,
           stops: routeDef.stops,
+          stopPoints: stopPoints,
           color: routeDef.color,
           url: routeDef.url,
           timetable: routeDef.timetable || null
