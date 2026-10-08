@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import {
   Satellite,
   Mountain,
-  Bike,
   Footprints,
   TrainFront,
   SquareParking,
@@ -57,7 +56,7 @@ export default function MapControlBar({
   const baseLayers = [
     { key: 'satellite', label: 'Satellite', Icon: Satellite },
     { key: 'relief', label: 'Relief', Icon: Mountain },
-    { key: 'cyclosm', label: 'CyclOSM', Icon: Bike },
+    { key: 'cyclosm', label: 'Montagne', Icon: MountainSnow },
   ]
 
   const activeBaseIdx = baseLayers.findIndex((b) => b.key === baseLayer)

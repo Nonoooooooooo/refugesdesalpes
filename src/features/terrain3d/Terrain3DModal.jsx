@@ -16,6 +16,7 @@ import {
   Globe2,
   ArrowUp,
   ArrowDown,
+  Maximize,
 } from 'lucide-react'
 import { typeInfo } from '../../lib/types.jsx'
 
@@ -56,23 +57,31 @@ export default function Terrain3DModal({ point, onClose }) {
   const [povBearing, setPovBearing] = useState(45)
   const [povPitch, setPovPitch] = useState(83)
   const [eyeHeight, setEyeHeight] = useState(8) // en mètres au-dessus du sol
+  const [povFov, setPovFov] = useState(75) // Champ de vision large (75° par défaut au lieu des 36° standards)
 
+  // Refs pour interactions fluides sans re-render React à chaque pixel
   const povBearingRef = useRef(45)
   const povPitchRef = useRef(83)
   const eyeHeightRef = useRef(8)
+  const povFovRef = useRef(75)
+  const cachedAltitudeRef = useRef(null)
+
+  // Drag souris / tactile incrémental fluide
   const isDraggingRef = useRef(false)
-  const dragStartRef = useRef({ x: 0, y: 0, bearing: 0, pitch: 0 })
+  const lastPosRef = useRef({ x: 0, y: 0 })
+  const pendingRafRef = useRef(null)
 
   const modalRef = useRef(null)
   const animFrameRef = useRef(null)
 
   const { color, Icon, label } = typeInfo(point?.type)
 
-  // Calcule l'altitude effective du refuge
+  // Récupère ou met en cache l'altitude du refuge
   const getRefugeAltitude = useCallback(() => {
-    const map = mapInstanceRef.current
+    if (cachedAltitudeRef.current != null) return cachedAltitudeRef.current
     let alt = Number(point?.alt)
     if (!alt || isNaN(alt)) {
+      const map = mapInstanceRef.current
       if (map) {
         try {
           const terrainAlt = map.queryTerrainElevation?.([point.lng, point.lat])
@@ -83,43 +92,57 @@ export default function Terrain3DModal({ point, onClose }) {
       }
     }
     if (!alt || isNaN(alt)) alt = 2000
-    return alt * (exaggeration || 1)
+    cachedAltitudeRef.current = alt
+    return alt
   }, [point, exaggeration])
 
-  // Calcule la configuration de caméra pour le mode POV
+  // Calcule la configuration de caméra stable pour le mode POV
+  // Utilise un point cible géométrique sur l'horizon à distance fixe pour éliminer les sauts de raycast
   const getCameraOptionsForPOV = useCallback(
     (bearing, pitch, customHeight) => {
       const map = mapInstanceRef.current
       if (!map || !point) return null
       const baseAlt = getRefugeAltitude()
       const height = customHeight ?? eyeHeightRef.current
-      const cameraAlt = baseAlt + height
+      const cameraAlt = baseAlt * (exaggeration || 1) + height
+
+      // Distance cible fixe sur l'horizon (2500m) pour une géométrie de vue parfaitement stable
+      const targetDist = 2500
+      const bearingRad = (bearing * Math.PI) / 180
+      const pitchRad = (pitch * Math.PI) / 180
+      const latRad = (point.lat * Math.PI) / 180
+
+      const dLng = (targetDist * Math.sin(bearingRad)) / (111320 * Math.cos(latRad))
+      const dLat = (targetDist * Math.cos(bearingRad)) / 110540
+      const toLng = point.lng + dLng
+      const toLat = point.lat + dLat
+
+      // Inclinaison : altitude cible calculée trigonométriquement
+      const tanP = Math.tan(pitchRad)
+      const toAlt = cameraAlt - (tanP > 0 ? targetDist / tanP : 0)
 
       try {
-        if (typeof map.calculateCameraOptionsFromCameraLngLatAltRotation === 'function') {
-          return map.calculateCameraOptionsFromCameraLngLatAltRotation(
+        if (typeof map.calculateCameraOptionsFromTo === 'function') {
+          return map.calculateCameraOptionsFromTo(
             [point.lng, point.lat],
             cameraAlt,
-            bearing,
-            pitch,
-            0
+            [toLng, toLat],
+            toAlt
           )
         }
       } catch (err) {
-        console.warn('calculateCameraOptions error:', err)
+        console.warn('calculateCameraOptionsFromTo error:', err)
       }
 
       // Fallback
-      const rad = (bearing * Math.PI) / 180
-      const dist = 0.02
       return {
-        center: [point.lng + dist * Math.sin(rad), point.lat + dist * Math.cos(rad)],
-        zoom: 15,
+        center: [toLng, toLat],
+        zoom: 14.5,
         pitch,
         bearing,
       }
     },
-    [getRefugeAltitude, point]
+    [getRefugeAltitude, point, exaggeration]
   )
 
   // Applique la caméra POV
@@ -137,6 +160,19 @@ export default function Terrain3DModal({ point, onClose }) {
     },
     [getCameraOptionsForPOV]
   )
+
+  // Applique le champ de vision (Field of View)
+  const applyFOV = useCallback((fovValue) => {
+    const map = mapInstanceRef.current
+    if (!map) return
+    try {
+      if (typeof map.setVerticalFieldOfView === 'function') {
+        map.setVerticalFieldOfView(fovValue)
+      }
+    } catch (e) {
+      console.warn('setVerticalFieldOfView error:', e)
+    }
+  }, [])
 
   // Initialisation de la carte MapLibre 3D avec Mapterhorn DEM
   useEffect(() => {
@@ -271,6 +307,7 @@ export default function Terrain3DModal({ point, onClose }) {
     return () => {
       clearTimeout(safetyTimer)
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current)
+      if (pendingRafRef.current) cancelAnimationFrame(pendingRafRef.current)
       map.remove()
       mapInstanceRef.current = null
     }
@@ -284,8 +321,16 @@ export default function Terrain3DModal({ point, onClose }) {
 
     if (mode === 'pov') {
       setViewMode('pov')
-      // Désactive le pan 2D pour manipuler la tête à 360° en glissant
+      // Désactiver les contrôles par défaut pouvant interférer avec la rotation de tête
       map.dragPan.disable()
+      map.dragRotate.disable()
+      map.touchZoomRotate.disable()
+      map.touchPitch.disable()
+      map.doubleClickZoom.disable()
+
+      // Élargir le champ de vision (FOV) pour une vue panoramique immersive
+      applyFOV(povFovRef.current)
+
       // Masquer le marqueur à la position de la caméra pour ne pas obstruer la vue
       if (markerRef.current) {
         const el = markerRef.current.getElement()
@@ -306,8 +351,16 @@ export default function Terrain3DModal({ point, onClose }) {
       }
     } else {
       setViewMode('orbit')
-      // Réactiver le pan 2D
+      // Réactiver les contrôles par défaut
       map.dragPan.enable()
+      map.dragRotate.enable()
+      map.touchZoomRotate.enable()
+      map.touchPitch.enable()
+      map.doubleClickZoom.enable()
+
+      // Rétablir le FOV standard pour la vue aérienne
+      applyFOV(36.87)
+
       // Réafficher le marqueur
       if (markerRef.current) {
         const el = markerRef.current.getElement()
@@ -337,6 +390,7 @@ export default function Terrain3DModal({ point, onClose }) {
       if (map.getLayer('hillshade-layer')) map.setLayoutProperty('hillshade-layer', 'visibility', 'none')
     } else {
       if (map.getLayer('satellite-layer')) map.setLayoutProperty('satellite-layer', 'visibility', 'none')
+      if (map.getLayer('outdoor-layer')) map.setLayoutProperty('outdoor-layer', 'visibility', 'none')
       if (map.getLayer('outdoor-layer')) map.setLayoutProperty('outdoor-layer', 'visibility', 'visible')
       if (map.getLayer('hillshade-layer')) map.setLayoutProperty('hillshade-layer', 'visibility', 'visible')
     }
@@ -345,6 +399,7 @@ export default function Terrain3DModal({ point, onClose }) {
   // Ajustement du relief
   const handleExaggerationChange = (val) => {
     setExaggeration(val)
+    cachedAltitudeRef.current = null
     const map = mapInstanceRef.current
     if (map) {
       try {
@@ -364,6 +419,15 @@ export default function Terrain3DModal({ point, onClose }) {
     eyeHeightRef.current = h
     if (viewMode === 'pov') {
       applyPOVCamera(povBearingRef.current, povPitchRef.current, h, true)
+    }
+  }
+
+  // Changement du champ de vision (FOV) en mode POV
+  const handleFovChange = (val) => {
+    setPovFov(val)
+    povFovRef.current = val
+    if (viewMode === 'pov') {
+      applyFOV(val)
     }
   }
 
@@ -403,10 +467,13 @@ export default function Terrain3DModal({ point, onClose }) {
         map.setBearing((currentBearing + 0.25) % 360)
       } else {
         // En mode POV : rotation panoramique sur soi-même depuis le refuge
-        const nextBearing = (povBearingRef.current + 0.2) % 360
+        const nextBearing = (povBearingRef.current + 0.18) % 360
         povBearingRef.current = nextBearing
-        setPovBearing(Math.round(nextBearing))
         applyPOVCamera(nextBearing, povPitchRef.current, eyeHeightRef.current, false)
+        // Mettre à jour l'affichage de la boussole de temps à autre
+        if (Math.round(nextBearing) % 2 === 0) {
+          setPovBearing(Math.round(nextBearing))
+        }
       }
 
       animFrameRef.current = requestAnimationFrame(rotate)
@@ -423,19 +490,13 @@ export default function Terrain3DModal({ point, onClose }) {
     }
   }, [isRotating, viewMode, applyPOVCamera])
 
-  // Drag souris / tactile en mode POV pour tourner la tête
+  // Drag souris / tactile incrémental ultra-fluide avec RequestAnimationFrame
   const handlePointerDown = (e) => {
     if (viewMode !== 'pov') return
     if (e.target.closest('button, input, a, [role="button"]')) return
 
     isDraggingRef.current = true
-    dragStartRef.current = {
-      x: e.clientX,
-      y: e.clientY,
-      bearing: povBearingRef.current,
-      pitch: povPitchRef.current,
-    }
-    // Si la rotation auto était active, on la suspend lors du contrôle manuel
+    lastPosRef.current = { x: e.clientX, y: e.clientY }
     setIsRotating(false)
     try {
       e.currentTarget.setPointerCapture?.(e.pointerId)
@@ -444,20 +505,25 @@ export default function Terrain3DModal({ point, onClose }) {
 
   const handlePointerMove = (e) => {
     if (!isDraggingRef.current || viewMode !== 'pov') return
-    const dx = e.clientX - dragStartRef.current.x
-    const dy = e.clientY - dragStartRef.current.y
 
-    // Déplacement horizontal : orientation du regard (azimut)
-    const newBearing = ((dragStartRef.current.bearing - dx * 0.25) % 360 + 360) % 360
-    // Déplacement vertical : inclinaison du regard (pitch)
-    const newPitch = Math.min(85, Math.max(68, dragStartRef.current.pitch + dy * 0.12))
+    const dx = e.clientX - lastPosRef.current.x
+    const dy = e.clientY - lastPosRef.current.y
+    lastPosRef.current = { x: e.clientX, y: e.clientY }
 
-    povBearingRef.current = newBearing
-    povPitchRef.current = newPitch
-    setPovBearing(Math.round(newBearing))
-    setPovPitch(Math.round(newPitch))
+    // Déplacement relatif incrémental doux (0.2° par pixel)
+    const nextBearing = ((povBearingRef.current - dx * 0.2) % 360 + 360) % 360
+    const nextPitch = Math.min(85, Math.max(68, povPitchRef.current + dy * 0.1))
 
-    applyPOVCamera(newBearing, newPitch, eyeHeightRef.current, false)
+    povBearingRef.current = nextBearing
+    povPitchRef.current = nextPitch
+
+    // Rendu sur le cycle RequestAnimationFrame pour une fluidité 60-120fps sans freeze
+    if (!pendingRafRef.current) {
+      pendingRafRef.current = requestAnimationFrame(() => {
+        pendingRafRef.current = null
+        applyPOVCamera(povBearingRef.current, povPitchRef.current, eyeHeightRef.current, false)
+      })
+    }
   }
 
   const handlePointerUp = (e) => {
@@ -466,6 +532,9 @@ export default function Terrain3DModal({ point, onClose }) {
       try {
         e.currentTarget.releasePointerCapture?.(e.pointerId)
       } catch {}
+      // Synchronisation du state React à la fin du geste
+      setPovBearing(Math.round(povBearingRef.current))
+      setPovPitch(Math.round(povPitchRef.current))
     }
   }
 
@@ -478,12 +547,12 @@ export default function Terrain3DModal({ point, onClose }) {
       }
       if (viewMode === 'pov') {
         if (e.key === 'ArrowLeft') {
-          const next = ((povBearingRef.current - 5) % 360 + 360) % 360
+          const next = ((povBearingRef.current - 4) % 360 + 360) % 360
           povBearingRef.current = next
           setPovBearing(Math.round(next))
           applyPOVCamera(next, povPitchRef.current, eyeHeightRef.current, false)
         } else if (e.key === 'ArrowRight') {
-          const next = (povBearingRef.current + 5) % 360
+          const next = (povBearingRef.current + 4) % 360
           povBearingRef.current = next
           setPovBearing(Math.round(next))
           applyPOVCamera(next, povPitchRef.current, eyeHeightRef.current, false)
@@ -581,7 +650,7 @@ export default function Terrain3DModal({ point, onClose }) {
             </button>
             <button
               onClick={() => handleSwitchMode('pov')}
-              title="Visualiser le panorama depuis le refuge, à hauteur d'homme"
+              title="Visualiser le panorama depuis le refuge, à hauteur d'homme avec grand angle"
               className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
                 viewMode === 'pov'
                   ? 'bg-white/20 text-white font-semibold shadow-sm'
@@ -659,7 +728,7 @@ export default function Terrain3DModal({ point, onClose }) {
                 <span className="text-white/40">·</span>
                 <span className="text-white/70">Hauteur : +{eyeHeight}m</span>
                 <span className="text-white/40">·</span>
-                <span className="text-white/70">{povPitch}°</span>
+                <span className="text-white/70">Angle : {povPitch}°</span>
               </div>
               <div className="hidden sm:block text-[10px] text-white/60 bg-black/40 px-2.5 py-0.5 rounded-full border border-white/5 backdrop-blur-sm">
                 Faites glisser pour regarder à 360° ou utilisez ← →
@@ -735,6 +804,32 @@ export default function Terrain3DModal({ point, onClose }) {
                       className="rounded-lg px-2 py-0.5 text-xs font-medium text-white/60 hover:text-white hover:bg-white/10 transition-colors"
                     >
                       {dir.label}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="mx-1 h-4 w-px bg-white/15" />
+
+                {/* Champ de vision (FOV / Grand angle) */}
+                <div className="flex items-center gap-1 text-[11px] text-white/70 px-1">
+                  <Maximize size={12} className="text-white/50" />
+                  <span className="hidden lg:inline text-white/50">Vision :</span>
+                  {[
+                    { val: 60, label: '60°' },
+                    { val: 75, label: '75° Large' },
+                    { val: 85, label: '85° Maxi' },
+                  ].map((f) => (
+                    <button
+                      key={f.val}
+                      onClick={() => handleFovChange(f.val)}
+                      title={`Champ de vision ${f.label}`}
+                      className={`rounded-lg px-2 py-0.5 text-xs font-medium transition-colors ${
+                        povFov === f.val
+                          ? 'bg-white/20 text-white font-semibold'
+                          : 'text-white/50 hover:text-white hover:bg-white/10'
+                      }`}
+                    >
+                      {f.label}
                     </button>
                   ))}
                 </div>
