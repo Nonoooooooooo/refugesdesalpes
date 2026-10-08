@@ -1842,12 +1842,13 @@ const BUS_ROUTES = [
     period: 'Toute l\'année (Renforts quotidiens été & hiver)',
     stops: [
       'Névache Roubion (Grand Parking obligatoire & Foyer nordique)',
-      'Névache Village',
+      'Névache Sallé (Croix de Mission)',
+      'Névache Village (Ville-Basse & Le Bon Coin)',
       'Névache Ville-Haute (1600 m, Pôle navettes Haute Vallée)'
     ],
     color: '#06b6d4',
     url: 'https://www.monaltigo.fr',
-    coords: '6.6040,45.0200;6.5890,45.0250;6.5790,45.0270'
+    coords: '6.6319,45.0171;6.6216,45.0179;6.6128,45.0181;6.6050,45.0189'
   },
   {
     id: 'altigo-n4-claree',
@@ -1869,7 +1870,7 @@ const BUS_ROUTES = [
     ],
     color: '#10b981',
     url: 'https://www.monaltigo.fr',
-    coords: '6.5790,45.0270;6.5786,45.0189;6.5491,45.0318;6.5350,45.0450;6.5299,45.0575;6.5240,45.0680'
+    coords: '6.6050,45.0189;6.5785,45.0221;6.5451,45.0342;6.5380,45.0420;6.5340,45.0518;6.5256,45.0592'
   },
   {
     id: 'navette-vallee-etroite',
@@ -1881,10 +1882,10 @@ const BUS_ROUTES = [
     route: 'Névache ↔ Col de l\'Échelle (1762 m) ↔ Vallée Étroite (Granges de la Vallée Étroite, Refuges I Re Magi & Terzo Alpini)',
     frequency: 'Navettes estivales sur réservation',
     period: 'Été (Accès sentier des Lacs de Terre Rouge & Refuges italiens)',
-    stops: ['Névache Village', 'Col de l\'Échelle (1762 m)', 'Vallée Étroite (Granges de la Vallée Étroite 1650 m, Refuges I Re Magi & Terzo Alpini)'],
+    stops: ['Névache Village (Ville-Haute)', 'Col de l\'Échelle (1762 m)', 'Vallée Étroite (Granges de la Vallée Étroite 1650 m, Refuges I Re Magi & Terzo Alpini)'],
     color: '#f59e0b',
     url: 'https://www.nevache-tourisme.fr',
-    coords: '6.5370,44.9720;6.5660,45.0160;6.5920,45.0350'
+    coords: '6.6050,45.0189;6.6570,45.0270;6.6267,45.0695'
   },
   {
     id: 'navette-queyras-est',
@@ -3144,11 +3145,12 @@ const BUS_ROUTES = [
       'Val-des-Prés (Le Rosier, La Vachette)',
       'Plampinet (Auberge de la Clarée, départ Col des Thures)',
       'Névache Roubion (Foyer nordique)',
+      'Névache Village (Ville-Basse)',
       'Névache Ville-Haute (1600 m, Pôle d\'échange des navettes de la Haute Clarée)'
     ],
     color: '#ec4899',
     url: 'https://www.monaltigo.fr',
-    coords: '6.6340,44.8980;6.6430,44.8990;6.6730,44.9160;6.6770,44.9490;6.6617,45.0031;6.6040,45.0200;6.5790,45.0270'
+    coords: '6.6340,44.8980;6.6430,44.8990;6.6730,44.9160;6.6770,44.9490;6.6617,45.0031;6.6319,45.0171;6.6128,45.0181;6.6050,45.0189'
   },
   {
     id: 'altigo-ld',
