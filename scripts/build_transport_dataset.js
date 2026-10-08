@@ -5,9 +5,10 @@ const CHAMONIX_BUS_ROUTES = fs.existsSync('scripts/data/chamonix_bus.json')
   ? JSON.parse(fs.readFileSync('scripts/data/chamonix_bus.json', 'utf8'))
   : [];
 
-const CARS_REGION_EXPRESS_ROUTES = fs.existsSync('scripts/data/cars_region_express_final.json')
+const EXCLUDED_CRE_REFS = new Set(['X76', 'X73', 'X18', 'X13', 'X25']);
+const CARS_REGION_EXPRESS_ROUTES = (fs.existsSync('scripts/data/cars_region_express_final.json')
   ? JSON.parse(fs.readFileSync('scripts/data/cars_region_express_final.json', 'utf8'))
-  : [];
+  : []).filter(r => !EXCLUDED_CRE_REFS.has((r.ref || '').toUpperCase()));
 
 const HAUTE_SAVOIE_DATA = fs.existsSync('scripts/data/haute_savoie_final.json')
   ? JSON.parse(fs.readFileSync('scripts/data/haute_savoie_final.json', 'utf8'))
