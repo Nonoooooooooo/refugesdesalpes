@@ -8,7 +8,141 @@ if (typeof window !== 'undefined') {
 }
 import 'leaflet-polylineoffset';
 
-// Cache mémoire global pour éviter tout re-téléchargement
+// ============================================================================
+// 1. PATCH ANTI-BOUCLES SUR LEAFLET-POLYLINEOFFSET
+// Neutralise le bug géométrique de boucle (circular arcs à 350°) sur les lacets de montagne
+// ============================================================================
+if (typeof window !== 'undefined' && L.PolylineOffset) {
+  const originalJoinSegments = L.PolylineOffset.joinSegments;
+
+  L.PolylineOffset.joinSegments = function (s1, s2, offset) {
+    if (!s1 || !s2) return [];
+
+    // Longueurs des segments d'origine à l'écran
+    const len1 = Math.hypot(s1.original[1].x - s1.original[0].x, s1.original[1].y - s1.original[0].y);
+    const len2 = Math.hypot(s2.original[1].x - s2.original[0].x, s2.original[1].y - s2.original[0].y);
+    const absOffset = Math.abs(offset || 0);
+
+    // 1. Si les segments sont très courts (dézoom sur lacets de montagne),
+    // ne jamais tracer d'arc de cercle qui ferait une boucle visible
+    if (len1 < absOffset * 1.5 || len2 < absOffset * 1.5) {
+      return [s1.offset[1], s2.offset[0]];
+    }
+
+    // 2. Écart angulaire le plus court entre les deux segments
+    let diff = s2.offsetAngle - s1.offsetAngle;
+    while (diff > Math.PI) diff -= 2 * Math.PI;
+    while (diff < -Math.PI) diff += 2 * Math.PI;
+
+    // En cas de virage trop en épingle (> 115° = ~2 rad), relier directement
+    if (Math.abs(diff) > 2.0) {
+      return [s1.offset[1], s2.offset[0]];
+    }
+
+    try {
+      const arc = originalJoinSegments.call(this, s1, s2, offset);
+      // Si l'arc fait plus de 6 points pour un petit angle, il y a eu un débordement angulaire (boucle)
+      if (arc && arc.length > 7) {
+        return [s1.offset[1], s2.offset[0]];
+      }
+      return arc;
+    } catch {
+      return [s1.offset[1], s2.offset[0]];
+    }
+  };
+}
+
+// ============================================================================
+// 2. GÉOMÉTRIE & PROJECTION DÉCALÉE DES ARRÊTS SUR LEURS TRAITS RESPECTIFS
+// ============================================================================
+
+/**
+ * Trouve le segment géométrique le plus proche pour un arrêt donné
+ */
+function findClosestSegment(lat, lng, geometry) {
+  if (!geometry || !geometry.coordinates) return null;
+
+  let lineStrings = [];
+  if (geometry.type === 'LineString') {
+    lineStrings = [geometry.coordinates];
+  } else if (geometry.type === 'MultiLineString') {
+    lineStrings = geometry.coordinates;
+  }
+
+  let minDistSq = Infinity;
+  let best = null;
+
+  for (let s = 0; s < lineStrings.length; s++) {
+    const coords = lineStrings[s];
+    if (!coords || coords.length < 2) continue;
+
+    for (let i = 0; i < coords.length - 1; i++) {
+      const c1 = coords[i];
+      const c2 = coords[i + 1];
+      const dx = c2[0] - c1[0];
+      const dy = c2[1] - c1[1];
+      const lenSq = dx * dx + dy * dy;
+      if (lenSq === 0) continue;
+
+      let t = ((lng - c1[0]) * dx + (lat - c1[1]) * dy) / lenSq;
+      t = Math.max(0, Math.min(1, t));
+      const px = c1[0] + t * dx;
+      const py = c1[1] + t * dy;
+      const distSq = (lng - px) * (lng - px) + (lat - py) * (lat - py);
+
+      if (distSq < minDistSq) {
+        minDistSq = distSq;
+        best = {
+          c1: [c1[1], c1[0]], // [lat, lng]
+          c2: [c2[1], c2[0]], // [lat, lng]
+          t: t,
+        };
+      }
+    }
+  }
+
+  return best;
+}
+
+/**
+ * Marqueur d'arrêt dont la position écran est exactement décalée sur le trait de sa ligne
+ */
+const LineStopMarker = L.CircleMarker.extend({
+  options: {
+    offset: 0,
+    segmentData: null,
+  },
+  _project: function () {
+    this._point = this._map.latLngToLayerPoint(this._latlng);
+    const offset = this.options.offset || 0;
+    const seg = this.options.segmentData;
+
+    if (offset !== 0 && seg) {
+      const p1 = this._map.latLngToLayerPoint(seg.c1);
+      const p2 = this._map.latLngToLayerPoint(seg.c2);
+      const dx = p2.x - p1.x;
+      const dy = p2.y - p1.y;
+      const len = Math.hypot(dx, dy);
+
+      if (len > 0) {
+        const projX = p1.x + seg.t * dx;
+        const projY = p1.y + seg.t * dy;
+        const nx = -dy / len;
+        const ny = dx / len;
+        this._point = L.point(projX + offset * nx, projY + offset * ny);
+      }
+    }
+    this._updateBounds();
+  },
+  setOffset: function (offset) {
+    this.options.offset = offset;
+    this._project();
+    this.redraw();
+    return this;
+  },
+});
+
+const ZOOM_OFFSET_THRESHOLD = 11;
 let cachedTransportData = null;
 
 export default function TransportLayer({ active, onSelectTransport, selectedTransport }) {
@@ -45,14 +179,16 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
   }, [active, data]);
 
   // Style selon le mode de transport, décalage et sélection
-  const getFeatureStyle = (feature, isSelected, hasSelection) => {
+  const getFeatureStyle = (feature, isSelected, hasSelection, currentZoom) => {
     const mode = feature.properties?.mode;
     const isCable = mode === 'cable_car' || mode === 'funicular';
     const isTrain = mode === 'train' || mode === 'mountain_train';
     const isNavette = mode === 'navette';
     const baseColor =
       feature.properties?.color || (isTrain ? '#6366f1' : isNavette ? '#f59e0b' : '#10b981');
-    const offset = Number(feature.properties?.offset) || 0;
+    const zoom = typeof currentZoom === 'number' ? currentZoom : map ? map.getZoom() : 12;
+    const rawOffset = Number(feature.properties?.offset) || 0;
+    const offset = zoom >= ZOOM_OFFSET_THRESHOLD ? rawOffset : 0;
 
     if (hasSelection) {
       if (isSelected) {
@@ -79,7 +215,7 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
       }
     }
 
-    // Aucun transport sélectionné : luminosité et opacité normales avec offset parallèle
+    // Aucun transport sélectionné : luminosité et opacité normales
     return {
       color: baseColor,
       weight: isCable ? 3 : 4,
@@ -94,94 +230,34 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
   const UNIFORM_STOP_RADIUS = 4;
   const HOVER_STOP_RADIUS = 5.5;
 
-  const stopMatches = (name1, name2) => {
-    if (!name1 || !name2) return false;
-    const n1 = name1.toLowerCase().trim();
-    const n2 = name2.toLowerCase().trim();
-    if (n1 === n2 || n1.includes(n2) || n2.includes(n1)) return true;
-    const w1 = n1
-      .replace(/[^a-z0-9]/g, ' ')
-      .split(/\s+/)
-      .filter((w) => w.length >= 3 && !['gare', 'arret', 'place', 'centre', 'station'].includes(w));
-    const w2 = n2
-      .replace(/[^a-z0-9]/g, ' ')
-      .split(/\s+/)
-      .filter((w) => w.length >= 3 && !['gare', 'arret', 'place', 'centre', 'station'].includes(w));
-    return w1.some((w) => w2.includes(w));
-  };
-
-  const isStopAssociatedWithSelection = (entry, selected) => {
-    if (!selected) return false;
-    const selId = selected.id;
-    const selName = selected.name;
-    const selRef = selected.ref;
-
-    // Correspondance directe par ID ou Nom de ligne
-    if (entry.lineIds.has(selId)) return true;
-    if (
-      entry.linesInfo.some(
-        (l) => l.id === selId || l.name === selName || (selRef && l.ref === selRef)
-      )
-    )
-      return true;
-
-    // Correspondance par stopPoints
-    if (Array.isArray(selected.stopPoints)) {
-      if (selected.stopPoints.some((sp) => entry.names.some((n) => stopMatches(n, sp.name))))
-        return true;
-    }
-
-    // Correspondance par stops
-    if (Array.isArray(selected.stops)) {
-      if (selected.stops.some((s) => entry.names.some((n) => stopMatches(n, s)))) return true;
-    }
-
-    // Si le transport sélectionné est une station/gare
-    if (
-      entry.isStation &&
-      (entry.stationId === selId || entry.names.some((n) => stopMatches(n, selName)))
-    ) {
-      return true;
-    }
-
-    return false;
-  };
-
-  const createStopTooltipContent = (entry) => {
-    const primaryName = entry.names[0] || 'Arrêt';
-    const badgesHtml = entry.linesInfo
-      .map(
-        (line) => `
-      <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 3px; font-size: 11px;">
-        <span style="background: ${line.color || '#3b82f6'}; color: #fff; font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 4px; text-transform: uppercase; white-space: nowrap;">
-          ${line.ref || 'Ligne'}
-        </span>
-        <span style="color: rgba(255,255,255,0.85); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px;">
-          ${line.name || ''}
-        </span>
-        ${
-          line.time
-            ? `<span style="color: #38bdf8; font-size: 10px; font-weight: 600; white-space: nowrap;">🕒 ${
-                line.time.split('|')[0].trim()
-              }</span>`
-            : ''
-        }
-      </div>
-    `
-      )
-      .join('');
+  const createStopTooltipContent = (sp, lineProps) => {
+    const stopName = sp.name || 'Arrêt';
+    const lineBadge = lineProps.ref || (lineProps.mode === 'train' ? 'TER' : 'Ligne');
+    const timeInfo = sp.time ? `🕒 Passage : ${sp.time.split('|')[0].trim()}` : '';
 
     return `
-      <div style="font-family: inherit; min-width: 160px; max-width: 280px; padding: 2px;">
+      <div style="font-family: inherit; min-width: 150px; max-width: 260px; padding: 2px;">
         <div style="font-weight: 700; font-size: 12px; color: #fff; line-height: 1.3; margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.15); padding-bottom: 3px;">
-          ${primaryName}
+          ${stopName}
         </div>
-        <div>${badgesHtml}</div>
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 3px; font-size: 11px;">
+          <span style="background: ${lineProps.color || '#3b82f6'}; color: #fff; font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 4px; text-transform: uppercase; white-space: nowrap;">
+            ${lineBadge}
+          </span>
+          <span style="color: rgba(255,255,255,0.85); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px;">
+            ${lineProps.name || ''}
+          </span>
+        </div>
+        ${
+          timeInfo
+            ? `<div style="color: #38bdf8; font-size: 10px; font-weight: 600; margin-top: 3px;">${timeInfo}</div>`
+            : ''
+        }
       </div>
     `;
   };
 
-  // 2. Rendu Vectoriel Ultra-Fluide avec décalages parallèles (Offset) et Déduplication
+  // 2. Rendu Vectoriel Ultra-Fluide avec décalages parallèles (Offset) et Arrêts sur leurs traits
   useEffect(() => {
     if (!active || !data) {
       if (layerGroupRef.current) {
@@ -209,6 +285,8 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
 
     const canvasRenderer = L.canvas({ padding: 0.5, tolerance: 10 });
     const group = L.featureGroup();
+    const currentZoom = map.getZoom();
+    const isOffsetActive = currentZoom >= ZOOM_OFFSET_THRESHOLD;
 
     // Tooltip formaté pour les lignes
     const createTooltipContent = (props) => {
@@ -247,25 +325,25 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
       `;
     };
 
-    const stopMarkersByLocation = new Map();
+    const stopMarkersList = [];
 
-    // 1. Ajouter d'abord les lignes avec application du décalage parallèle
+    // 1. Ajouter les lignes et créer les arrêts directement associés à chaque ligne sur son trait
     data.features.forEach((feature) => {
       const props = feature.properties || {};
       const featId = props.id || feature.id;
 
       if (feature.geometry.type === 'LineString' || feature.geometry.type === 'MultiLineString') {
-        const offsetVal = Number(props.offset) || 0;
+        const rawOffset = Number(props.offset) || 0;
+        const offsetVal = isOffsetActive ? rawOffset : 0;
         const initialStyle = {
           renderer: canvasRenderer,
           offset: offsetVal,
-          ...getFeatureStyle(feature, false, false),
+          ...getFeatureStyle(feature, false, false, currentZoom),
         };
 
         const line = L.geoJSON(feature, {
           style: () => initialStyle,
           onEachFeature: (_, layer) => {
-            // Assurer que le décalage parallèle est injecté sur chaque polyline
             if (layer.setOffset) {
               layer.setOffset(offsetVal);
             } else if (layer.options) {
@@ -306,7 +384,7 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
                   target.setStyle({
                     weight: isCable ? 6 : 7,
                     opacity: 1,
-                    offset: offsetVal,
+                    offset: map.getZoom() >= ZOOM_OFFSET_THRESHOLD ? rawOffset : 0,
                   });
                   if (target.bringToFront) target.bringToFront();
                 }
@@ -320,7 +398,7 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
                   (currentSelection.id === featId || currentSelection.name === props.name);
 
                 if (target.setStyle) {
-                  target.setStyle(getFeatureStyle(feature, isSelected, hasSelection));
+                  target.setStyle(getFeatureStyle(feature, isSelected, hasSelection, map.getZoom()));
                   if (hasSelection) {
                     const selObj = layersMapRef.current.get(currentSelection.id);
                     if (selObj?.layer) {
@@ -343,156 +421,184 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
         }
         group.addLayer(line);
 
-        // Agréger les arrêts de la ligne pour la déduplication spatiale
+        // Créer les arrêts de CETTE ligne posés exactement sur SON trait
         if (Array.isArray(props.stopPoints) && props.stopPoints.length > 0) {
           props.stopPoints.forEach((sp) => {
             if (sp.lat == null || sp.lng == null) return;
-            const key = `${sp.lat.toFixed(4)}_${sp.lng.toFixed(4)}`;
-            const lineItem = {
-              id: featId,
-              name: props.name,
-              ref: props.ref,
-              color: props.color || '#3b82f6',
-              mode: props.mode,
-              time: sp.time,
-              stopName: sp.name,
-            };
 
-            if (stopMarkersByLocation.has(key)) {
-              const entry = stopMarkersByLocation.get(key);
-              entry.lineIds.add(featId);
-              if (!entry.names.includes(sp.name)) entry.names.push(sp.name);
-              entry.linesInfo.push(lineItem);
-            } else {
-              stopMarkersByLocation.set(key, {
-                lat: sp.lat,
-                lng: sp.lng,
-                names: [sp.name],
-                lineIds: new Set([featId]),
-                linesInfo: [lineItem],
-                color: props.color || '#3b82f6',
-                primaryProps: props,
-                primaryStop: sp,
-              });
-            }
+            const segData = findClosestSegment(sp.lat, sp.lng, feature.geometry);
+
+            const stopMarker = new LineStopMarker([sp.lat, sp.lng], {
+              renderer: canvasRenderer,
+              radius: UNIFORM_STOP_RADIUS,
+              fillColor: props.color || '#3b82f6',
+              color: '#ffffff',
+              weight: 1.5,
+              opacity: 1,
+              fillOpacity: 0.95,
+              offset: offsetVal,
+              segmentData: segData,
+            });
+
+            stopMarker._lineId = featId;
+            stopMarker._lineProps = props;
+            stopMarker._stop = sp;
+            stopMarker._rawOffset = rawOffset;
+
+            stopMarker.bindTooltip(createStopTooltipContent(sp, props), {
+              className: 'refuge-tooltip',
+              direction: 'top',
+              offset: [0, -6],
+            });
+
+            stopMarker.on({
+              mouseover: (e) => {
+                e.target.setRadius(HOVER_STOP_RADIUS);
+                e.target.setStyle({ weight: 2, fillOpacity: 1 });
+                if (e.target.bringToFront) e.target.bringToFront();
+              },
+              mouseout: (e) => {
+                const currentSel = selectedTransportRef.current;
+                if (currentSel) {
+                  const isAssoc =
+                    currentSel.id === featId ||
+                    currentSel.name === props.name ||
+                    (Array.isArray(currentSel.stopPoints) &&
+                      currentSel.stopPoints.some((s) => s.name === sp.name));
+                  e.target.setRadius(isAssoc ? UNIFORM_STOP_RADIUS + 1 : UNIFORM_STOP_RADIUS);
+                  e.target.setStyle({
+                    fillOpacity: isAssoc ? 1 : 0.15,
+                    opacity: isAssoc ? 1 : 0.2,
+                    weight: isAssoc ? 2 : 0.8,
+                  });
+                } else {
+                  e.target.setRadius(UNIFORM_STOP_RADIUS);
+                  e.target.setStyle({ fillOpacity: 0.95, opacity: 1, weight: 1.5 });
+                }
+              },
+              click: (e) => {
+                L.DomEvent.stopPropagation(e);
+                if (onSelectTransport) {
+                  onSelectTransport({
+                    ...props,
+                    selectedStop: sp,
+                    activeDirectionIndex: 0,
+                    isTransport: true,
+                  });
+                }
+              },
+            });
+
+            group.addLayer(stopMarker);
+            stopMarkersList.push(stopMarker);
           });
         }
       }
     });
 
-    // 2. Traiter les gares et pôles (Points) et les fusionner/dédupliquer avec les arrêts
+    // 2. Traiter les gares et pôles centraux (Points)
     data.features.forEach((feature) => {
       const props = feature.properties || {};
       const featId = props.id || feature.id;
 
       if (feature.geometry.type === 'Point') {
         const [lng, lat] = feature.geometry.coordinates;
-        const key = `${lat.toFixed(4)}_${lng.toFixed(4)}`;
-        const lineItem = {
-          id: featId,
-          name: props.name,
-          ref: props.ref || 'Pôle',
-          color: props.color || '#3b82f6',
-          mode: props.mode || 'station',
-          stops: props.stops || props.lines,
-        };
 
-        if (stopMarkersByLocation.has(key)) {
-          const entry = stopMarkersByLocation.get(key);
-          entry.isStation = true;
-          entry.stationId = featId;
-          entry.lineIds.add(featId);
-          if (!entry.names.includes(props.name)) entry.names.unshift(props.name);
-          entry.linesInfo.push(lineItem);
-        } else {
-          stopMarkersByLocation.set(key, {
-            lat,
-            lng,
-            isStation: true,
-            stationId: featId,
-            names: [props.name],
-            lineIds: new Set([featId]),
-            linesInfo: [lineItem],
-            color: props.color || '#3b82f6',
-            primaryProps: props,
-          });
-        }
+        const stationMarker = L.circleMarker([lat, lng], {
+          renderer: canvasRenderer,
+          radius: 5.5,
+          fillColor: '#0f172a',
+          color: '#ffffff',
+          weight: 2,
+          fillOpacity: 1,
+          opacity: 1,
+        });
+
+        stationMarker._isStation = true;
+        stationMarker._stationId = featId;
+        stationMarker._stationProps = props;
+
+        stationMarker.bindTooltip(
+          `
+          <div style="font-family: inherit; min-width: 140px; padding: 2px;">
+            <div style="display: flex; align-items: center; gap: 5px; margin-bottom: 2px;">
+              <span style="background: #3b82f6; color: #fff; font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 4px; text-transform: uppercase;">
+                ${props.ref || 'Gare'}
+              </span>
+              <span style="font-size: 10px; color: rgba(255,255,255,0.7);">Pôle d'échange</span>
+            </div>
+            <div style="font-weight: 700; font-size: 12px; color: #fff;">${props.name}</div>
+          </div>
+        `,
+          {
+            className: 'refuge-tooltip',
+            direction: 'top',
+            offset: [0, -8],
+          }
+        );
+
+        stationMarker.on({
+          mouseover: (e) => {
+            e.target.setRadius(7);
+            e.target.setStyle({ weight: 2.5 });
+            if (e.target.bringToFront) e.target.bringToFront();
+          },
+          mouseout: (e) => {
+            e.target.setRadius(5.5);
+            e.target.setStyle({ weight: 2 });
+          },
+          click: (e) => {
+            L.DomEvent.stopPropagation(e);
+            if (onSelectTransport) {
+              onSelectTransport({
+                ...props,
+                isStation: true,
+                isTransport: true,
+              });
+            }
+          },
+        });
+
+        group.addLayer(stationMarker);
+        stopMarkersList.push(stationMarker);
       }
-    });
-
-    // 3. Créer un unique marqueur géométrique uniforme pour chaque arrêt dédupliqué
-    const stopMarkersList = [];
-    stopMarkersByLocation.forEach((entry) => {
-      const stopMarker = L.circleMarker([entry.lat, entry.lng], {
-        renderer: canvasRenderer,
-        radius: UNIFORM_STOP_RADIUS,
-        fillColor: entry.color,
-        stroke: false,
-        weight: 0,
-        fillOpacity: 0.95,
-      });
-
-      stopMarker._stopEntry = entry;
-
-      stopMarker.bindTooltip(createStopTooltipContent(entry), {
-        className: 'refuge-tooltip',
-        direction: 'top',
-        offset: [0, -6],
-      });
-
-      stopMarker.on({
-        mouseover: (e) => {
-          const currentSel = selectedTransportRef.current;
-          const isAssoc = currentSel ? isStopAssociatedWithSelection(entry, currentSel) : true;
-          e.target.setRadius(HOVER_STOP_RADIUS);
-          if (currentSel && !isAssoc) {
-            e.target.setStyle({ fillOpacity: 0.8 });
-          }
-          if (e.target.bringToFront) e.target.bringToFront();
-        },
-        mouseout: (e) => {
-          const currentSel = selectedTransportRef.current;
-          if (currentSel) {
-            const isAssoc = isStopAssociatedWithSelection(entry, currentSel);
-            e.target.setRadius(isAssoc ? UNIFORM_STOP_RADIUS + 0.5 : UNIFORM_STOP_RADIUS);
-            e.target.setStyle({ fillOpacity: isAssoc ? 1 : 0.15 });
-          } else {
-            e.target.setRadius(UNIFORM_STOP_RADIUS);
-            e.target.setStyle({ fillOpacity: 0.95 });
-          }
-        },
-        click: (e) => {
-          L.DomEvent.stopPropagation(e);
-          if (onSelectTransport) {
-            const currentSel = selectedTransportRef.current;
-            const matchingLine = entry.linesInfo.find(
-              (l) => currentSel && (l.id === currentSel.id || l.name === currentSel.name)
-            );
-            const targetInfo = matchingLine || entry.linesInfo[0] || entry.primaryProps;
-            onSelectTransport({
-              ...entry.primaryProps,
-              ...targetInfo,
-              selectedStop: {
-                name: entry.names[0],
-                lat: entry.lat,
-                lng: entry.lng,
-                time: targetInfo.time,
-              },
-              isTransport: true,
-            });
-          }
-        },
-      });
-
-      group.addLayer(stopMarker);
-      stopMarkersList.push(stopMarker);
     });
 
     stopMarkersRef.current = stopMarkersList;
     group.addTo(map);
     layerGroupRef.current = group;
 
+    // 3. Gestion dynamique du zoom : désactiver l'offset au dézoom pour supprimer 100% des boucles
+    const onZoomEnd = () => {
+      const zoom = map.getZoom();
+      const shouldOffset = zoom >= ZOOM_OFFSET_THRESHOLD;
+
+      layersMapRef.current.forEach(({ type, layer, props }) => {
+        if (type !== 'line') return;
+        const targetOffset = shouldOffset ? (Number(props.offset) || 0) : 0;
+        if (layer.setOffset) layer.setOffset(targetOffset);
+        if (layer.eachLayer) {
+          layer.eachLayer((sub) => {
+            if (sub.setOffset) sub.setOffset(targetOffset);
+            else if (sub.options) {
+              sub.options.offset = targetOffset;
+              sub.redraw?.();
+            }
+          });
+        }
+      });
+
+      stopMarkersRef.current.forEach((marker) => {
+        if (marker.setOffset && marker._rawOffset != null) {
+          marker.setOffset(shouldOffset ? marker._rawOffset : 0);
+        }
+      });
+    };
+
+    map.on('zoomend', onZoomEnd);
+
     return () => {
+      map.off('zoomend', onZoomEnd);
       if (layerGroupRef.current) {
         map.removeLayer(layerGroupRef.current);
         layerGroupRef.current = null;
@@ -506,7 +612,7 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
     };
   }, [active, data, map, onSelectTransport]);
 
-  // 3. Mise à jour instantanée du style lors de la sélection / désélection d'une ligne
+  // 4. Mise à jour instantanée du style lors de la sélection / désélection d'une ligne
   // et affichage des deux directions (Aller / Retour) avec badges Départ & Terminus
   useEffect(() => {
     if (!layerGroupRef.current) return;
@@ -514,6 +620,7 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
     const hasSelection = Boolean(selectedTransport);
     const selectedId = selectedTransport?.id;
     const selectedName = selectedTransport?.name;
+    const currentZoom = map.getZoom();
 
     // Supprimer tout ancien calque de direction
     if (activeDirectionOverlayRef.current) {
@@ -528,7 +635,7 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
       if (type === 'line') {
         const isSelected =
           hasSelection && (props.id === selectedId || props.name === selectedName);
-        const newStyle = getFeatureStyle(feature, isSelected, hasSelection);
+        const newStyle = getFeatureStyle(feature, isSelected, hasSelection, currentZoom);
         layer.setStyle(newStyle);
 
         if (isSelected) {
@@ -540,14 +647,40 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
     // Arrêts : sous-brillance synchronisée avec les traits
     if (stopMarkersRef.current && stopMarkersRef.current.length > 0) {
       stopMarkersRef.current.forEach((marker) => {
-        const entry = marker._stopEntry;
-        if (!entry) return;
+        if (marker._isStation) {
+          // Gare / pôle
+          if (hasSelection) {
+            const isAssoc =
+              selectedTransport?.id === marker._stationId ||
+              selectedTransport?.name === marker._stationProps?.name;
+            marker.setStyle({
+              radius: isAssoc ? 7 : 4.5,
+              fillOpacity: isAssoc ? 1 : 0.25,
+              opacity: isAssoc ? 1 : 0.3,
+            });
+            if (isAssoc) selectedLayersToFront.push(marker);
+          } else {
+            marker.setStyle({ radius: 5.5, fillOpacity: 1, opacity: 1 });
+          }
+          return;
+        }
+
+        // Arrêt d'une ligne
+        const lineId = marker._lineId;
+        const lineProps = marker._lineProps;
+        const sp = marker._stop;
 
         if (hasSelection) {
-          const isAssociated = isStopAssociatedWithSelection(entry, selectedTransport);
+          const isAssociated =
+            lineId === selectedId ||
+            lineProps?.name === selectedName ||
+            (Array.isArray(selectedTransport?.stopPoints) &&
+              selectedTransport.stopPoints.some((s) => s.name === sp?.name));
+
           if (isAssociated) {
             marker.setStyle({
-              radius: UNIFORM_STOP_RADIUS + 0.5,
+              radius: UNIFORM_STOP_RADIUS + 1,
+              weight: 2,
               fillOpacity: 1,
               opacity: 1,
             });
@@ -555,15 +688,17 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
           } else {
             // Sous-brillance (estompé identique aux traits non sélectionnés)
             marker.setStyle({
-              radius: UNIFORM_STOP_RADIUS,
+              radius: UNIFORM_STOP_RADIUS - 0.5,
+              weight: 0.8,
               fillOpacity: 0.15,
-              opacity: 0.15,
+              opacity: 0.2,
             });
           }
         } else {
           // Aucun transport sélectionné : opacité et taille uniforme normales
           marker.setStyle({
             radius: UNIFORM_STOP_RADIUS,
+            weight: 1.5,
             fillOpacity: 0.95,
             opacity: 1,
           });
@@ -621,6 +756,8 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
 
       if (startPt && endPt) {
         const dirGroup = L.featureGroup();
+        const effectiveOffset =
+          currentZoom >= ZOOM_OFFSET_THRESHOLD ? (Number(selectedTransport.offset) || 0) : 0;
 
         // 1. Tracé spécifique à la direction si des coordonnées dédiées existent
         if (activeDir?.coordinates && activeDir.coordinates.length >= 2) {
@@ -631,7 +768,7 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
             opacity: 1,
             lineCap: 'round',
             lineJoin: 'round',
-            offset: Number(selectedTransport.offset) || 0,
+            offset: effectiveOffset,
           });
           dirGroup.addLayer(dirLine);
         }
