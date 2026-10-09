@@ -13,8 +13,14 @@ export default function TransportToggle({ active, onToggle }) {
             : 'bg-black/35 text-white/70 hover:text-white hover:bg-black/45'
         }`}
       >
-        <TrainFront size={14} className={active ? 'text-indigo-300 animate-pulse' : 'text-white/70'} />
-        Transports
+        <TrainFront size={14} className={active ? 'text-indigo-300' : 'text-white/70'} />
+        <span>Transports</span>
+        {active && (
+          <span
+            className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]"
+            title="Contrôle mensuel actif : vérifié auprès de transport.data.gouv.fr"
+          />
+        )}
       </button>
     </div>
   );

@@ -7,7 +7,10 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "update-bra": "node scripts/update_bra.js",
+    "update-transports": "node scripts/update_transports_monthly.cjs",
+    "check-transports": "node scripts/update_transports_monthly.cjs --check"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",

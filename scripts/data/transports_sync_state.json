@@ -1,0 +1,56 @@
+{
+  "datasets": {
+    "607861844a84ad655a94f8c5": {
+      "name": "Cars Région Haute-Savoie (Lignes Yxx)",
+      "lastUpdated": "2026-10-02T15:56:56.000000Z",
+      "lastChecked": "2026-10-09T20:29:30.336Z"
+    },
+    "607862da7487e5d490677f14": {
+      "name": "Cars Région Savoie (Lignes Sxx)",
+      "lastUpdated": "2026-10-08T00:38:36.000000Z",
+      "lastChecked": "2026-10-09T20:29:31.313Z"
+    },
+    "5bb1caa6634f4136693d9053": {
+      "name": "Cars Région Isère (Lignes Txx)",
+      "lastUpdated": "2026-10-09T03:36:14.000000Z",
+      "lastChecked": "2026-10-09T20:29:32.141Z"
+    },
+    "668d0a18a847603d391cbeec": {
+      "name": "ZOU ! Proximité (Hautes-Alpes 05 / Massif des Écrins)",
+      "lastUpdated": "2026-10-08T00:00:00.000000Z",
+      "lastChecked": "2026-10-09T20:29:32.968Z"
+    },
+    "668d0a08a847603d391cbed7": {
+      "name": "ZOU ! Express (Lignes régionales PACA)",
+      "lastUpdated": "2026-10-08T00:00:00.000000Z",
+      "lastChecked": "2026-10-09T20:29:33.921Z"
+    },
+    "69e2cd307123972d45a21d49": {
+      "name": "TER ZOU ! (Lignes ferroviaires alpines SNCF)",
+      "lastUpdated": "2026-08-07T00:00:00.000000Z",
+      "lastChecked": "2026-10-09T20:29:34.611Z"
+    },
+    "63c562c646696c9cd83544b7": {
+      "name": "Réseau Altigo (Briançonnais & Serre Chevalier)",
+      "lastUpdated": "2026-09-29T15:40:30.281000Z",
+      "lastChecked": "2026-10-09T20:29:35.490Z"
+    },
+    "674ec12d71d8fc02e805a58c": {
+      "name": "Navettes Parc du Queyras & Guillestrois",
+      "lastUpdated": "2026-08-17T08:32:09.154000Z",
+      "lastChecked": "2026-10-09T20:29:36.716Z"
+    },
+    "68e4f0acdd9bf1d1d9902276": {
+      "name": "Estibus CC du Pays des Écrins (Vallouise / Pré de Mme Carle)",
+      "lastUpdated": "2026-10-08T00:00:00.000000Z",
+      "lastChecked": "2026-10-09T20:29:37.748Z"
+    },
+    "6798942abc43332729738b53": {
+      "name": "Navettes saisonnières Val d'Isère",
+      "lastUpdated": "2026-09-01T02:00:00.000000Z",
+      "lastChecked": "2026-10-09T20:29:38.480Z"
+    }
+  },
+  "lastSyncRun": "2026-10-09T20:29:56.399Z",
+  "nextScheduledCheck": "2026-11-01T02:00:00.000Z"
+}

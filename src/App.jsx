@@ -124,7 +124,6 @@ export default function App() {
   const [showTrails, setShowTrails] = useState(false)
   const [showTransports, setShowTransports] = useState(false)
   const [showParkings, setShowParkings] = useState(false)
-  const [showPeaks, setShowPeaks] = useState(false)
   const [showWebcams, setShowWebcams] = useState(false)
 
   // Cumule les points déjà vus pour éviter le scintillement, borne la taille.
@@ -169,7 +168,7 @@ export default function App() {
     const lat = t?.centerLat || t?.lat
     const lng = t?.centerLng || t?.lng
     if (lat && lng) {
-      setFlyTarget({ lat, lng, zoom: t.mode === 'station' ? 13 : 11, t: Date.now() })
+      setFlyTarget({ lat, lng, zoom: t.zoom || (t.mode === 'station' ? 13 : 11), t: Date.now() })
     }
   }, [])
 
@@ -242,7 +241,7 @@ export default function App() {
           onSelectTransport={handleSelectTransport}
           selectedTransport={selected?.isTransport ? selected : null}
         />
-        <OverpassLayer showParkings={showParkings} showPeaks={showPeaks} />
+        <OverpassLayer showParkings={showParkings} />
         <LayersControl position="topright">
           <LayersControl.Overlay name="Webcams" checked={showWebcams}>
             <WebcamLayer active={showWebcams} />
@@ -301,8 +300,6 @@ export default function App() {
         onToggleTransports={() => setShowTransports((v) => !v)}
         showParkings={showParkings}
         onToggleParkings={() => setShowParkings((v) => !v)}
-        showPeaks={showPeaks}
-        onTogglePeaks={() => setShowPeaks((v) => !v)}
         showWebcams={showWebcams}
         onToggleWebcams={() => setShowWebcams((v) => !v)}
         activeTypes={activeTypes}

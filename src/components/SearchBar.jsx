@@ -237,17 +237,19 @@ export default function SearchBar({
   return (
     <div
       ref={containerRef}
-      className={`absolute top-4 z-[1050] transition-all duration-300 ${
-        hasSelected ? 'left-4 sm:left-[448px]' : 'left-4'
+      className={`absolute top-2.5 sm:top-4 z-[1050] transition-all duration-300 ${
+        hasSelected ? 'left-2.5 sm:left-[448px]' : 'left-2.5 sm:left-4'
       } ${
         isMobileOpen
-          ? 'right-4 sm:right-auto sm:w-80 md:w-96'
-          : 'w-10 sm:w-80 md:w-96'
+          ? 'right-2.5 z-[1200] sm:right-auto sm:w-80 md:w-96'
+          : 'w-9 sm:w-80 md:w-96'
       }`}
     >
       {/* Barre de recherche principale */}
       <div
-        className={`glass flex items-center gap-2 rounded-2xl p-1.5 shadow-2xl transition-all ${
+        className={`glass flex items-center ${
+          isMobileOpen ? 'gap-2 p-1.5' : 'gap-0 sm:gap-2 p-1 sm:p-1.5'
+        } rounded-2xl shadow-2xl transition-all border border-white/10 ${
           isOpen ? 'ring-2 ring-emerald-400/40' : ''
         }`}
       >
@@ -258,10 +260,10 @@ export default function SearchBar({
             setIsOpen(true)
             setTimeout(() => inputRef.current?.focus(), 50)
           }}
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/10 text-white/80 transition-colors hover:bg-white/20 hover:text-white"
+          className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-xl bg-white/10 text-white/80 transition-colors hover:bg-white/20 hover:text-white"
           title="Rechercher refuge, ville, transport"
         >
-          <Search size={16} />
+          <Search size={15} />
         </button>
 
         <input
@@ -280,7 +282,7 @@ export default function SearchBar({
             }
           }}
           placeholder="Refuge, ville, ligne (ex: Clarée, Chamonix)..."
-          className={`h-8 w-full bg-transparent text-xs text-white placeholder-white/45 outline-none transition-all ${
+          className={`h-7 sm:h-8 w-full bg-transparent text-xs text-white placeholder-white/45 outline-none transition-all ${
             !isMobileOpen ? 'hidden sm:block' : 'block'
           }`}
         />
@@ -312,12 +314,12 @@ export default function SearchBar({
 
       {/* Dropdown des résultats */}
       {isOpen && hasQuery && (
-        <div className="glass glass-panel scroll-thin mt-2 flex max-h-[72vh] flex-col overflow-y-auto rounded-2xl border border-white/15 bg-black/85 p-2 shadow-2xl backdrop-blur-2xl">
+        <div className="glass glass-panel scroll-thin mt-1.5 sm:mt-2 flex max-h-[65vh] sm:max-h-[72vh] flex-col overflow-y-auto rounded-2xl border border-white/15 bg-black/90 p-2 shadow-2xl backdrop-blur-2xl">
           {/* Onglets de filtrage rapide */}
           <div className="mb-2 flex gap-1 border-b border-white/10 pb-2">
             <button
               onClick={() => setActiveTab('all')}
-              className={`rounded-lg px-2.5 py-1 text-[11px] font-medium transition-colors ${
+              className={`flex-1 sm:flex-initial text-center rounded-lg px-2 py-1 text-[11px] font-medium transition-colors ${
                 activeTab === 'all'
                   ? 'bg-white/20 text-white'
                   : 'text-white/60 hover:text-white hover:bg-white/10'
@@ -327,7 +329,7 @@ export default function SearchBar({
             </button>
             <button
               onClick={() => setActiveTab('refuges')}
-              className={`flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-medium transition-colors ${
+              className={`flex-1 sm:flex-initial flex items-center justify-center gap-1 rounded-lg px-2 py-1 text-[11px] font-medium transition-colors ${
                 activeTab === 'refuges'
                   ? 'bg-emerald-500/30 text-emerald-200'
                   : 'text-white/60 hover:text-white hover:bg-white/10'
@@ -337,17 +339,17 @@ export default function SearchBar({
             </button>
             <button
               onClick={() => setActiveTab('transports')}
-              className={`flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-medium transition-colors ${
+              className={`flex-1 sm:flex-initial flex items-center justify-center gap-1 rounded-lg px-2 py-1 text-[11px] font-medium transition-colors ${
                 activeTab === 'transports'
                   ? 'bg-indigo-500/30 text-indigo-200'
                   : 'text-white/60 hover:text-white hover:bg-white/10'
               }`}
             >
-              Transports ({filteredTransports.length})
+              Lignes ({filteredTransports.length})
             </button>
             <button
               onClick={() => setActiveTab('villes')}
-              className={`flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-medium transition-colors ${
+              className={`flex-1 sm:flex-initial flex items-center justify-center gap-1 rounded-lg px-2 py-1 text-[11px] font-medium transition-colors ${
                 activeTab === 'villes'
                   ? 'bg-sky-500/30 text-sky-200'
                   : 'text-white/60 hover:text-white hover:bg-white/10'

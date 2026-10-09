@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   X,
   Train,
@@ -14,7 +14,7 @@ import {
   Sparkles,
   ArrowLeftRight,
   ArrowRight,
-  Navigation,
+  GitBranch,
 } from 'lucide-react';
 
 function getModeInfo(mode, transport = {}) {
@@ -95,31 +95,50 @@ function getModeInfo(mode, transport = {}) {
 }
 
 export default function TransportSidebar({ transport, onClose, onSelectTransport }) {
-  if (!transport) return null;
+  const safeTransport = transport || {};
 
   const isFreccia =
-    transport.ref === 'Frecciarossa' ||
-    transport.isTrenitalia ||
-    transport.id === 'trenitalia-frecciarossa-paris-milan';
-  const isTGV = (transport.isTGV || transport.ref === 'TGV INOUI') && !isFreccia;
+    safeTransport.ref === 'Frecciarossa' ||
+    safeTransport.isTrenitalia ||
+    safeTransport.id === 'trenitalia-frecciarossa-paris-milan';
+  const isTGV = (safeTransport.isTGV || safeTransport.ref === 'TGV INOUI') && !isFreccia;
 
-  const modeInfo = getModeInfo(transport.mode, transport);
+  const modeInfo = getModeInfo(safeTransport.mode, safeTransport);
   const { label, Icon } = modeInfo;
-  const displayColor = isFreccia ? '#059669' : transport.color || modeInfo.color;
+  const displayColor = isFreccia ? '#059669' : safeTransport.color || modeInfo.color;
 
   // État local de la direction active (0 = Aller, 1 = Retour)
+  const [prevTransportId, setPrevTransportId] = useState(transport?.id);
   const [activeDirIndex, setActiveDirIndex] = useState(
-    typeof transport.activeDirectionIndex === 'number' ? transport.activeDirectionIndex : 0
+    typeof transport?.activeDirectionIndex === 'number' ? transport.activeDirectionIndex : 0
   );
+  // État local de la branche active
+  const [activeBranchId, setActiveBranchId] = useState(transport?.activeBranchId || null);
 
-  useEffect(() => {
+  if (transport?.id !== prevTransportId) {
+    setPrevTransportId(transport?.id);
     setActiveDirIndex(
-      typeof transport.activeDirectionIndex === 'number' ? transport.activeDirectionIndex : 0
+      typeof transport?.activeDirectionIndex === 'number' ? transport.activeDirectionIndex : 0
     );
-  }, [transport.id, transport.activeDirectionIndex]);
+    setActiveBranchId(transport?.activeBranchId || null);
+  }
 
-  // Résoudre les directions (depuis transport.directions ou déduites)
+  // Branches disponibles
+  const branches = Array.isArray(safeTransport.branches) && safeTransport.branches.length > 1
+    ? safeTransport.branches
+    : null;
+
+  const activeBranch = useMemo(() => {
+    if (!branches) return null;
+    if (activeBranchId) {
+      return branches.find((b) => b.id === activeBranchId) || branches[0];
+    }
+    return branches[0];
+  }, [branches, activeBranchId]);
+
+  // Résoudre les directions
   const directions = useMemo(() => {
+    if (!transport) return null;
     if (Array.isArray(transport.directions) && transport.directions.length > 0) {
       return transport.directions;
     }
@@ -151,14 +170,7 @@ export default function TransportSidebar({ transport, onClose, onSelectTransport
             destination: origin,
             stops: [...stops].reverse(),
             stopPoints: Array.isArray(transport.stopPoints) ? [...transport.stopPoints].reverse() : [],
-            timetable:
-              transport.timetable && Array.isArray(transport.timetable.rows)
-                ? {
-                    title: `Horaires Retour (Vers ${origin})`,
-                    headers: transport.timetable.headers || [],
-                    rows: [...transport.timetable.rows].reverse(),
-                  }
-                : null,
+            timetable: null,
           },
         ];
       }
@@ -170,40 +182,75 @@ export default function TransportSidebar({ transport, onClose, onSelectTransport
 
   const handleSelectDirection = (idx) => {
     setActiveDirIndex(idx);
+    setActiveBranchId(null);
     if (onSelectTransport) {
       onSelectTransport({
         ...transport,
         activeDirectionIndex: idx,
+        activeBranchId: null,
         skipFlyTo: true,
       });
     }
   };
 
-  // Arrêts selon la direction active
-  const displayStops = activeDirection?.stops || transport.stops || [];
+  const handleSelectBranch = (b) => {
+    setActiveBranchId(b.id);
+    const newDirIdx = b.direction === 'retour' ? 1 : 0;
+    setActiveDirIndex(newDirIdx);
+    if (onSelectTransport) {
+      onSelectTransport({
+        ...transport,
+        activeBranchId: b.id,
+        activeDirectionIndex: newDirIdx,
+        skipFlyTo: true,
+      });
+    }
+  };
 
-  // Liaison textuelle selon la direction
-  const displayRoute = activeDirection
+  // Arrêts selon la branche ou direction active
+  const displayStops = activeBranch?.stops || activeDirection?.stops || transport.stops || [];
+  const displayStopPoints =
+    activeBranch?.stopPoints || activeDirection?.stopPoints || transport.stopPoints || [];
+
+  // Liaison textuelle
+  const displayRoute = activeBranch
+    ? `${activeBranch.origin} → ${activeBranch.destination}`
+    : activeDirection
     ? `${activeDirection.origin} → ${activeDirection.destination}`
     : transport.route;
 
-  // Grille horaire adaptée à la direction
+  // Grille horaire
   const displayTimetable = useMemo(() => {
+    if (activeBranch?.timetable) {
+      return activeBranch.timetable;
+    }
     if (activeDirection?.timetable) {
       return activeDirection.timetable;
     }
     if (transport.timetable) {
-      if (activeDirIndex === 1 && Array.isArray(transport.timetable.rows)) {
-        return {
-          ...transport.timetable,
-          title: `Horaires Retour (Sens inverse)`,
-          rows: [...transport.timetable.rows].reverse(),
-        };
-      }
       return transport.timetable;
     }
     return null;
-  }, [activeDirection, transport.timetable, activeDirIndex]);
+  }, [activeBranch, activeDirection, transport.timetable]);
+
+  const handleStopClick = (stop, idx) => {
+    let sp = null;
+    if (typeof stop === 'object') {
+      sp = stop;
+    } else if (Array.isArray(displayStopPoints)) {
+      sp = displayStopPoints.find((p) => p.name === stop) || displayStopPoints[idx];
+    }
+    if (onSelectTransport) {
+      onSelectTransport({
+        ...transport,
+        selectedStop: sp || { name: typeof stop === 'string' ? stop : stop.name },
+        skipFlyTo: sp && sp.lat != null ? false : true,
+        lat: sp?.lat,
+        lng: sp?.lng,
+        zoom: 15,
+      });
+    }
+  };
 
   return (
     <aside className="sidebar-enter glass glass-panel scroll-thin absolute bottom-0 left-0 top-0 z-[1100] flex w-full flex-col overflow-y-auto sm:bottom-4 sm:left-4 sm:top-4 sm:w-[420px] sm:rounded-3xl">
@@ -239,7 +286,7 @@ export default function TransportSidebar({ transport, onClose, onSelectTransport
 
       {/* Corps du panneau */}
       <div className="flex flex-col gap-5 p-5">
-        {/* En-tête exclusif Trenitalia Frecciarossa avec thème vert officiel et logo */}
+        {/* En-tête exclusif Trenitalia Frecciarossa */}
         {isFreccia && (
           <div className="relative overflow-hidden rounded-2xl border border-emerald-500/40 bg-gradient-to-br from-[#022c22] via-[#064e3b] to-[#022c22] p-3.5 shadow-xl">
             <div className="flex items-center justify-between">
@@ -265,7 +312,7 @@ export default function TransportSidebar({ transport, onClose, onSelectTransport
           </div>
         )}
 
-        {/* En-tête exclusif TGV inOui avec pictogramme officiel conforme au modèle exact */}
+        {/* En-tête exclusif TGV inOui */}
         {isTGV && (
           <div className="relative overflow-hidden rounded-2xl border border-rose-500/35 bg-gradient-to-br from-[#1b081d] via-[#2f0827] to-[#160517] p-3.5 shadow-xl">
             <div className="flex items-center justify-between">
@@ -310,13 +357,70 @@ export default function TransportSidebar({ transport, onClose, onSelectTransport
           )}
         </div>
 
-        {/* Sélecteur de direction interactif Aller / Retour */}
-        {directions && directions.length >= 2 && (
+        {/* Sélecteur de branches interactif (si la ligne a des branches) */}
+        {branches && branches.length > 1 && (
+          <div className="rounded-2xl border border-cyan-500/30 bg-gradient-to-br from-cyan-950/40 via-blue-950/30 to-slate-900/40 p-3.5 backdrop-blur-md shadow-lg">
+            <div className="mb-2.5 flex items-center justify-between">
+              <span className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-cyan-300">
+                <GitBranch size={14} className="text-cyan-400" />
+                Branches & Variantes ({branches.length})
+              </span>
+              <span className="rounded-full border border-cyan-500/30 bg-cyan-500/20 px-2 py-0.5 text-[9.5px] font-bold text-cyan-200">
+                Choix actif
+              </span>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              {branches.map((b) => {
+                const isActive = activeBranch?.id === b.id;
+                return (
+                  <button
+                    key={b.id}
+                    type="button"
+                    onClick={() => handleSelectBranch(b)}
+                    className={`flex items-center justify-between gap-2.5 rounded-xl p-2.5 text-left transition-all ${
+                      isActive
+                        ? 'bg-gradient-to-r from-cyan-600/40 to-blue-600/40 text-white font-semibold ring-2 ring-cyan-400/60 shadow-md scale-[1.01]'
+                        : 'bg-white/[0.04] text-white/70 hover:bg-white/[0.09] hover:text-white'
+                    }`}
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          className={`rounded px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider ${
+                            b.direction === 'retour'
+                              ? 'bg-rose-500/30 text-rose-300 border border-rose-500/40'
+                              : 'bg-emerald-500/30 text-emerald-300 border border-emerald-500/40'
+                          }`}
+                        >
+                          {b.direction === 'retour' ? 'Retour' : 'Aller'}
+                        </span>
+                        <span className="text-xs font-semibold text-white truncate">
+                          {b.name}
+                        </span>
+                      </div>
+                      <div className="mt-1 text-[10px] text-white/60 truncate">
+                        {b.origin} &rarr; {b.destination} ({b.stops?.length || 0} arrêts)
+                      </div>
+                    </div>
+                    <ArrowRight
+                      size={14}
+                      className={isActive ? 'text-cyan-300 shrink-0' : 'text-white/30 shrink-0'}
+                    />
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Sélecteur de direction Aller / Retour */}
+        {directions && directions.length >= 2 && (!branches || branches.length <= 1) && (
           <div className="rounded-2xl border border-white/15 bg-white/[0.07] p-3.5 backdrop-blur-md shadow-md">
             <div className="mb-2.5 flex items-center justify-between">
               <span className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-white/80">
                 <ArrowLeftRight size={14} className="text-amber-400" />
-                Sens de circulation (2 directions)
+                Sens de circulation
               </span>
               <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-medium text-white/80">
                 {activeDirIndex === 0 ? 'Direction Aller' : 'Direction Retour'}
@@ -400,7 +504,7 @@ export default function TransportSidebar({ transport, onClose, onSelectTransport
           </Section>
         )}
 
-        {/* Section Arrêts & Gares desservis ordonnés selon la direction */}
+        {/* Section Arrêts & Gares desservis ordonnés selon la direction active */}
         {Array.isArray(displayStops) && displayStops.length > 0 && (
           <Section
             title={
@@ -411,7 +515,6 @@ export default function TransportSidebar({ transport, onClose, onSelectTransport
           >
             <div className="rounded-2xl bg-white/[0.05] p-3.5 ring-1 ring-white/10">
               <ul className="relative flex flex-col gap-3 pl-3">
-                {/* Ligne verticale de la timeline */}
                 <div
                   className="absolute bottom-2 left-[17px] top-2 w-[2px] rounded-full opacity-30"
                   style={{ background: displayColor }}
@@ -424,10 +527,14 @@ export default function TransportSidebar({ transport, onClose, onSelectTransport
                     transport.selectedStop && transport.selectedStop.name === stopLabel;
 
                   return (
-                    <li key={idx} className="relative flex items-center justify-between gap-2">
+                    <li
+                      key={idx}
+                      onClick={() => handleStopClick(stop, idx)}
+                      className="relative flex items-center justify-between gap-2 cursor-pointer group rounded-lg p-1 -m-1 transition-colors hover:bg-white/[0.07]"
+                    >
                       <div className="flex items-center gap-3 min-w-0">
                         <span
-                          className={`relative z-10 flex shrink-0 rounded-full ring-2 ring-black/40 ${
+                          className={`relative z-10 flex shrink-0 rounded-full ring-2 ring-black/40 transition-transform group-hover:scale-125 ${
                             isSelectedStop
                               ? 'h-3.5 w-3.5 ring-amber-400'
                               : isFirst || isLast
@@ -445,12 +552,12 @@ export default function TransportSidebar({ transport, onClose, onSelectTransport
                           }}
                         />
                         <span
-                          className={`text-xs ${
+                          className={`text-xs transition-colors ${
                             isSelectedStop
                               ? 'text-amber-300 font-bold'
                               : isFirst || isLast
                               ? 'text-white font-semibold'
-                              : 'text-white/85'
+                              : 'text-white/85 group-hover:text-white'
                           }`}
                         >
                           {stopLabel}
@@ -494,7 +601,7 @@ export default function TransportSidebar({ transport, onClose, onSelectTransport
                 : Array.from({ length: maxCols }, (_, idx) => `Dép. ${idx + 1}`);
 
             return (
-              <Section title={displayTimetable.title || 'Horaires et départs réguliers'}>
+              <Section title={displayTimetable.title || 'Horaires et passages'}>
                 <div className="rounded-2xl bg-white/[0.05] p-3 ring-1 ring-white/10">
                   <div className="overflow-x-auto scroll-thin">
                     <table className="w-full min-w-[340px] text-left text-xs">
@@ -530,7 +637,7 @@ export default function TransportSidebar({ transport, onClose, onSelectTransport
                               key={i}
                               className={`transition-colors ${
                                 isSelectedStop
-                              ? 'bg-amber-500/20 font-semibold'
+                                  ? 'bg-amber-500/20 font-semibold'
                                   : 'hover:bg-white/5'
                               }`}
                             >
@@ -572,8 +679,8 @@ export default function TransportSidebar({ transport, onClose, onSelectTransport
         <div className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-3.5 text-xs leading-relaxed text-white/75">
           <Info size={16} className="mt-0.5 shrink-0 text-cyan-300" />
           <span>
-            Cette ligne permet de rejoindre les sentiers de randonnée et refuges des Alpes sans
-            voiture. Vérifiez les horaires en temps réel selon les conditions météo et saisons.
+            Cette liaison permet de rejoindre les départs de sentiers, cols et refuges alpins en
+            mobilité douce. Vérifiez les conditions météo et correspondances en gare.
           </span>
         </div>
 

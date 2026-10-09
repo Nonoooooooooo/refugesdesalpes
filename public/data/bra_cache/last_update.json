@@ -1,0 +1,121 @@
+{
+  "lastRun": "2026-10-09T16:30:04.692Z",
+  "massifsCount": 23,
+  "results": [
+    {
+      "id": 1,
+      "nom": "Chablais",
+      "live": true
+    },
+    {
+      "id": 2,
+      "nom": "Aravis",
+      "live": true
+    },
+    {
+      "id": 3,
+      "nom": "Mont-Blanc",
+      "live": true
+    },
+    {
+      "id": 4,
+      "nom": "Bauges",
+      "live": true
+    },
+    {
+      "id": 5,
+      "nom": "Beaufortain",
+      "live": true
+    },
+    {
+      "id": 6,
+      "nom": "Haute-Tarentaise",
+      "live": true
+    },
+    {
+      "id": 7,
+      "nom": "Chartreuse",
+      "live": true
+    },
+    {
+      "id": 8,
+      "nom": "Belledonne",
+      "live": true
+    },
+    {
+      "id": 9,
+      "nom": "Maurienne",
+      "live": true
+    },
+    {
+      "id": 10,
+      "nom": "Vanoise",
+      "live": true
+    },
+    {
+      "id": 11,
+      "nom": "Haute-Maurienne",
+      "live": true
+    },
+    {
+      "id": 12,
+      "nom": "Grandes-Rousses",
+      "live": true
+    },
+    {
+      "id": 13,
+      "nom": "Thabor",
+      "live": true
+    },
+    {
+      "id": 14,
+      "nom": "Vercors",
+      "live": true
+    },
+    {
+      "id": 15,
+      "nom": "Oisans",
+      "live": true
+    },
+    {
+      "id": 16,
+      "nom": "Pelvoux",
+      "live": true
+    },
+    {
+      "id": 17,
+      "nom": "Queyras",
+      "live": true
+    },
+    {
+      "id": 18,
+      "nom": "Dévoluy",
+      "live": true
+    },
+    {
+      "id": 19,
+      "nom": "Champsaur",
+      "live": true
+    },
+    {
+      "id": 20,
+      "nom": "Embrunais-Parpaillon",
+      "live": true
+    },
+    {
+      "id": 21,
+      "nom": "Ubaye",
+      "live": true
+    },
+    {
+      "id": 22,
+      "nom": "Haut-Var/Haut-Verdon",
+      "live": true
+    },
+    {
+      "id": 23,
+      "nom": "Mercantour",
+      "live": true
+    }
+  ]
+}

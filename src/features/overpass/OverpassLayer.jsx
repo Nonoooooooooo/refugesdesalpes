@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useMap, useMapEvents, Marker, Tooltip, Popup } from 'react-leaflet'
 import L from 'leaflet'
 import { Loader2, ZoomIn, Navigation } from 'lucide-react'
-import { fetchOverpassParkings, fetchOverpassPeaksAndPasses } from '../../lib/overpass'
+import { fetchOverpassParkings } from '../../lib/overpass'
 
 const MIN_ZOOM = 12
 const iconCache = new Map()
@@ -23,26 +23,9 @@ function getParkingIcon() {
   return iconCache.get('parking')
 }
 
-// Icône Sommet / Col avec texte direct sur la carte
-function getPeakLabelIcon(label, isPeak) {
-  const symbol = isPeak ? '▲' : '≍'
-  return L.divIcon({
-    className: 'overpass-marker overpass-label-marker',
-    html: `
-      <div class="peak-label-container">
-        <span class="peak-symbol ${isPeak ? 'is-peak' : 'is-pass'}">${symbol}</span>
-        <span class="peak-text">${label}</span>
-      </div>
-    `,
-    iconSize: [140, 20],
-    iconAnchor: [10, 10],
-  })
-}
-
-export default function OverpassLayer({ showParkings, showPeaks }) {
+export default function OverpassLayer({ showParkings }) {
   const map = useMap()
   const [parkings, setParkings] = useState([])
-  const [peaks, setPeaks] = useState([])
   const [loading, setLoading] = useState(false)
   const [zoomLevel, setZoomLevel] = useState(() => map.getZoom())
 
@@ -67,23 +50,15 @@ export default function OverpassLayer({ showParkings, showPeaks }) {
     }
   }, [showParkings])
 
-  useEffect(() => {
-    if (!showPeaks) {
-      setPeaks([])
-    }
-  }, [showPeaks])
-
   const fetchLayers = useCallback(() => {
     const currentZoom = map.getZoom()
     setZoomLevel(currentZoom)
 
-    // Si aucun calque actif
-    if (!showParkings && !showPeaks) {
+    if (!showParkings) {
       setLoading(false)
       return
     }
 
-    // Si zoom trop faible (< 12) : on ne télécharge pas
     if (currentZoom < MIN_ZOOM) {
       setLoading(false)
       return
@@ -96,48 +71,25 @@ export default function OverpassLayer({ showParkings, showPeaks }) {
 
     const b = map.getBounds()
     const bounds = [b.getSouth(), b.getWest(), b.getNorth(), b.getEast()]
-    const promises = []
 
-    // 1. Requête Parkings si actif (fonctionne à tout zoom >= 12 : 12, 13, 14, 15, 16...)
-    if (showParkings) {
-      const p1 = fetchOverpassParkings(bounds, ctrl.signal)
-        .then((incoming) => {
-          if (ctrl.signal.aborted) return
-          setParkings((prev) => {
-            const mapById = new Map(prev.slice(-1500).map((item) => [item.id, item]))
-            incoming.forEach((item) => mapById.set(item.id, item))
-            return [...mapById.values()]
-          })
+    fetchOverpassParkings(bounds, ctrl.signal)
+      .then((incoming) => {
+        if (ctrl.signal.aborted) return
+        setParkings((prev) => {
+          const mapById = new Map(prev.slice(-1500).map((item) => [item.id, item]))
+          incoming.forEach((item) => mapById.set(item.id, item))
+          return [...mapById.values()]
         })
-        .catch((e) => {
-          if (!ctrl.signal.aborted) console.warn('Erreur chargement Overpass parkings:', e)
-        })
-      promises.push(p1)
-    }
-
-    // 2. Requête Sommets & Cols si actif
-    if (showPeaks) {
-      const p2 = fetchOverpassPeaksAndPasses(bounds, ctrl.signal)
-        .then((incoming) => {
-          if (ctrl.signal.aborted) return
-          setPeaks((prev) => {
-            const mapById = new Map(prev.slice(-1000).map((item) => [item.id, item]))
-            incoming.forEach((item) => mapById.set(item.id, item))
-            return [...mapById.values()]
-          })
-        })
-        .catch((e) => {
-          if (!ctrl.signal.aborted) console.warn('Erreur chargement Overpass sommets:', e)
-        })
-      promises.push(p2)
-    }
-
-    Promise.allSettled(promises).finally(() => {
-      if (!ctrl.signal.aborted) {
-        setLoading(false)
-      }
-    })
-  }, [map, showParkings, showPeaks])
+      })
+      .catch((e) => {
+        if (!ctrl.signal.aborted) console.warn('Erreur chargement Overpass parkings:', e)
+      })
+      .finally(() => {
+        if (!ctrl.signal.aborted) {
+          setLoading(false)
+        }
+      })
+  }, [map, showParkings])
 
   // Débouncé à 400ms pour laisser l'utilisateur terminer son mouvement de carte
   const schedule = useCallback(() => {
@@ -162,23 +114,23 @@ export default function OverpassLayer({ showParkings, showPeaks }) {
     map.flyTo(map.getCenter(), MIN_ZOOM, { duration: 0.6 })
   }
 
-  const isTooFar = (showParkings || showPeaks) && zoomLevel < MIN_ZOOM
+  const isTooFar = showParkings && zoomLevel < MIN_ZOOM
 
   return (
     <>
       {/* ─── Notification d'aide au zoom ou de chargement ─── */}
-      {(showParkings || showPeaks) && (
+      {showParkings && (
         <div className="pointer-events-none absolute bottom-16 left-1/2 z-[1000] -translate-x-1/2">
           {loading && (
             <div className="glass flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs text-white/90 shadow-xl backdrop-blur-md animate-pulse">
               <Loader2 size={13} className="animate-spin text-blue-400" />
-              <span>Chargement {showParkings ? 'des parkings' : ''}{showParkings && showPeaks ? ' & ' : ''}{showPeaks ? 'des sommets' : ''}…</span>
+              <span>Chargement des parkings…</span>
             </div>
           )}
-          {isTooFar && !loading && parkings.length === 0 && peaks.length === 0 && (
+          {isTooFar && !loading && parkings.length === 0 && (
             <div className="pointer-events-auto glass flex items-center gap-2.5 rounded-2xl border border-blue-400/30 px-3.5 py-2 text-xs text-white/90 shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-bottom-2">
               <ZoomIn size={14} className="text-blue-400" />
-              <span>Zoomez pour afficher {showParkings ? 'les parkings' : ''}{showParkings && showPeaks ? ' et ' : ''}{showPeaks ? 'les sommets' : ''}</span>
+              <span>Zoomez davantage pour afficher les parkings</span>
               <button
                 onClick={handleZoomIn}
                 className="glass-btn flex items-center gap-1 rounded-xl bg-blue-500/30 px-2.5 py-1 font-semibold text-blue-200 hover:bg-blue-500/50 hover:text-white"
@@ -262,18 +214,6 @@ export default function OverpassLayer({ showParkings, showPeaks }) {
             </Marker>
           )
         })}
-
-      {/* ─── Calque Sommets & Cols ─── */}
-      {showPeaks &&
-        peaks.map((pk) => (
-          <Marker
-            key={pk.id}
-            position={[pk.lat, pk.lng]}
-            icon={getPeakLabelIcon(pk.label, pk.isPeak)}
-            zIndexOffset={350}
-            interactive={false}
-          />
-        ))}
     </>
   )
 }

@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { X, Loader2, TriangleAlert, Mountain, BedDouble, ExternalLink, RefreshCw, MessageSquare } from 'lucide-react'
+import { X, Loader2, TriangleAlert, Mountain, BedDouble, ExternalLink, RefreshCw, MessageSquare, FileText } from 'lucide-react'
 import { fetchPoint } from '../lib/api'
 import { fetchCommonsPhotos } from '../lib/wikimedia'
 import { fetchGooglePlacesPhotos } from '../lib/google-places'
@@ -8,11 +8,31 @@ import { typeInfo } from '../lib/types.jsx'
 import { cleanText } from '../lib/text'
 import Gallery from './Gallery.jsx'
 import Terrain3DModal from '../features/terrain3d/Terrain3DModal.jsx'
+import AvalancheModal from '../features/avalanche/AvalancheModal.jsx'
+import AvalanchePdfModal from '../features/avalanche/AvalanchePdfModal.jsx'
+import { findMassifByCoords } from '../features/avalanche/massifLookup'
 
 export default function Sidebar({ point, onClose }) {
   const [state, setState] = useState({ loading: true, error: null, data: null })
   const [attempt, setAttempt] = useState(0)
   const [show3D, setShow3D] = useState(false)
+  const [showPdf, setShowPdf] = useState(false)
+  const [showAvalanche, setShowAvalanche] = useState(false)
+  const [massifInfo, setMassifInfo] = useState(null)
+
+  useEffect(() => {
+    let active = true
+    if (point?.lat != null && point?.lng != null) {
+      findMassifByCoords(point.lat, point.lng).then((info) => {
+        if (active) setMassifInfo(info)
+      })
+    } else {
+      setMassifInfo(null)
+    }
+    return () => {
+      active = false
+    }
+  }, [point?.lat, point?.lng])
 
   useEffect(() => {
     const ctrl = new AbortController()
@@ -89,13 +109,29 @@ export default function Sidebar({ point, onClose }) {
             {(d?.etat ?? point.etat) && <Chip>{d?.etat ?? point.etat}</Chip>}
           </div>
 
-          {/* Bouton Vue 3D */}
-          <button
-            onClick={() => setShow3D(true)}
-            className="self-start rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 text-xs font-medium text-white/75 hover:text-white transition-all active:scale-95"
-          >
-            Vue 3D
-          </button>
+          {/* Boutons d'actions rapides (Vue 3D et Bulletin Avalanche BERA) */}
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => setShow3D(true)}
+              className="rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 text-xs font-medium text-white/75 hover:text-white transition-all active:scale-95"
+            >
+              Vue 3D
+            </button>
+
+            {massifInfo && (
+              <button
+                onClick={() => setShowPdf(true)}
+                className="group rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 text-xs font-medium text-white/75 hover:text-white transition-all active:scale-95 flex items-center gap-1.5"
+                title={`Consulter le bulletin officiel PDF de Météo-France pour le massif ${massifInfo.label}`}
+              >
+                <span>⚠️</span>
+                <span>Bulletin Avalanche (PDF)</span>
+                <span className="rounded-md bg-white/10 px-1.5 py-0.5 text-[10px] text-white/70">
+                  {massifInfo.label}
+                </span>
+              </button>
+            )}
+          </div>
 
           {state.loading && (
             <div className="flex items-center justify-center gap-2 py-10 text-sm text-white/70">
@@ -170,6 +206,36 @@ export default function Sidebar({ point, onClose }) {
             lng: point.lng,
           }}
           onClose={() => setShow3D(false)}
+        />
+      )}
+
+      {showPdf && massifInfo && (
+        <AvalanchePdfModal
+          massif={massifInfo}
+          point={{
+            ...point,
+            nom: d?.nom ?? point.nom,
+            alt: d?.alt ?? point.alt,
+            type: d?.type ?? point.type,
+            lat: point.lat,
+            lng: point.lng,
+          }}
+          onClose={() => setShowPdf(false)}
+        />
+      )}
+
+      {showAvalanche && massifInfo && (
+        <AvalancheModal
+          massif={massifInfo}
+          point={{
+            ...point,
+            nom: d?.nom ?? point.nom,
+            alt: d?.alt ?? point.alt,
+            type: d?.type ?? point.type,
+            lat: point.lat,
+            lng: point.lng,
+          }}
+          onClose={() => setShowAvalanche(false)}
         />
       )}
     </>

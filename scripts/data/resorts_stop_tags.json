@@ -1,0 +1,888 @@
+{
+  "251671095": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Paganon",
+    "network": "Cars Région Isère",
+    "public_transport": "stop_position"
+  },
+  "312162266": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Mélèzes",
+    "network": "Alpe d'Huez",
+    "public_transport": "stop_position"
+  },
+  "312162317": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Club Med",
+    "network": "Alpe d'Huez",
+    "public_transport": "stop_position"
+  },
+  "312162360": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Altiport",
+    "public_transport": "stop_position"
+  },
+  "312353292": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Passeaux",
+    "network": "Alpe d'Huez",
+    "public_transport": "stop_position"
+  },
+  "312439493": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Grangette",
+    "network": "Alpe d'Huez",
+    "public_transport": "stop_position"
+  },
+  "312476532": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Palais des Sports",
+    "network": "Cars Région Isère",
+    "network:wikidata": "Q3456857",
+    "public_transport": "stop_position"
+  },
+  "312586402": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Pic Blanc",
+    "network": "Alpe d'Huez",
+    "public_transport": "stop_position"
+  },
+  "312586411": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Parking des Bergers",
+    "network": "Cars Région Isère",
+    "network:wikidata": "Q3456857",
+    "public_transport": "stop_position"
+  },
+  "312823942": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Avenue de l'Étendard - Place Jean Moulin",
+    "network": "Cars Région Isère",
+    "network:wikidata": "Q3456857",
+    "public_transport": "stop_position"
+  },
+  "312823970": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Gendarmerie",
+    "network": "Alpe d'Huez",
+    "public_transport": "stop_position"
+  },
+  "312823994": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Coulet",
+    "network": "Alpe d'Huez",
+    "public_transport": "stop_position"
+  },
+  "312824025": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Ours Blanc",
+    "network": "Alpe d'Huez",
+    "public_transport": "stop_position"
+  },
+  "708882624": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Richardes",
+    "network": "Train Rouge",
+    "operator": "ValBus",
+    "public_transport": "platform",
+    "shelter": "yes"
+  },
+  "708882671": {
+    "bench": "yes",
+    "bus": "yes",
+    "check_date:shelter": "2024-08-29",
+    "highway": "bus_stop",
+    "name": "Laisinant",
+    "network": "Train Rouge",
+    "operator": "ValBus",
+    "public_transport": "platform",
+    "shelter": "yes"
+  },
+  "708882758": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Le Fornet",
+    "network": "Train Rouge",
+    "operator": "ValBus",
+    "public_transport": "platform"
+  },
+  "708882842": {
+    "bench": "no",
+    "bus": "yes",
+    "check_date:shelter": "2026-01-28",
+    "highway": "bus_stop",
+    "name": "Rond-Point des Pistes",
+    "network": "Train Rouge",
+    "operator": "ValBus",
+    "public_transport": "platform",
+    "ref": "Train rouge, Train bleu, Train jaune",
+    "shelter": "no"
+  },
+  "708883011": {
+    "bench": "no",
+    "bin": "no",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "lit": "no",
+    "name": "UCPA",
+    "network": "Train Rouge",
+    "operator": "ValBus",
+    "public_transport": "platform",
+    "ref": "Train rouge",
+    "shelter": "no",
+    "tactile_paving": "no"
+  },
+  "708946929": {
+    "bench": "yes",
+    "bin": "yes",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "La Daille",
+    "network": "Train Rouge",
+    "operator": "ValBus",
+    "public_transport": "platform",
+    "shelter": "yes"
+  },
+  "708946934": {
+    "bench": "no",
+    "bin": "yes",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "lit": "yes",
+    "name": "Gare Routière, Val d'Isere",
+    "network": "Train Rouge",
+    "operator": "ValBus",
+    "public_transport": "platform",
+    "ref": "train rouge;train vert",
+    "shelter": "no",
+    "tactile_paving": "no"
+  },
+  "1107446524": {
+    "bench": "yes",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Le Bourg",
+    "operator": "ValmoBus",
+    "public_transport": "platform",
+    "shelter": "yes"
+  },
+  "1217718917": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Grand Broue",
+    "public_transport": "stop_position"
+  },
+  "1217732340": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Huez Bas - Le Village",
+    "network": "Cars Région Isère",
+    "network:wikidata": "Q3456857",
+    "public_transport": "stop_position"
+  },
+  "1217765627": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Virage 5",
+    "network": "Alpe d'Huez",
+    "public_transport": "stop_position"
+  },
+  "1613494926": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Petit-Coeur-la-Léchère",
+    "public_transport": "stop_position"
+  },
+  "1976445458": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "La Garde - Le Village",
+    "network": "Cars Région Isère",
+    "network:wikidata": "Q3456857",
+    "operator": "Cars Région",
+    "public_transport": "stop_position"
+  },
+  "2013824543": {
+    "bus": "yes",
+    "name": "Le Bourg",
+    "public_transport": "stop_position"
+  },
+  "2262977063": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Office du tourisme",
+    "network": "Cars Région Isère",
+    "public_transport": "stop_position"
+  },
+  "2429506504": {
+    "bench": "yes",
+    "bin": "yes",
+    "bus": "yes",
+    "direction": "both",
+    "highway": "bus_stop",
+    "lit": "yes",
+    "name": "La Daille",
+    "network": "Train Rouge",
+    "operator": "ValBus",
+    "public_transport": "platform",
+    "ref": "train rouge",
+    "shelter": "yes",
+    "tactile_paving": "no"
+  },
+  "2476830532": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Balcons de Sagnes",
+    "network": "Alpe d'Huez",
+    "public_transport": "stop_position"
+  },
+  "2619567084": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Paganon",
+    "network": "Alpe d'Huez",
+    "public_transport": "stop_position"
+  },
+  "2619567115": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Héliotropes",
+    "network": "Alpe d'Huez",
+    "public_transport": "stop_position"
+  },
+  "2675938800": {
+    "bench": "yes",
+    "bin": "yes",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "lit": "yes",
+    "name": "Le Crêt",
+    "network": "Train Rouge",
+    "operator": "ValBus",
+    "public_transport": "platform",
+    "shelter": "no",
+    "tactile_paving": "no"
+  },
+  "2675938801": {
+    "bench": "yes",
+    "bin": "yes",
+    "bus": "yes",
+    "check_date:shelter": "2026-01-28",
+    "highway": "bus_stop",
+    "lit": "yes",
+    "name": "Le Crêt",
+    "network": "Train Rouge",
+    "operator": "ValBus",
+    "public_transport": "platform",
+    "shelter": "no",
+    "tactile_paving": "no"
+  },
+  "2675988375": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Richardes",
+    "network": "Train Rouge",
+    "operator": "ValBus",
+    "public_transport": "platform"
+  },
+  "2675988378": {
+    "bench": "no",
+    "bin": "no",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "lit": "no",
+    "name": "UCPA",
+    "network": "Train Rouge",
+    "operator": "ValBus",
+    "public_transport": "platform",
+    "ref": "Train rouge",
+    "shelter": "no",
+    "tactile_paving": "no"
+  },
+  "2675988380": {
+    "bench": "yes",
+    "bin": "yes",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Office du Tourisme",
+    "network": "Train Rouge",
+    "operator": "ValBus",
+    "public_transport": "platform",
+    "ref": "Train rouge",
+    "shelter": "no"
+  },
+  "2675988383": {
+    "bench": "no",
+    "bin": "yes",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Office du Tourisme",
+    "network": "Train Rouge",
+    "operator": "ValBus",
+    "public_transport": "platform",
+    "ref": "Train rouge",
+    "shelter": "no"
+  },
+  "2675988390": {
+    "bench": "yes",
+    "bin": "yes",
+    "bus": "yes",
+    "check_date:shelter": "2026-01-28",
+    "highway": "bus_stop",
+    "lit": "yes",
+    "name": "Portillo",
+    "network": "Train rouge",
+    "operator": "ValBus",
+    "public_transport": "platform",
+    "shelter": "no",
+    "tactile_paving": "no"
+  },
+  "2697699350": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Balcons de Sagnes",
+    "network": "Alpe d'Huez",
+    "public_transport": "stop_position"
+  },
+  "2697699352": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Castillan",
+    "network": "Alpe d'Huez",
+    "public_transport": "stop_position"
+  },
+  "2697699353": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Chalet Delta",
+    "network": "Alpe d'Huez",
+    "public_transport": "stop_position"
+  },
+  "2697699354": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Cognet",
+    "network": "Alpe d'Huez",
+    "public_transport": "stop_position"
+  },
+  "2697699355": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Huez le Haut",
+    "network": "Alpe d'Huez",
+    "public_transport": "stop_position"
+  },
+  "2697699356": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "L'Éclose",
+    "network": "Alpe d'Huez",
+    "public_transport": "stop_position"
+  },
+  "2697699357": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Maona",
+    "network": "Alpe d'Huez",
+    "public_transport": "stop_position"
+  },
+  "2697699358": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Maona",
+    "network": "Alpe d'Huez",
+    "public_transport": "stop_position"
+  },
+  "2697699359": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Mélèzes",
+    "network": "Alpe d'Huez",
+    "public_transport": "stop_position"
+  },
+  "2697699361": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Rond-Point du Tour de France",
+    "network": "Alpe d'Huez",
+    "public_transport": "stop_position"
+  },
+  "2697699362": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Signal",
+    "network": "Alpe d'Huez",
+    "public_transport": "stop_position"
+  },
+  "2697699363": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Val d'Ys",
+    "network": "Alpe d'Huez",
+    "public_transport": "stop_position"
+  },
+  "2697954259": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Le Ribot",
+    "network": "Cars Région Isère",
+    "public_transport": "stop_position"
+  },
+  "2697954272": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Sarennes - La Bergerie",
+    "network": "Cars Région Isère",
+    "public_transport": "stop_position"
+  },
+  "3018145038": {
+    "bench": "no",
+    "bin": "yes",
+    "bus": "yes",
+    "check_date:shelter": "2026-01-28",
+    "highway": "bus_stop",
+    "lit": "yes",
+    "name": "Gare Routière",
+    "network": "Train Rouge",
+    "operator": "ValBus",
+    "public_transport": "platform",
+    "ref": "train rouge;train vert",
+    "shelter": "no",
+    "tactile_paving": "no"
+  },
+  "3609453770": {
+    "bus": "yes",
+    "name": "Piou Piou",
+    "public_transport": "stop_position"
+  },
+  "5335547190": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "network": "Train Rouge",
+    "operator": "ValBus",
+    "public_transport": "platform",
+    "shelter": "no"
+  },
+  "5497648058": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Laisinant",
+    "network": "Train Rouge",
+    "operator": "ValBus",
+    "public_transport": "platform"
+  },
+  "5562924160": {
+    "bench": "no",
+    "bin": "no",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "lit": "yes",
+    "name": "Doucy-Station Office du tourisme",
+    "public_transport": "platform",
+    "shelter": "no",
+    "tactile_paving": "no"
+  },
+  "5562924161": {
+    "bus": "yes",
+    "name": "Doucy-Station Office du tourisme",
+    "public_transport": "stop_position"
+  },
+  "5562924162": {
+    "bus": "yes",
+    "name": "Doucy-Station Office du tourisme",
+    "public_transport": "stop_position"
+  },
+  "5562924163": {
+    "bench": "yes",
+    "bin": "no",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "lit": "yes",
+    "name": "Doucy-Station Office du tourisme",
+    "public_transport": "platform",
+    "shelter": "no",
+    "tactile_paving": "no"
+  },
+  "5562924164": {
+    "bus": "yes",
+    "name": "Doucy École",
+    "public_transport": "stop_position"
+  },
+  "5562924165": {
+    "bench": "no",
+    "bin": "no",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Doucy École",
+    "public_transport": "platform",
+    "shelter": "no",
+    "tactile_paving": "no"
+  },
+  "5562924166": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Saint-Oyen Centre",
+    "public_transport": "platform"
+  },
+  "5562924167": {
+    "bus": "yes",
+    "name": "Saint-Oyen Centre",
+    "public_transport": "stop_position"
+  },
+  "5562924168": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Saint-Oyen Centre",
+    "public_transport": "platform"
+  },
+  "5562924169": {
+    "bus": "yes",
+    "name": "Saint-Oyen Centre",
+    "public_transport": "stop_position"
+  },
+  "5568813974": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Aigueblanche (Centre)",
+    "public_transport": "stop_position"
+  },
+  "5568813978": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Notre-Dame de Briançon - Gare",
+    "public_transport": "stop_position"
+  },
+  "5570970043": {
+    "bus": "yes",
+    "name": "Aigueblanche Centre Commercial (Parking Super U)",
+    "public_transport": "stop_position"
+  },
+  "5570970045": {
+    "bus": "yes",
+    "name": "Bellecombe Mairie",
+    "public_transport": "stop_position"
+  },
+  "5571065016": {
+    "bench": "no",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Doucy-Station Eau Rousse",
+    "public_transport": "platform",
+    "shelter": "no"
+  },
+  "5571065017": {
+    "bus": "yes",
+    "name": "Doucy-Station Eau Rousse",
+    "public_transport": "stop_position"
+  },
+  "5571065018": {
+    "bench": "no",
+    "bin": "no",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "lit": "yes",
+    "name": "Doucy-Station Le Sappey/Les Carlines",
+    "public_transport": "platform",
+    "shelter": "no",
+    "tactile_paving": "no"
+  },
+  "5571065019": {
+    "bus": "yes",
+    "name": "Doucy-Station Le Sappey/Les Carlines",
+    "public_transport": "stop_position"
+  },
+  "5571132932": {
+    "bus": "yes",
+    "name": "Bellecombe Place Saint-Laurent",
+    "public_transport": "stop_position"
+  },
+  "5571165470": {
+    "bus": "yes",
+    "name": "Le Bois Centre",
+    "public_transport": "stop_position"
+  },
+  "5571165471": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Le Bois Centre",
+    "public_transport": "platform"
+  },
+  "5571165472": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Le Bois Ste Hélène",
+    "public_transport": "platform"
+  },
+  "5571165474": {
+    "bus": "yes",
+    "name": "Le Bois Ste Hélène",
+    "public_transport": "stop_position"
+  },
+  "5571165484": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Crey/Les Emptes",
+    "public_transport": "platform"
+  },
+  "5571198699": {
+    "bus": "yes",
+    "name": "Le Fey-Dessous",
+    "public_transport": "stop_position"
+  },
+  "5571198700": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Le Fey-Dessous",
+    "public_transport": "platform"
+  },
+  "5571198701": {
+    "bus": "yes",
+    "name": "Les Avanchers Chef-lieu",
+    "public_transport": "stop_position"
+  },
+  "5571202314": {
+    "bus": "yes",
+    "name": "Le Pré",
+    "public_transport": "stop_position"
+  },
+  "5571202316": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Le Pré",
+    "public_transport": "platform"
+  },
+  "5604952686": {
+    "bus": "yes",
+    "name": "Crève Cœur",
+    "public_transport": "stop_position"
+  },
+  "5604952687": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Crève Cœur",
+    "public_transport": "platform"
+  },
+  "5604952688": {
+    "bus": "yes",
+    "fixme": "position",
+    "highway": "bus_stop",
+    "name": "Les Avanchers Chef-lieu",
+    "public_transport": "platform"
+  },
+  "5604952689": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Moûtiers Gare Routière",
+    "public_transport": "stop_position"
+  },
+  "5777915680": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "network": "Train Rouge",
+    "operator": "ValBus",
+    "public_transport": "platform",
+    "shelter": "no"
+  },
+  "6241818402": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Moûtiers Gare Routière",
+    "public_transport": "stop_position"
+  },
+  "6795986757": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Rond-Point des Pistes",
+    "network": "Cars Région Isère",
+    "public_transport": "stop_position"
+  },
+  "6795986762": {
+    "alt_name": "Le Bourg-d'Oisans - Halte Routière",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Agence Cars Region VFD",
+    "network": "Cars Région Isère",
+    "network:wikidata": "Q3456857",
+    "public_transport": "stop_position"
+  },
+  "6795986772": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Office du tourisme",
+    "network": "Cars Région Isère",
+    "public_transport": "stop_position"
+  },
+  "7667490301": {
+    "bench": "no",
+    "bin": "no",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Doucy École",
+    "public_transport": "platform",
+    "shelter": "no",
+    "tactile_paving": "no"
+  },
+  "7667490302": {
+    "bus": "yes",
+    "name": "Doucy École",
+    "public_transport": "stop_position"
+  },
+  "10295714472": {
+    "bus": "yes",
+    "name": "La Léchère-les-Bains - Radiana",
+    "public_transport": "stop_position"
+  },
+  "10795829566": {
+    "name": "Petit Coeur - Village 92 Rond Point",
+    "public_transport": "pole"
+  },
+  "10795862055": {
+    "bus": "yes",
+    "name": "L'Étrat",
+    "public_transport": "stop_position"
+  },
+  "11787992472": {
+    "bus": "yes",
+    "name": "La Léchère-les-Bains - Radiana",
+    "public_transport": "platform"
+  },
+  "11787992473": {
+    "bus": "yes",
+    "name": "Feissons-sur-Isère - Mairie",
+    "public_transport": "stop_position"
+  },
+  "13479120206": {
+    "bus": "yes",
+    "name": "Le Pré",
+    "public_transport": "stop_position"
+  },
+  "5777880050": {
+    "bus": "yes",
+    "name": "La Thuile",
+    "public_transport": "stop_position"
+  },
+  "5777880051": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "La Thuile",
+    "public_transport": "platform"
+  },
+  "5777885669": {
+    "bench": "no",
+    "bin": "no",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Séez Centre",
+    "public_transport": "platform",
+    "shelter": "no"
+  },
+  "5777885671": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Séez Centre",
+    "public_transport": "stop_position"
+  },
+  "5777915685": {
+    "bus": "yes",
+    "name": "La Reculaz",
+    "public_transport": "stop_position"
+  },
+  "5777915686": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "La Reculaz",
+    "public_transport": "platform"
+  },
+  "5777915691": {
+    "bus": "yes",
+    "name": "Viclaire",
+    "public_transport": "stop_position"
+  },
+  "6296277023": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "local_ref": "10",
+    "name": "Bourg-Saint-Maurice - Gare Routière",
+    "network": "Cars Région Savoie",
+    "network:wikidata": "Q27992297",
+    "public_transport": "stop_position"
+  },
+  "6381326172": {
+    "bus": "yes",
+    "name": "Longefoy",
+    "public_transport": "stop_position"
+  },
+  "6381326173": {
+    "bench": "yes",
+    "bin": "yes",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "lit": "yes",
+    "name": "Longefoy",
+    "public_transport": "platform",
+    "shelter": "yes",
+    "tactile_paving": "no"
+  },
+  "6761577566": {
+    "bus": "yes",
+    "name": "Gare Routière, Val d'Isere",
+    "network": "Train Rouge",
+    "operator": "ValBus",
+    "public_transport": "stop_position"
+  },
+  "11509197014": {
+    "bench": "no",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Villaret du Nial",
+    "public_transport": "platform",
+    "shelter": "no"
+  },
+  "12848575405": {
+    "bench": "no",
+    "covered": "yes",
+    "name": "Sainte-Foy Tarentaise Centre",
+    "public_transport": "platform",
+    "shelter": "yes"
+  },
+  "12848575406": {
+    "bus": "yes",
+    "name": "Sainte-Foy Tarentaise Centre",
+    "public_transport": "stop_position"
+  },
+  "12848575408": {
+    "name": "Viclaire",
+    "passenger_information_display": "no",
+    "public_transport": "platform"
+  },
+  "12848592321": {
+    "bus": "yes",
+    "name": "La Daille",
+    "public_transport": "stop_position"
+  },
+  "12848592322": {
+    "bus": "yes",
+    "name": "Villaret du Nial",
+    "public_transport": "stop_position"
+  },
+  "13369928915": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Funival",
+    "public_transport": "platform"
+  }
+}

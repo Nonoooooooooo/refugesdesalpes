@@ -92,6 +92,12 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/rimg/, ''),
         },
+        '/api/meteofrance': {
+          target: 'https://public-api.meteofrance.fr/public/DPBRA/v1',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api\/meteofrance/, ''),
+          secure: false,
+        },
       },
     },
   }
