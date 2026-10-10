@@ -21,7 +21,7 @@ const CATEGORIES = [
   { id: 'Autre', label: '🏔️ Autre', color: 'border-sky-400/50 bg-sky-500/20 text-sky-200' },
 ]
 
-export default function InfoFeedbackButton({ hasSelected }) {
+export default function InfoFeedbackButton({ placement = 'top-bar' }) {
   const [isOpen, setIsOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('info') // 'info' | 'chatbox'
   const [selectedCategory, setSelectedCategory] = useState('Donnée erronée')
@@ -43,14 +43,14 @@ export default function InfoFeedbackButton({ hasSelected }) {
   }
 
   const handleMouseLeave = () => {
-    // Si l'utilisateur a cliqué pour interagir (épinglé) ou tape au clavier, on ne ferme pas au survol
     if (isPinnedRef.current || activeTab === 'chatbox') return
     closeTimerRef.current = setTimeout(() => {
       setIsOpen(false)
     }, 280)
   }
 
-  const handleClickToggle = () => {
+  const handleClickToggle = (e) => {
+    e.stopPropagation()
     clearTimeout(closeTimerRef.current)
     setIsOpen((prev) => {
       const next = !prev
@@ -65,7 +65,7 @@ export default function InfoFeedbackButton({ hasSelected }) {
     setIsOpen(true)
   }
 
-  // Fermeture par clic extérieur (sur desktop & mobile)
+  // Fermeture par clic extérieur
   useEffect(() => {
     function handleClickOutside(e) {
       if (
@@ -87,7 +87,7 @@ export default function InfoFeedbackButton({ hasSelected }) {
     }
   }, [isOpen])
 
-  // Envoi du formulaire vers le endpoint /api/feedback (Discord Webhook)
+  // Envoi du formulaire vers /api/feedback (Discord Webhook)
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!message.trim() || message.trim().length < 3) {
@@ -126,47 +126,60 @@ export default function InfoFeedbackButton({ hasSelected }) {
     }
   }
 
+  const isTopBar = placement === 'top-bar'
+
   return (
     <div
-      className={`fixed bottom-5 z-[1050] transition-all duration-300 ${
-        hasSelected ? 'left-3 sm:left-[444px]' : 'left-3 sm:left-4'
-      }`}
+      className={
+        isTopBar
+          ? 'relative inline-flex items-center pointer-events-auto'
+          : 'fixed bottom-5 left-4 z-[1050] pointer-events-auto'
+      }
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      {/* ─── BOUTON ROND "i" DISCRET ─── */}
+      {/* ─── BOUTON ROND "i" ─── */}
       <button
         ref={buttonRef}
         onClick={handleClickToggle}
-        aria-label="Informations sur le projet et Chatbox"
-        title="Informations & Chatbox"
-        className={`group relative flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full border shadow-xl backdrop-blur-xl transition-all duration-300 active:scale-95 ${
+        aria-label="Informations sur le projet et Chatbox Discord"
+        title="Informations sur le projet & Chatbox Discord"
+        className={`group relative flex items-center justify-center rounded-full border shadow-md backdrop-blur-xl transition-all duration-300 active:scale-95 ${
+          isTopBar
+            ? 'h-7 w-7 sm:h-8 sm:w-8'
+            : 'h-9 w-9 sm:h-10 sm:w-10 shadow-xl'
+        } ${
           isOpen
-            ? 'border-emerald-400/80 bg-emerald-500/30 text-emerald-200 shadow-[0_0_15px_rgba(16,185,129,0.4)]'
-            : 'border-white/20 bg-slate-900/75 text-white/80 hover:border-white/40 hover:bg-slate-900/90 hover:text-white hover:shadow-2xl'
+            ? 'border-emerald-400 bg-emerald-500/40 text-emerald-100 shadow-[0_0_14px_rgba(16,185,129,0.5)] ring-1 ring-emerald-400/60'
+            : 'border-emerald-400/60 bg-emerald-500/20 text-emerald-300 hover:border-emerald-400 hover:bg-emerald-500/35 hover:text-white'
         }`}
       >
-        <span className="font-serif text-sm sm:text-base font-bold italic tracking-wide">
-          i
-        </span>
-        <span className="sr-only">Informations</span>
+        <Info size={isTopBar ? 15 : 18} strokeWidth={2.5} className="shrink-0" />
+        <span className="sr-only">Informations & Chatbox</span>
 
-        {/* Halo d'invitation discret pulsant */}
-        <span className="absolute -inset-0.5 -z-10 rounded-full bg-emerald-400/20 blur-[3px] opacity-70 group-hover:opacity-100 transition-opacity" />
+        {/* Halo discret d'invitation */}
+        <span className="absolute -inset-0.5 -z-10 rounded-full bg-emerald-400/25 blur-[3px] opacity-70 group-hover:opacity-100 transition-opacity" />
       </button>
 
-      {/* ─── BULLE D'INFORMATION / CHATBOX ─── */}
+      {/* ─── BULLE D'INFORMATION / CHATBOX (POPOVER) ─── */}
       {isOpen && (
         <>
-          {/* Overlay sombre mobile pour une ergonomie optimale */}
+          {/* Overlay sombre mobile */}
           <div
-            className="fixed inset-0 -z-10 bg-black/45 backdrop-blur-[2px] sm:hidden"
-            onClick={() => setIsOpen(false)}
+            className="fixed inset-0 -z-10 bg-black/50 backdrop-blur-[2px] sm:hidden"
+            onClick={() => {
+              setIsOpen(false)
+              isPinnedRef.current = false
+            }}
           />
 
           <div
             ref={popoverRef}
-            className="absolute bottom-12 left-0 sm:bottom-13 sm:left-0 z-[1100] w-[calc(100vw-1.5rem)] sm:w-[410px] max-w-[440px] rounded-3xl border border-white/20 bg-slate-900/95 p-4 sm:p-5 shadow-2xl backdrop-blur-2xl text-white transition-all animate-in fade-in zoom-in-95 duration-200 max-h-[82vh] overflow-y-auto scroll-thin"
+            className={`fixed sm:absolute z-[1200] w-[calc(100vw-1.5rem)] sm:w-[410px] max-w-[440px] rounded-3xl border border-white/20 bg-slate-900/95 p-4 sm:p-5 shadow-2xl backdrop-blur-2xl text-white transition-all animate-in fade-in zoom-in-95 duration-200 max-h-[82vh] overflow-y-auto scroll-thin ${
+              isTopBar
+                ? 'top-14 right-3 sm:top-11 sm:right-0 sm:left-auto'
+                : 'bottom-13 left-3 sm:bottom-13 sm:left-0'
+            }`}
           >
             {/* Header avec onglets & fermeture */}
             <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-3">
@@ -216,7 +229,7 @@ export default function InfoFeedbackButton({ hasSelected }) {
               </button>
             </div>
 
-            {/* ─── ONGLET 1 : TEXTE DU PROJET (Issu du document officiel) ─── */}
+            {/* ─── ONGLET 1 : TEXTE DU PROJET (Issu du PDF) ─── */}
             {activeTab === 'info' && (
               <div className="space-y-3.5 text-xs sm:text-[13px] leading-relaxed">
                 <div>
@@ -242,27 +255,27 @@ export default function InfoFeedbackButton({ hasSelected }) {
                 <div className="rounded-2xl border border-white/10 bg-white/5 p-3 sm:p-3.5 space-y-2.5">
                   <h4 className="font-semibold text-white/90 text-xs uppercase tracking-wider flex items-center gap-1.5">
                     <Sparkles size={13} className="text-amber-300" />
-                    Quelques informations utiles :
+                    Quelques informations :
                   </h4>
 
                   <div className="flex items-start gap-2 text-white/75">
                     <Zap size={14} className="mt-0.5 shrink-0 text-emerald-400" />
                     <span>
-                      <strong>Fluidité :</strong> Pour améliorer la fluidité du site, nous vous suggérons d'activer uniquement les options dont vous avez besoin.
+                      Pour améliorer la fluidité du site, nous vous suggérons d’activer uniquement les options dont vous avez besoin
                     </span>
                   </div>
 
                   <div className="flex items-start gap-2 text-white/75">
                     <AlertTriangle size={14} className="mt-0.5 shrink-0 text-amber-400" />
                     <span>
-                      <strong>Véracité :</strong> Ne vous fiez pas uniquement à nos informations, nous ne garantissons pas la véracité de toutes celles-ci (ex : les numéros de ligne de transports).
+                      Ne vous fiez pas uniquement à nos informations, nous ne garantissons pas la véracité de toutes celles-ci (ex : les numéros de ligne de transports)
                     </span>
                   </div>
 
                   <div className="flex items-start gap-2 text-white/75">
                     <SquareParking size={14} className="mt-0.5 shrink-0 text-sky-400" />
                     <span>
-                      <strong>Parkings :</strong> Les parkings sont visibles mais demandent beaucoup de ressources, nous vous conseillons de zoomer suffisamment sur la zone qui vous intéresse avant d'activer l'option.
+                      Les parkings sont visibles mais demandent beaucoup de ressources, nous vous conseillons de zoomer suffisamment sur la zone qui vous intéresse avant d’activer l’option
                     </span>
                   </div>
                 </div>
@@ -367,7 +380,7 @@ export default function InfoFeedbackButton({ hasSelected }) {
                         required
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
-                        placeholder="Ex: Le numéro de téléphone de ce refuge a changé, la ligne de navette S72 s'arrête ici..."
+                        placeholder="Ex: Le numéro de ce refuge a changé, la ligne S72 s'arrête ici..."
                         className="w-full rounded-2xl border border-white/15 bg-black/40 px-3 py-2 text-xs sm:text-sm text-white placeholder-white/40 focus:border-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-400 transition-all resize-none"
                       />
                     </div>

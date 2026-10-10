@@ -15,7 +15,6 @@ import TransportLayer from './features/transport/TransportLayer.jsx'
 import TransportSidebar from './features/transport/TransportSidebar.jsx'
 import OverpassLayer from './features/overpass/OverpassLayer.jsx'
 import WebcamLayer from './features/webcams/WebcamLayer.jsx'
-import InfoFeedbackButton from './components/InfoFeedbackButton.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
 
 const MIN_ZOOM_FETCH = 9
@@ -306,8 +305,6 @@ export default function App() {
         activeTypes={activeTypes}
         onToggleType={toggleType}
       />
-
-      <InfoFeedbackButton hasSelected={Boolean(selected)} />
 
       {/* Statut discret */}
       <div className="pointer-events-none absolute bottom-6 left-1/2 z-[1000] -translate-x-1/2">
