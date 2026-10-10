@@ -19,8 +19,18 @@ export default defineConfig(({ mode }) => {
           server.middlewares.use('/api/places-photos', async (req, res) => {
             const parsedUrl = new URL(req.url, 'http://localhost')
             const query = Object.fromEntries(parsedUrl.searchParams)
-            const fakeReq = { query }
+            const fakeReq = {
+              method: req.method,
+              headers: req.headers,
+              query,
+              url: req.url,
+            }
             const fakeRes = {
+              statusCode: 200,
+              setHeader(k, v) {
+                res.setHeader(k, v)
+                return this
+              },
               status(code) {
                 res.statusCode = code
                 return this
@@ -28,6 +38,17 @@ export default defineConfig(({ mode }) => {
               json(data) {
                 res.setHeader('Content-Type', 'application/json')
                 res.end(JSON.stringify(data))
+              },
+              send(data) {
+                if (typeof data === 'object' && !Buffer.isBuffer(data)) {
+                  res.setHeader('Content-Type', 'application/json')
+                  res.end(JSON.stringify(data))
+                } else {
+                  res.end(data)
+                }
+              },
+              end(data) {
+                res.end(data)
               },
             }
             try {
@@ -57,6 +78,7 @@ export default defineConfig(({ mode }) => {
             }
             const fakeReq = {
               method: req.method,
+              headers: req.headers,
               query,
               body: parsedBody || query.data || query.ql,
             }
@@ -64,6 +86,7 @@ export default defineConfig(({ mode }) => {
               statusCode: 200,
               setHeader(k, v) {
                 res.setHeader(k, v)
+                return this
               },
               status(code) {
                 res.statusCode = code
@@ -72,6 +95,12 @@ export default defineConfig(({ mode }) => {
               json(data) {
                 res.setHeader('Content-Type', 'application/json')
                 res.end(JSON.stringify(data))
+              },
+              send(data) {
+                res.end(data)
+              },
+              end(data) {
+                res.end(data)
               },
             }
             try {

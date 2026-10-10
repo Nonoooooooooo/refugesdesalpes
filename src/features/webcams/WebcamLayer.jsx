@@ -54,17 +54,17 @@ export default function WebcamLayer({ active: propActive }) {
     const active = isLayerActive()
     const envKey = import.meta.env.VITE_WINDY_API_KEY
 
-    // Sécurité anti-crash : bloque si la variable est explicitement déclarée vide ou 'ta_cle_api_ici'
-    if (envKey === 'ta_cle_api_ici' || envKey === '') {
+    // Sécurité : bloque si la variable est indéfinie ou égale à un placeholder
+    const isPlaceholder = !envKey || envKey === 'ta_cle_api_ici' || envKey === 'votre_cle_windy_ici' || envKey.trim() === ''
+    if (isPlaceholder) {
       console.warn(
-        'Clé API Windy Webcams (VITE_WINDY_API_KEY) indéfinie, vide ou égale à la valeur par défaut. Veuillez configurer votre clé dans le fichier .env.',
+        'Clé API Windy Webcams (VITE_WINDY_API_KEY) non configurée dans .env. Veuillez configurer votre clé dans le fichier .env.',
       )
       setWebcams([])
       return
     }
 
-    // Clé issue de l'environnement ou clé fournie par l'utilisateur
-    const apiKey = envKey || '7TIkAKeVqJgF7IqKJTASuerVdq31Gs3x'
+    const apiKey = envKey.trim()
     const isKeyValid = Boolean(apiKey && typeof apiKey === 'string' && apiKey.trim() !== '')
     const zoom = map.getZoom()
 

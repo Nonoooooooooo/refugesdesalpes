@@ -285,14 +285,32 @@ export default function Terrain3DModal({ point, onClose }) {
       try {
         const el = document.createElement('div')
         el.className = 'group relative flex flex-col items-center cursor-pointer pointer-events-auto'
-        el.innerHTML = `
-          <div style="background: ${color}" class="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold text-white shadow-2xl border-2 border-white/90 backdrop-blur-md">
-            <span>${point.nom || 'Point'}</span>
-            ${point.alt ? `<span class="opacity-90 font-normal">(${point.alt}m)</span>` : ''}
-          </div>
-          <div style="background: ${color}" class="h-2.5 w-2.5 rotate-45 transform -mt-1.5 shadow-md border-r-2 border-b-2 border-white/80"></div>
-          <div style="background: ${color}" class="h-2 w-2 rounded-full mt-0.5 opacity-80 ring-2 ring-white"></div>
-        `
+        const badge = document.createElement('div')
+        badge.style.background = color
+        badge.className = 'flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold text-white shadow-2xl border-2 border-white/90 backdrop-blur-md'
+
+        const nameSpan = document.createElement('span')
+        nameSpan.textContent = point.nom || 'Point'
+        badge.appendChild(nameSpan)
+
+        if (point.alt) {
+          const altSpan = document.createElement('span')
+          altSpan.className = 'opacity-90 font-normal'
+          altSpan.textContent = ` (${point.alt}m)`
+          badge.appendChild(altSpan)
+        }
+
+        const arrow = document.createElement('div')
+        arrow.style.background = color
+        arrow.className = 'h-2.5 w-2.5 rotate-45 transform -mt-1.5 shadow-md border-r-2 border-b-2 border-white/80'
+
+        const dot = document.createElement('div')
+        dot.style.background = color
+        dot.className = 'h-2 w-2 rounded-full mt-0.5 opacity-80 ring-2 ring-white'
+
+        el.appendChild(badge)
+        el.appendChild(arrow)
+        el.appendChild(dot)
 
         const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
           .setLngLat([point.lng, point.lat])
