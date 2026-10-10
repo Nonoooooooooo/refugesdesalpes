@@ -1,17 +1,121 @@
 <!doctype html>
-<html lang="fr">
+<html lang="fr" dir="ltr">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- ─── TITRE & DESCRIPTION PRINCIPAUX (SEO) ─── -->
+    <title>Refuges des Alpes · Carte Interactive, Transports &amp; Sentiers</title>
+    <meta
+      name="description"
+      content="Explorez la carte interactive des refuges et cabanes de montagne dans les Alpes : accès en transports (trains, cars, navettes), sentiers de randonnée, webcams en direct et bulletins avalanche BERA Météo-France."
+    />
+    <meta
+      name="keywords"
+      content="refuges alpes, carte refuges alpes, cabanes de montagne, randonnee alpes, refuges sans voiture, transports alpins, trains alpes, navettes estivales montagne, bulletin avalanche bera, meteo france bera, sentiers waymarked trails, carte relief alpes, vanoise, ecrins, mont-blanc, belledonne, queyras"
+    />
+    <meta name="author" content="Refuges des Alpes" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <link rel="canonical" href="https://refugesdesalpes.vercel.app/" />
+
+    <!-- ─── BALISES GÉOGRAPHIQUES (SEO LOCAL ALPIN) ─── -->
+    <meta name="geo.region" content="FR" />
+    <meta name="geo.placename" content="Alpes Françaises" />
+    <meta name="geo.position" content="45.9237;6.8694" />
+    <meta name="ICBM" content="45.9237, 6.8694" />
+
+    <!-- ─── OPEN GRAPH (PARTAGE FACEBOOK, WHATSAPP, LINKEDIN, DISCORD) ─── -->
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:site_name" content="Refuges des Alpes" />
+    <meta property="og:title" content="Refuges des Alpes · Carte Interactive, Transports &amp; Sentiers" />
+    <meta
+      property="og:description"
+      content="Carte interactive complète des refuges, cabanes, sentiers, webcams et transports en montagne dans les Alpes françaises."
+    />
+    <meta property="og:url" content="https://refugesdesalpes.vercel.app/" />
+    <meta property="og:image" content="https://refugesdesalpes.vercel.app/og-image.jpg" />
+    <meta property="og:image:secure_url" content="https://refugesdesalpes.vercel.app/og-image.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1792" />
+    <meta property="og:image:height" content="1024" />
+    <meta property="og:image:alt" content="Refuge de montagne face aux sommets enneigés des Alpes" />
+
+    <!-- ─── TWITTER CARD (X) ─── -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Refuges des Alpes · Carte Interactive, Transports &amp; Sentiers" />
+    <meta
+      name="twitter:description"
+      content="Carte interactive complète des refuges, cabanes, sentiers, webcams et transports en montagne dans les Alpes françaises."
+    />
+    <meta name="twitter:image" content="https://refugesdesalpes.vercel.app/og-image.jpg" />
+
+    <!-- ─── FAVICONS & APPLICATION MOBILE PWA ─── -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Carte interactive des refuges et cabanes de montagne (données Refuges.info)." />
-    <title>Refuges – Carte satellite</title>
+    <meta name="theme-color" content="#0f172a" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Refuges des Alpes" />
+
+    <!-- ─── POLICES TYPOGRAPHIQUES OPTIMISÉES ─── -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+    <!-- ─── DONNÉES STRUCTURÉES GOOGLE (SCHEMA.ORG JSON-LD) ─── -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebApplication",
+            "@id": "https://refugesdesalpes.vercel.app/#webapp",
+            "name": "Refuges des Alpes",
+            "url": "https://refugesdesalpes.vercel.app/",
+            "applicationCategory": "TravelApplication",
+            "operatingSystem": "All",
+            "description": "Carte interactive des refuges gardés, cabanes non gardées, sentiers de randonnée, réseau de transports en commun alpins et bulletins d'estimation du risque d'avalanche (BERA).",
+            "inLanguage": "fr-FR",
+            "featureList": [
+              "Fiches détaillées et géolocalisation des refuges et cabanes alpines",
+              "Réseau de transports en commun alpins (TGV, TER, cars régionaux, navettes de montagne)",
+              "Sentiers de randonnée officiels Waymarked Trails",
+              "Webcams panoramiques en direct des massifs et stations",
+              "Bulletins d'estimation du risque d'avalanche (BERA Météo-France)",
+              "Visualisation du relief 3D et dénivelé"
+            ]
+          },
+          {
+            "@type": "Place",
+            "@id": "https://refugesdesalpes.vercel.app/#place",
+            "name": "Alpes françaises",
+            "geo": {
+              "@type": "GeoCoordinates",
+              "latitude": 45.9237,
+              "longitude": 6.8694
+            }
+          }
+        ]
+      }
+    </script>
   </head>
-  <body>
-    <div id="root"></div>
+  <body class="bg-slate-950 text-white antialiased selection:bg-emerald-500 selection:text-white">
+    <div id="root">
+      <noscript>
+        <div style="padding: 2.5rem; max-width: 800px; margin: 0 auto; font-family: system-ui, sans-serif; line-height: 1.6;">
+          <h1 style="font-size: 1.8rem; font-weight: bold; color: #34d399;">
+            Refuges des Alpes – Carte interactive des refuges, cabanes et transports en montagne
+          </h1>
+          <p style="margin-top: 1rem; color: #cbd5e1;">
+            Explorez les refuges gardés, cabanes non gardées, sentiers de grande randonnée (GR), lignes de bus et navettes d'accès dans tous les massifs des Alpes françaises : Mont-Blanc, Vanoise, Écrins, Belledonne, Queyras, Mercantour, Chartreuse, Vercors, Chablais...
+          </p>
+          <p style="margin-top: 1rem; color: #94a3b8;">
+            Veuillez activer JavaScript dans votre navigateur pour profiter de la carte interactive haute performance.
+          </p>
+        </div>
+      </noscript>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

@@ -1,0 +1,9 @@
+# robots.txt pour Refuges des Alpes (https://refugesdesalpes.vercel.app)
+User-agent: *
+Allow: /
+
+# Ne pas indexer les routes d'API internes et de proxys
+Disallow: /api/
+
+# Déclaration officielle du sitemap XML pour les moteurs de recherche
+Sitemap: https://refugesdesalpes.vercel.app/sitemap.xml
