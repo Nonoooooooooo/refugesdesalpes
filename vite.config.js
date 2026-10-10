@@ -3,11 +3,13 @@ import tailwindcss from '@tailwindcss/vite'
 import { defineConfig, loadEnv } from 'vite'
 import placesHandler from './api/places-photos.js'
 import overpassHandler from './api/overpass.js'
+import feedbackHandler from './api/feedback.js'
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   process.env.GOOGLE_PLACES_API_KEY = env.GOOGLE_PLACES_API_KEY || process.env.GOOGLE_PLACES_API_KEY
+  process.env.DISCORD_WEBHOOK_URL = env.DISCORD_WEBHOOK_URL || process.env.DISCORD_WEBHOOK_URL
 
   return {
     plugins: [
@@ -105,6 +107,58 @@ export default defineConfig(({ mode }) => {
             }
             try {
               await overpassHandler(fakeReq, fakeRes)
+            } catch (err) {
+              res.statusCode = 500
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({ error: err.message }))
+            }
+          })
+
+          server.middlewares.use('/api/feedback', async (req, res) => {
+            const parsedUrl = new URL(req.url, 'http://localhost')
+            let rawBody = ''
+            if (req.method === 'POST') {
+              for await (const chunk of req) {
+                rawBody += chunk
+              }
+            }
+            let parsedBody = null
+            if (rawBody) {
+              try {
+                parsedBody = JSON.parse(rawBody)
+              } catch {
+                parsedBody = rawBody
+              }
+            }
+            const fakeReq = {
+              method: req.method,
+              headers: req.headers,
+              query: Object.fromEntries(parsedUrl.searchParams),
+              body: parsedBody,
+            }
+            const fakeRes = {
+              statusCode: 200,
+              setHeader(k, v) {
+                res.setHeader(k, v)
+                return this
+              },
+              status(code) {
+                res.statusCode = code
+                return this
+              },
+              json(data) {
+                res.setHeader('Content-Type', 'application/json')
+                res.end(JSON.stringify(data))
+              },
+              send(data) {
+                res.end(data)
+              },
+              end(data) {
+                res.end(data)
+              },
+            }
+            try {
+              await feedbackHandler(fakeReq, fakeRes)
             } catch (err) {
               res.statusCode = 500
               res.setHeader('Content-Type', 'application/json')
