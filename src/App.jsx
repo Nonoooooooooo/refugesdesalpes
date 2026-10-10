@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { MapContainer, TileLayer, Marker, Tooltip, Pane, LayersControl, useMap, useMapEvents } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Tooltip, Pane, useMap, useMapEvents } from 'react-leaflet'
 import MarkerClusterGroup from 'react-leaflet-cluster'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
@@ -243,11 +243,7 @@ export default function App() {
           selectedTransport={selected?.isTransport ? selected : null}
         />
         <OverpassLayer showParkings={showParkings} />
-        <LayersControl position="topright">
-          <LayersControl.Overlay name="Webcams" checked={showWebcams}>
-            <WebcamLayer active={showWebcams} />
-          </LayersControl.Overlay>
-        </LayersControl>
+        <WebcamLayer active={showWebcams} />
         <BboxLoader onData={handleData} onStatus={setStatus} reloadKey={reloadKey} />
         <FlyToSelected target={flyTarget} />
         <MapControls />
