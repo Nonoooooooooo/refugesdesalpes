@@ -14,7 +14,6 @@ import {
   RotateCcw,
 } from 'lucide-react'
 import { FILTERABLE } from '../lib/types.jsx'
-import InfoFeedbackButton from './InfoFeedbackButton.jsx'
 
 /**
  * Barre de contrôle unifiée :
@@ -158,11 +157,6 @@ export default function MapControlBar({
           </span>
           {showFilters ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
         </button>
-
-        <div className="mx-0.5 h-4 sm:h-5 w-px bg-white/15" />
-
-        {/* Bouton rond 'i' Information & Chatbox Discord */}
-        <InfoFeedbackButton placement="top-bar" />
       </div>
 
       {/* ─── LIGNE 2 : Bulle ajustée des filtres d'hébergements & Parkings ─── */}
