@@ -85,8 +85,8 @@ export default function InfoFeedbackButton({ hasSelected }) {
   // Envoi simple du message vers l'équipe
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!message.trim() || message.trim().length < 3) {
-      setErrorMessage('Veuillez renseigner un message d’au moins 3 caractères.')
+    if (!message.trim() || message.trim().length < 2) {
+      setErrorMessage('Veuillez renseigner un message (au moins 2 caractères).')
       return
     }
 
@@ -104,7 +104,7 @@ export default function InfoFeedbackButton({ hasSelected }) {
         }),
       })
 
-      const data = await res.json()
+      const data = await res.json().catch(() => ({}))
 
       if (!res.ok) {
         throw new Error(data.error || 'Erreur lors de l’envoi.')
@@ -345,7 +345,10 @@ export default function InfoFeedbackButton({ hasSelected }) {
                         rows={4}
                         required
                         value={message}
-                        onChange={(e) => setMessage(e.target.value)}
+                        onChange={(e) => {
+                          setMessage(e.target.value)
+                          if (errorMessage) setErrorMessage('')
+                        }}
                         placeholder="Décrivez une donnée erronée, une suggestion, ou laissez simplement un mot à l'équipe..."
                         className="w-full rounded-2xl border border-white/15 bg-black/40 px-3.5 py-2.5 text-sm text-white placeholder-white/40 focus:border-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-400 transition-all resize-none"
                       />
@@ -381,8 +384,8 @@ export default function InfoFeedbackButton({ hasSelected }) {
                     {/* Bouton d'envoi clair et direct */}
                     <button
                       type="submit"
-                      disabled={isSubmitting || message.trim().length < 3}
-                      className="w-full flex items-center justify-center gap-2 rounded-2xl border border-emerald-400/60 bg-emerald-500/40 px-4 py-3 text-xs sm:text-sm font-semibold text-emerald-100 hover:bg-emerald-500/50 hover:border-emerald-400/90 shadow-lg transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none"
+                      disabled={isSubmitting}
+                      className="w-full flex items-center justify-center gap-2 rounded-2xl border border-emerald-400/60 bg-emerald-500/40 px-4 py-3 text-xs sm:text-sm font-semibold text-emerald-100 hover:bg-emerald-500/50 hover:border-emerald-400/90 shadow-lg transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isSubmitting ? (
                         <>

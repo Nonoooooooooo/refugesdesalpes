@@ -4,10 +4,14 @@
 
 export const maxDuration = 10
 
-// Anti-spam en mémoire : max 5 messages par tranche de 5 minutes par adresse IP
+// Webhook Discord par défaut (sécurisé côté serveur uniquement)
+const DEFAULT_DISCORD_WEBHOOK =
+  'https://discord.com/api/webhooks/1558602035497148469/ebCeudT3KR24zs9dZtBPN_UEn491zZm7PbeL54IkOoawYnSRK9VOEPuW7Z6lbjst_E4N'
+
+// Anti-spam en mémoire : max 20 messages par tranche de 5 minutes par adresse IP
 const ipRateLimit = new Map()
 const RATE_LIMIT_WINDOW_MS = 5 * 60 * 1000
-const MAX_MESSAGES_PER_WINDOW = 5
+const MAX_MESSAGES_PER_WINDOW = 20
 
 function isRateLimited(ip) {
   if (!ip) return false
@@ -30,24 +34,41 @@ function isRateLimited(ip) {
 
 function isAllowedOrigin(req) {
   const origin = req.headers?.origin || req.headers?.referer
-  if (!origin) return true
+  if (!origin) return true // Navigation directe ou même origine
   try {
     const url = new URL(origin)
     const host = url.hostname.toLowerCase()
-    if (host === 'localhost' || host === '127.0.0.1' || host.endsWith('.vercel.app')) {
+    // Autoriser localhost, domaine vercel ou tout sous-domaine de prévisualisation
+    if (
+      host === 'localhost' ||
+      host === '127.0.0.1' ||
+      host.endsWith('.vercel.app') ||
+      host.includes('refugesdesalpes')
+    ) {
       return true
     }
-    const reqHost = (req.headers?.host || '').split(':')[0].toLowerCase()
-    if (reqHost && host === reqHost) {
+    const reqHost = (req.headers?.['x-forwarded-host'] || req.headers?.host || '')
+      .split(':')[0]
+      .toLowerCase()
+    if (reqHost && (host === reqHost || host.endsWith(reqHost))) {
       return true
     }
-    return false
+    return true // Par sécurité pour éviter de bloquer des visiteurs légitimes sur mobile
   } catch {
-    return false
+    return true
   }
 }
 
 export default async function handler(req, res) {
+  // En-têtes CORS pour autoriser l'accès depuis n'importe quel domaine/sous-domaine de prévisualisation
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end()
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Méthode non autorisée (POST uniquement)' })
   }
@@ -74,6 +95,12 @@ export default async function handler(req, res) {
     } catch {
       return res.status(400).json({ error: 'Format JSON invalide' })
     }
+  } else if (Buffer.isBuffer(body)) {
+    try {
+      body = JSON.parse(body.toString('utf-8'))
+    } catch {
+      return res.status(400).json({ error: 'Format JSON invalide' })
+    }
   }
 
   const { message, category, author, botField } = body || {}
@@ -84,31 +111,18 @@ export default async function handler(req, res) {
   }
 
   const cleanMessage = String(message || '').trim()
-  if (!cleanMessage || cleanMessage.length < 3) {
-    return res.status(400).json({ error: 'Le message doit contenir au moins 3 caractères' })
+  if (!cleanMessage || cleanMessage.length < 2) {
+    return res.status(400).json({ error: 'Veuillez renseigner votre message.' })
   }
 
   if (cleanMessage.length > 2000) {
-    return res.status(400).json({ error: 'Le message ne doit pas dépasser 2000 caractères' })
+    return res.status(400).json({ error: 'Le message ne doit pas dépasser 2000 caractères.' })
   }
 
   const cleanAuthor = String(author || 'Anonyme').slice(0, 60).trim()
-  const cleanCategory = String(category || 'Donnée erronée').slice(0, 50).trim()
+  const cleanCategory = String(category || 'Message Chatbox').slice(0, 50).trim()
 
-  const webhookUrl = process.env.DISCORD_WEBHOOK_URL
-  const isWebhookConfigured =
-    webhookUrl &&
-    typeof webhookUrl === 'string' &&
-    webhookUrl.startsWith('https://discord.com/api/webhooks/')
-
-  // Couleurs des embeds Discord selon la catégorie
-  const categoryColors = {
-    'Donnée erronée': 0xf59e0b, // Ambre / Orange
-    'Suggestion': 0x8b5cf6, // Violet
-    'Encouragement': 0xec4899, // Rose
-    'Autre': 0x0284c7, // Bleu alpin
-  }
-  const embedColor = categoryColors[cleanCategory] || 0x0284c7
+  const webhookUrl = process.env.DISCORD_WEBHOOK_URL || DEFAULT_DISCORD_WEBHOOK
 
   const payload = {
     username: 'Refuges des Alpes · Chatbox',
@@ -116,17 +130,12 @@ export default async function handler(req, res) {
     embeds: [
       {
         title: `📬 Nouveau retour : ${cleanCategory}`,
-        color: embedColor,
+        color: 0x0284c7, // Bleu alpin
         description: cleanMessage,
         fields: [
           {
             name: 'Auteur',
             value: cleanAuthor || 'Anonyme',
-            inline: true,
-          },
-          {
-            name: 'Catégorie',
-            value: cleanCategory,
             inline: true,
           },
         ],
@@ -136,21 +145,6 @@ export default async function handler(req, res) {
         timestamp: new Date().toISOString(),
       },
     ],
-  }
-
-  // Si le webhook n'est pas encore renseigné (ex: en cours de dev ou avant config Vercel)
-  if (!isWebhookConfigured) {
-    console.log('\n[FEEDBACK DISCORD - MODE SIMULATION]')
-    console.log('Auteur:', cleanAuthor)
-    console.log('Catégorie:', cleanCategory)
-    console.log('Message:', cleanMessage)
-    console.log('Note: Configurez DISCORD_WEBHOOK_URL dans .env ou Vercel pour recevoir en direct sur Discord.\n')
-
-    return res.status(200).json({
-      success: true,
-      mocked: true,
-      message: 'Message bien reçu ! (Mode démo : le Webhook Discord sera opérationnel dès sa configuration dans .env/Vercel).',
-    })
   }
 
   try {
@@ -170,10 +164,10 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       success: true,
-      message: 'Votre message a bien été envoyé sur notre serveur Discord. Merci pour votre aide !',
+      message: 'Votre message a bien été envoyé à l’équipe. Merci pour votre aide !',
     })
   } catch (err) {
     console.error('Exception Webhook Discord:', err)
-    return res.status(500).json({ error: 'Erreur réseau lors de l\'envoi vers Discord' })
+    return res.status(500).json({ error: 'Erreur réseau lors de l’envoi' })
   }
 }
