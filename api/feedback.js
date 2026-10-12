@@ -118,7 +118,11 @@ export default async function handler(req, res) {
 
   const cleanAuthor = String(author || 'Anonyme').slice(0, 60).trim()
   const cleanCategory = String(category || 'Message Chatbox').slice(0, 50).trim()
-  const webhookUrl = process.env.DISCORD_WEBHOOK_URL || DEFAULT_DISCORD_WEBHOOK
+  const envUrl = process.env.DISCORD_WEBHOOK_URL
+  const webhookUrl =
+    envUrl && !envUrl.includes('1558602035497148469')
+      ? envUrl
+      : DEFAULT_DISCORD_WEBHOOK
   if (!webhookUrl) {
     console.error('Configuration manquante : DISCORD_WEBHOOK_URL non définie')
     return res.status(503).json({ error: 'Service de messagerie temporairement indisponible' })
