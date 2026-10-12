@@ -17,6 +17,7 @@ import OverpassLayer from './features/overpass/OverpassLayer.jsx'
 import WebcamLayer from './features/webcams/WebcamLayer.jsx'
 import InfoFeedbackButton from './components/InfoFeedbackButton.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
+import { trackEvent } from './lib/analytics'
 
 const MIN_ZOOM_FETCH = 9
 const IMAGERY_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
@@ -151,11 +152,13 @@ export default function App() {
   const selectPoint = (p) => {
     setSelected(p)
     setFlyTarget({ lat: p.lat, lng: p.lng, zoom: 13, t: Date.now() })
+    trackEvent('select_content', { content_type: 'refuge', item_id: p.id, item_name: p.nom })
   }
 
   const handleSelectRefuge = useCallback((refuge) => {
     setSelected(refuge)
     setFlyTarget({ lat: refuge.lat, lng: refuge.lng, zoom: 13, t: Date.now() })
+    trackEvent('select_content', { content_type: 'refuge', item_id: refuge.id, item_name: refuge.nom })
     setPoints((prev) => {
       if (prev.some((p) => p.id === refuge.id)) return prev
       return [refuge, ...prev]
@@ -165,6 +168,7 @@ export default function App() {
   const handleSelectTransport = useCallback((t) => {
     setShowTransports(true)
     setSelected(t)
+    trackEvent('select_content', { content_type: 'transport', item_name: t?.name || t?.nom || t?.mode || 'transport' })
     if (t?.skipFlyTo) return
     const lat = t?.centerLat || t?.lat
     const lng = t?.centerLng || t?.lng

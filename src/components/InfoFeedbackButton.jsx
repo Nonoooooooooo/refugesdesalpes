@@ -13,6 +13,7 @@ import {
   ChevronRight,
   ArrowLeft,
 } from 'lucide-react'
+import { trackEvent } from '../lib/analytics'
 
 export default function InfoFeedbackButton({ hasSelected }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -111,6 +112,7 @@ export default function InfoFeedbackButton({ hasSelected }) {
       }
 
       setSubmitStatus('success')
+      trackEvent('feedback_submitted', { category: 'Message Chatbox' })
       setMessage('')
       setAuthor('')
     } catch (err) {

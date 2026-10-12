@@ -15,6 +15,7 @@ import {
   Compass
 } from 'lucide-react'
 import { typeInfo } from '../lib/types.jsx'
+import { trackEvent } from '../lib/analytics'
 
 const norm = (str = '') =>
   str
@@ -212,18 +213,27 @@ export default function SearchBar({
   const hasQuery = query.trim().length >= 2
 
   const handleSelectRefuge = (r) => {
+    if (query.trim()) {
+      trackEvent('search', { search_term: query.trim(), result_type: 'refuge', result_name: r.nom })
+    }
     onSelectRefuge(r)
     setIsOpen(false)
     setIsMobileOpen(false)
   }
 
   const handleSelectTransport = (t) => {
+    if (query.trim()) {
+      trackEvent('search', { search_term: query.trim(), result_type: 'transport', result_name: t.name || t.nom || t.id })
+    }
     onSelectTransport(t)
     setIsOpen(false)
     setIsMobileOpen(false)
   }
 
   const handleSelectCity = (c) => {
+    if (query.trim()) {
+      trackEvent('search', { search_term: query.trim(), result_type: 'city', result_name: c.name })
+    }
     onSelectCity(c)
     setIsOpen(false)
     setIsMobileOpen(false)
