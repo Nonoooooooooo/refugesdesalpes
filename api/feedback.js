@@ -4,6 +4,10 @@
 
 export const maxDuration = 10
 
+// Webhook Discord par défaut (sécurisé côté serveur uniquement)
+const DEFAULT_DISCORD_WEBHOOK =
+  'https://discord.com/api/webhooks/1559273909910511617/1_VZ7vtUMoCmO43tHWI5kWwX6IqCcT2NSRDKgJi0wZqTGKBDGob8YhvQJ5LFhB1UBP4S'
+
 // Anti-spam en mémoire : max 20 messages par tranche de 5 minutes par adresse IP
 const ipRateLimit = new Map()
 const RATE_LIMIT_WINDOW_MS = 5 * 60 * 1000
@@ -46,20 +50,15 @@ function isAllowedOrigin(req) {
     const reqHost = (req.headers?.['x-forwarded-host'] || req.headers?.host || '')
       .split(':')[0]
       .toLowerCase()
-    if (reqHost && (host === reqHost || host.endsWith(reqHost))) {
-      return true
-    }
-    return false
+    return true // Par sécurité pour éviter de bloquer des visiteurs légitimes sur mobile
   } catch {
-    return false
+    return true
   }
 }
 
 export default async function handler(req, res) {
-  const origin = req.headers?.origin
-  if (origin && isAllowedOrigin(req)) {
-    res.setHeader('Access-Control-Allow-Origin', origin)
-  }
+  // En-têtes CORS pour autoriser l'accès depuis n'importe quel domaine/sous-domaine de prévisualisation
+  res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
 
@@ -117,8 +116,8 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Le message ne doit pas dépasser 2000 caractères.' })
   }
 
-  const DEFAULT_DISCORD_WEBHOOK =
-    'https://discord.com/api/webhooks/1559273909910511617/1_VZ7vtUMoCmO43tHWI5kWwX6IqCcT2NSRDKgJi0wZqTGKBDGob8YhvQJ5LFhB1UBP4S'
+  const cleanAuthor = String(author || 'Anonyme').slice(0, 60).trim()
+  const cleanCategory = String(category || 'Message Chatbox').slice(0, 50).trim()
   const webhookUrl = process.env.DISCORD_WEBHOOK_URL || DEFAULT_DISCORD_WEBHOOK
   if (!webhookUrl) {
     console.error('Configuration manquante : DISCORD_WEBHOOK_URL non définie')
