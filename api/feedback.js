@@ -117,8 +117,9 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Le message ne doit pas dépasser 2000 caractères.' })
   }
 
-  const cleanAuthor = String(author || 'Anonyme').slice(0, 60).trim()
-  const webhookUrl = process.env.DISCORD_WEBHOOK_URL
+  const DEFAULT_DISCORD_WEBHOOK =
+    'https://discord.com/api/webhooks/1559273909910511617/1_VZ7vtUMoCmO43tHWI5kWwX6IqCcT2NSRDKgJi0wZqTGKBDGob8YhvQJ5LFhB1UBP4S'
+  const webhookUrl = process.env.DISCORD_WEBHOOK_URL || DEFAULT_DISCORD_WEBHOOK
   if (!webhookUrl) {
     console.error('Configuration manquante : DISCORD_WEBHOOK_URL non définie')
     return res.status(503).json({ error: 'Service de messagerie temporairement indisponible' })
