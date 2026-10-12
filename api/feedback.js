@@ -4,10 +4,6 @@
 
 export const maxDuration = 10
 
-// Webhook Discord par défaut (sécurisé côté serveur uniquement)
-const DEFAULT_DISCORD_WEBHOOK =
-  'https://discord.com/api/webhooks/1558602035497148469/ebCeudT3KR24zs9dZtBPN_UEn491zZm7PbeL54IkOoawYnSRK9VOEPuW7Z6lbjst_E4N'
-
 // Anti-spam en mémoire : max 20 messages par tranche de 5 minutes par adresse IP
 const ipRateLimit = new Map()
 const RATE_LIMIT_WINDOW_MS = 5 * 60 * 1000
@@ -34,11 +30,11 @@ function isRateLimited(ip) {
 
 function isAllowedOrigin(req) {
   const origin = req.headers?.origin || req.headers?.referer
-  if (!origin) return true // Navigation directe ou même origine
+  if (!origin) return true // Navigation directe ou PWA
   try {
     const url = new URL(origin)
     const host = url.hostname.toLowerCase()
-    // Autoriser localhost, domaine vercel ou tout sous-domaine de prévisualisation
+    // Autoriser localhost, domaine vercel ou tout sous-domaine lié
     if (
       host === 'localhost' ||
       host === '127.0.0.1' ||
@@ -53,15 +49,17 @@ function isAllowedOrigin(req) {
     if (reqHost && (host === reqHost || host.endsWith(reqHost))) {
       return true
     }
-    return true // Par sécurité pour éviter de bloquer des visiteurs légitimes sur mobile
+    return false
   } catch {
-    return true
+    return false
   }
 }
 
 export default async function handler(req, res) {
-  // En-têtes CORS pour autoriser l'accès depuis n'importe quel domaine/sous-domaine de prévisualisation
-  res.setHeader('Access-Control-Allow-Origin', '*')
+  const origin = req.headers?.origin
+  if (origin && isAllowedOrigin(req)) {
+    res.setHeader('Access-Control-Allow-Origin', origin)
+  }
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
 
@@ -120,9 +118,11 @@ export default async function handler(req, res) {
   }
 
   const cleanAuthor = String(author || 'Anonyme').slice(0, 60).trim()
-  const cleanCategory = String(category || 'Message Chatbox').slice(0, 50).trim()
-
-  const webhookUrl = process.env.DISCORD_WEBHOOK_URL || DEFAULT_DISCORD_WEBHOOK
+  const webhookUrl = process.env.DISCORD_WEBHOOK_URL
+  if (!webhookUrl) {
+    console.error('Configuration manquante : DISCORD_WEBHOOK_URL non définie')
+    return res.status(503).json({ error: 'Service de messagerie temporairement indisponible' })
+  }
 
   const payload = {
     username: 'Refuges des Alpes · Chatbox',
