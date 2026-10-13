@@ -83,31 +83,9 @@ export default function SearchBar({
     if (cachedTransports) {
       setTransportsData(cachedTransports)
     } else {
-      fetch('/transports_alpes.json', { cache: 'no-cache' })
-        .then((r) => (r.ok ? r.json() : { features: [] }))
-        .then((geojson) => {
-          const items = (geojson.features || []).map((f) => {
-            const props = f.properties || {}
-            let centerLat = props.lat
-            let centerLng = props.lng
-            if (!centerLat && f.geometry?.coordinates) {
-              const coords = f.geometry.coordinates
-              if (f.geometry.type === 'Point') {
-                centerLng = coords[0]
-                centerLat = coords[1]
-              } else if (f.geometry.type === 'LineString' && coords.length > 0) {
-                const mid = coords[Math.floor(coords.length / 2)]
-                centerLng = mid[0]
-                centerLat = mid[1]
-              }
-            }
-            return {
-              ...props,
-              centerLat,
-              centerLng,
-              isTransport: true,
-            }
-          })
+      fetch('/transports_search_index.json')
+        .then((r) => (r.ok ? r.json() : []))
+        .then((items) => {
           cachedTransports = items
           setTransportsData(items)
         })

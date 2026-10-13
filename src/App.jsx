@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { MapContainer, TileLayer, Marker, Tooltip, Pane, useMap, useMapEvents } from 'react-leaflet'
 import MarkerClusterGroup from 'react-leaflet-cluster'
 import L from 'leaflet'
@@ -61,6 +61,45 @@ function pinIcon(type, selected, etat) {
   }
   return iconCache.get(cacheKey)
 }
+
+/** Marqueur refuge haute performance mémoïsé (zéro re-render sur survol ou pan) */
+const RefugeMarker = memo(function RefugeMarker({ point, isSelected, onSelect }) {
+  const icon = useMemo(
+    () => pinIcon(point.type, isSelected, point.etat),
+    [point.type, isSelected, point.etat],
+  )
+  const closed = isPointClosed(point.etat)
+  const info = typeInfo(point.type)
+  const eventHandlers = useMemo(
+    () => ({
+      click: () => onSelect(point),
+    }),
+    [point, onSelect],
+  )
+
+  return (
+    <Marker position={[point.lat, point.lng]} icon={icon} eventHandlers={eventHandlers}>
+      <Tooltip direction="top" offset={[0, -14]} className="refuge-tooltip">
+        <div className="refuge-tooltip-name flex items-center gap-1.5">
+          <span>{point.nom}</span>
+          {closed && (
+            <span className="rounded bg-red-600/90 px-1 py-0.2 text-[9px] font-bold text-white uppercase tracking-wider shadow-sm">
+              {point.etat || 'Fermé'}
+            </span>
+          )}
+        </div>
+        <div className="refuge-tooltip-meta">
+          <span
+            style={{ background: closed ? '#ef4444' : info.color }}
+            className="refuge-tooltip-dot"
+          />
+          {point.alt != null ? `${point.alt} m` : 'Altitude inconnue'}
+          <span className="opacity-60"> · {info.label}</span>
+        </div>
+      </Tooltip>
+    </Marker>
+  )
+})
 
 function clusterIcon(cluster) {
   const n = cluster.getChildCount()
@@ -141,12 +180,20 @@ export default function App() {
   const [showParkings, setShowParkings] = useState(false)
   const [showWebcams, setShowWebcams] = useState(false)
 
-  // Cumule les points déjà vus pour éviter le scintillement, borne la taille.
+  // Cumule les points déjà vus avec détection de changement (évite tout re-render inutile si aucun nouveau point)
   const handleData = useCallback((incoming) => {
     setPoints((prev) => {
-      const map = new Map(prev.slice(-1500).map((p) => [p.id, p]))
-      incoming.forEach((p) => map.set(p.id, p))
-      return [...map.values()]
+      let hasNew = false
+      const map = new Map(prev.map((p) => [p.id, p]))
+      for (const p of incoming) {
+        if (!map.has(p.id)) {
+          hasNew = true
+          map.set(p.id, p)
+        }
+      }
+      if (!hasNew) return prev
+      const all = Array.from(map.values())
+      return all.length > 1500 ? all.slice(-1500) : all
     })
   }, [])
 
@@ -162,11 +209,11 @@ export default function App() {
       return next
     })
 
-  const selectPoint = (p) => {
+  const selectPoint = useCallback((p) => {
     setSelected(p)
     setFlyTarget({ lat: p.lat, lng: p.lng, zoom: 13, t: Date.now() })
     trackEvent('select_content', { content_type: 'refuge', item_id: p.id, item_name: p.nom })
-  }
+  }, [])
 
   const handleSelectRefuge = useCallback((refuge) => {
     setSelected(refuge)
@@ -194,17 +241,7 @@ export default function App() {
     setFlyTarget({ lat: city.lat, lng: city.lng, zoom: 12, t: Date.now() })
   }, [])
 
-  // Survol : on attend un court instant avant d'afficher l'info-bulle
-  const [hoveredId, setHoveredId] = useState(null)
-  const hoverTimer = useRef(null)
-  const onHoverStart = (id) => {
-    clearTimeout(hoverTimer.current)
-    hoverTimer.current = setTimeout(() => setHoveredId(id), 350)
-  }
-  const onHoverEnd = () => {
-    clearTimeout(hoverTimer.current)
-    setHoveredId(null)
-  }
+
 
   return (
     <div className="relative h-screen w-screen overflow-hidden">
@@ -223,8 +260,10 @@ export default function App() {
               attribution="Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics"
               url={IMAGERY_URL}
               maxZoom={18}
+              keepBuffer={3}
+              updateInterval={100}
             />
-            <TileLayer key="labels" pane="labels" url={LABELS_URL} maxZoom={18} opacity={0.9} />
+            <TileLayer key="labels" pane="labels" url={LABELS_URL} maxZoom={18} opacity={0.9} keepBuffer={3} />
           </>
         )}
         {(baseLayer === 'opentopo' || baseLayer === 'relief') && (
@@ -235,6 +274,8 @@ export default function App() {
             subdomains={['a', 'b', 'c']}
             maxNativeZoom={17}
             maxZoom={18}
+            keepBuffer={3}
+            updateInterval={100}
           />
         )}
         {(baseLayer === 'ign' || baseLayer === 'cyclosm') && (
@@ -243,6 +284,8 @@ export default function App() {
             attribution='&copy; <a href="https://geoservices.ign.fr/" target="_blank" rel="noreferrer">IGN - Géoplateforme</a>'
             url={IGN_URL}
             maxZoom={18}
+            keepBuffer={3}
+            updateInterval={100}
           />
         )}
         {showTrails && (
@@ -253,6 +296,7 @@ export default function App() {
             attribution="Sentiers &copy; <a href='https://hiking.waymarkedtrails.org' target='_blank' rel='noreferrer'>Waymarked Trails</a>"
             opacity={0.85}
             maxZoom={18}
+            keepBuffer={3}
           />
         )}
         <TransportLayer
@@ -267,44 +311,21 @@ export default function App() {
         <MapControls />
         <MarkerClusterGroup
           chunkedLoading
+          chunkInterval={40}
+          chunkDelay={15}
           showCoverageOnHover={false}
-          maxClusterRadius={25}
-          disableClusteringAtZoom={13}
+          maxClusterRadius={(zoom) => (zoom >= 13 ? 28 : zoom >= 11 ? 40 : 50)}
+          disableClusteringAtZoom={14}
           spiderfyOnMaxZoom
           iconCreateFunction={clusterIcon}
         >
           {visible.map((p) => (
-            <Marker
+            <RefugeMarker
               key={p.id}
-              position={[p.lat, p.lng]}
-              icon={pinIcon(p.type, selected?.id === p.id, p.etat)}
-              eventHandlers={{
-                click: () => selectPoint(p),
-                mouseover: () => onHoverStart(p.id),
-                mouseout: onHoverEnd,
-              }}
-            >
-              {hoveredId === p.id && (
-                <Tooltip permanent direction="top" offset={[0, -14]} className="refuge-tooltip">
-                  <div className="refuge-tooltip-name flex items-center gap-1.5">
-                    <span>{p.nom}</span>
-                    {isPointClosed(p.etat) && (
-                      <span className="rounded bg-red-600/90 px-1 py-0.2 text-[9px] font-bold text-white uppercase tracking-wider shadow-sm">
-                        {p.etat || 'Fermé'}
-                      </span>
-                    )}
-                  </div>
-                  <div className="refuge-tooltip-meta">
-                    <span
-                      style={{ background: isPointClosed(p.etat) ? '#ef4444' : typeInfo(p.type).color }}
-                      className="refuge-tooltip-dot"
-                    />
-                    {p.alt != null ? `${p.alt} m` : 'Altitude inconnue'}
-                    <span className="opacity-60"> · {typeInfo(p.type).label}</span>
-                  </div>
-                </Tooltip>
-              )}
-            </Marker>
+              point={p}
+              isSelected={selected?.id === p.id}
+              onSelect={selectPoint}
+            />
           ))}
         </MarkerClusterGroup>
       </MapContainer>
