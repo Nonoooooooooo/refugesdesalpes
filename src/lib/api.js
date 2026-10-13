@@ -26,16 +26,21 @@ async function getJson(url, signal) {
 export async function fetchBbox([left, bottom, right, top], signal) {
   const bbox = [left, bottom, right, top].map((n) => n.toFixed(5)).join(',')
   const data = await getJson(`${BASE}/api/bbox?bbox=${bbox}`, signal)
-  return (data.features ?? []).map((f) => ({
-    id: f.properties.id ?? f.id,
-    nom: f.properties.nom,
-    lng: f.geometry.coordinates[0],
-    lat: f.geometry.coordinates[1],
-    type: f.properties.type?.valeur ?? 'autre',
-    alt: f.properties.coord?.alt,
-    places: f.properties.places?.valeur,
-    etat: f.properties.etat?.valeur,
-  }))
+  return (data.features ?? [])
+    .filter((f) => {
+      const typeStr = (f.properties.type?.valeur || '').toLowerCase()
+      return !typeStr.includes('passage')
+    })
+    .map((f) => ({
+      id: f.properties.id ?? f.id,
+      nom: f.properties.nom,
+      lng: f.geometry.coordinates[0],
+      lat: f.geometry.coordinates[1],
+      type: f.properties.type?.valeur ?? 'autre',
+      alt: f.properties.coord?.alt,
+      places: f.properties.places?.valeur,
+      etat: f.properties.etat?.valeur,
+    }))
 }
 
 const fixPhoto = (path) =>
@@ -88,6 +93,7 @@ export async function fetchPoint(id, signal) {
     lat: p.coord?.lat,
     lng: p.coord?.long,
     etat: p.etat?.valeur,
+    remarque: p.remarque?.valeur,
     places: p.places?.valeur,
     lien: p.lien,
     acces: p.acces?.valeur,

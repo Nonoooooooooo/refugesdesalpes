@@ -6,7 +6,7 @@ import 'leaflet/dist/leaflet.css'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { Loader2, TriangleAlert, ZoomIn } from 'lucide-react'
 import { fetchBbox } from './lib/api'
-import { typeInfo, FILTERABLE } from './lib/types.jsx'
+import { typeInfo, isPointClosed, FILTERABLE } from './lib/types.jsx'
 import MapControls from './components/MapControls.jsx'
 import Sidebar from './components/Sidebar.jsx'
 import MapControlBar from './components/MapControlBar.jsx'
@@ -29,17 +29,29 @@ const LABELS_URL =
 const TRAILS_URL = 'https://tile.waymarkedtrails.org/hiking/{z}/{x}/{y}.png'
 const iconCache = new Map()
 
-function pinIcon(type, selected) {
+function pinIcon(type, selected, etat) {
   const { color, Icon, key } = typeInfo(type)
-  const cacheKey = `${key}-${selected}`
+  const closed = isPointClosed(etat)
+  const cacheKey = `${key}-${selected}-${closed ? 'closed' : 'open'}`
   if (!iconCache.has(cacheKey)) {
     iconCache.set(
       cacheKey,
       L.divIcon({
         className: 'refuge-marker',
         html: renderToStaticMarkup(
-          <div className={`refuge-pin${selected ? ' selected' : ''}`} style={{ background: color }}>
+          <div
+            className={`refuge-pin${selected ? ' selected' : ''}${closed ? ' closed' : ''}`}
+            style={{
+              background: closed ? '#64748b' : color,
+              position: 'relative',
+            }}
+          >
             <Icon size={13} strokeWidth={2.4} />
+            {closed && (
+              <span className="refuge-pin-closed-badge" title="Fermé / Détruit">
+                ✕
+              </span>
+            )}
           </div>,
         ),
         iconSize: [24, 24],
@@ -265,7 +277,7 @@ export default function App() {
             <Marker
               key={p.id}
               position={[p.lat, p.lng]}
-              icon={pinIcon(p.type, selected?.id === p.id)}
+              icon={pinIcon(p.type, selected?.id === p.id, p.etat)}
               eventHandlers={{
                 click: () => selectPoint(p),
                 mouseover: () => onHoverStart(p.id),
@@ -274,9 +286,19 @@ export default function App() {
             >
               {hoveredId === p.id && (
                 <Tooltip permanent direction="top" offset={[0, -14]} className="refuge-tooltip">
-                  <div className="refuge-tooltip-name">{p.nom}</div>
+                  <div className="refuge-tooltip-name flex items-center gap-1.5">
+                    <span>{p.nom}</span>
+                    {isPointClosed(p.etat) && (
+                      <span className="rounded bg-red-600/90 px-1 py-0.2 text-[9px] font-bold text-white uppercase tracking-wider shadow-sm">
+                        {p.etat || 'Fermé'}
+                      </span>
+                    )}
+                  </div>
                   <div className="refuge-tooltip-meta">
-                    <span style={{ background: typeInfo(p.type).color }} className="refuge-tooltip-dot" />
+                    <span
+                      style={{ background: isPointClosed(p.etat) ? '#ef4444' : typeInfo(p.type).color }}
+                      className="refuge-tooltip-dot"
+                    />
                     {p.alt != null ? `${p.alt} m` : 'Altitude inconnue'}
                     <span className="opacity-60"> · {typeInfo(p.type).label}</span>
                   </div>

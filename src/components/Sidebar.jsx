@@ -4,7 +4,7 @@ import { fetchPoint } from '../lib/api'
 import { fetchCommonsPhotos } from '../lib/wikimedia'
 import { fetchGooglePlacesPhotos } from '../lib/google-places'
 import { dedupePhotos } from '../lib/dedupe'
-import { typeInfo } from '../lib/types.jsx'
+import { typeInfo, isPointClosed } from '../lib/types.jsx'
 import { cleanText } from '../lib/text'
 import Gallery from './Gallery.jsx'
 import Terrain3DModal from '../features/terrain3d/Terrain3DModal.jsx'
@@ -79,18 +79,28 @@ export default function Sidebar({ point, onClose }) {
   const d = state.data
   const description = d && cleanText(d.description)
 
+  const etatValue = d?.etat ?? point.etat
+  const isClosed = isPointClosed(etatValue)
+
   return (
     <>
       <aside className="sidebar-enter glass glass-panel scroll-thin absolute bottom-0 left-0 top-0 z-[1100] flex w-full flex-col overflow-y-auto sm:bottom-4 sm:left-4 sm:top-4 sm:w-[420px] sm:rounded-3xl">
         <header className="sticky top-0 z-10 flex items-start gap-3 border-b border-white/10 bg-black/30 p-5 backdrop-blur-xl">
           <span
             className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
-            style={{ background: color }}
+            style={{ background: isClosed ? '#ef4444' : color }}
           >
             <Icon size={20} />
           </span>
           <div className="min-w-0 flex-1">
-            <h1 className="text-lg font-semibold leading-tight">{d?.nom ?? point.nom}</h1>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-lg font-semibold leading-tight">{d?.nom ?? point.nom}</h1>
+              {isClosed && (
+                <span className="rounded-md bg-red-600/90 px-1.5 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider shadow-sm">
+                  {etatValue}
+                </span>
+              )}
+            </div>
             <p className="text-sm text-white/70">{d?.type ?? point.type ?? label}</p>
           </div>
           <button aria-label="Fermer" onClick={onClose} className="glass-btn rounded-full p-2">
@@ -99,6 +109,21 @@ export default function Sidebar({ point, onClose }) {
         </header>
 
         <div className="flex flex-col gap-5 p-5">
+          {/* Alerte fermeture ou destruction */}
+          {isClosed && (
+            <div className="rounded-2xl border border-red-500/45 bg-red-950/45 p-4 text-sm text-red-100 shadow-xl backdrop-blur-md flex items-start gap-3">
+              <span className="text-2xl shrink-0 leading-none">🚫</span>
+              <div className="min-w-0 flex-1">
+                <div className="font-bold text-red-200 uppercase tracking-wide text-xs">
+                  {etatValue === 'Détruite' ? 'Bâtiment détruit / Ruines' : 'Hébergement fermé / Non utilisable'}
+                </div>
+                <p className="mt-1 text-xs text-red-200/90 leading-relaxed">
+                  {d?.remarque ? cleanText(d.remarque) : d?.description ? cleanText(d.description).slice(0, 180) + '…' : 'Cet hébergement est indiqué comme fermé ou inutilisable pour dormir sur Refuges.info.'}
+                </p>
+              </div>
+            </div>
+          )}
+
           <div className="flex flex-wrap gap-2">
             {(d?.alt ?? point.alt) != null && (
               <Chip icon={<Mountain size={14} />}>{d?.alt ?? point.alt} m</Chip>
@@ -106,7 +131,11 @@ export default function Sidebar({ point, onClose }) {
             {(d?.places ?? point.places) > 0 && (
               <Chip icon={<BedDouble size={14} />}>{d?.places ?? point.places} places</Chip>
             )}
-            {(d?.etat ?? point.etat) && <Chip>{d?.etat ?? point.etat}</Chip>}
+            {etatValue && (
+              <Chip className={isClosed ? 'border border-red-500/50 bg-red-500/25 text-red-200 font-semibold' : ''}>
+                {etatValue}
+              </Chip>
+            )}
           </div>
 
           {/* Boutons d'actions rapides (Vue 3D et Bulletin Avalanche BERA) */}
@@ -242,9 +271,12 @@ export default function Sidebar({ point, onClose }) {
   )
 }
 
-function Chip({ icon, children }) {
+function Chip({ icon, children, className = '' }) {
   return (
-    <span className="flex items-center gap-1.5 rounded-full bg-white/12 px-3 py-1 text-xs font-medium" style={{ background: 'rgba(255,255,255,0.12)' }}>
+    <span
+      className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${className || 'bg-white/12'}`}
+      style={className ? undefined : { background: 'rgba(255,255,255,0.12)' }}
+    >
       {icon}
       {children}
     </span>
