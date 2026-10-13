@@ -256,8 +256,8 @@ export default function App() {
         <MarkerClusterGroup
           chunkedLoading
           showCoverageOnHover={false}
-          maxClusterRadius={48}
-          disableClusteringAtZoom={15}
+          maxClusterRadius={25}
+          disableClusteringAtZoom={13}
           spiderfyOnMaxZoom
           iconCreateFunction={clusterIcon}
         >
