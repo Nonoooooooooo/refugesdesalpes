@@ -5,7 +5,7 @@ import {
   Footprints,
   TrainFront,
   SquareParking,
-  MountainSnow,
+  Compass,
   Camera,
   Filter,
   ChevronDown,
@@ -17,7 +17,7 @@ import { FILTERABLE } from '../lib/types.jsx'
 
 /**
  * Barre de contrôle unifiée :
- * Ligne 1 : Fond de carte (Satellite/Relief/CyclOSM) | Sentiers | Transports | Webcams | Filtres
+ * Ligne 1 : Fond de carte (Satellite/OpenTopo/IGN France) | Sentiers | Transports | Webcams | Filtres
  * Ligne 2 : Bulle ajustée des filtres d'hébergements & parkings
  */
 export default function MapControlBar({
@@ -56,17 +56,25 @@ export default function MapControlBar({
 
   const baseLayers = [
     { key: 'satellite', label: 'Satellite', Icon: Satellite },
-    { key: 'relief', label: 'Relief', Icon: Mountain },
-    { key: 'cyclosm', label: 'Montagne', Icon: MountainSnow },
+    { key: 'opentopo', label: 'OpenTopo', Icon: Mountain },
+    { key: 'ign', label: 'IGN France', Icon: Compass },
   ]
 
-  const activeBaseIdx = baseLayers.findIndex((b) => b.key === baseLayer)
+  const activeBaseIdx = Math.max(
+    0,
+    baseLayers.findIndex(
+      (b) =>
+        b.key === baseLayer ||
+        (baseLayer === 'relief' && b.key === 'opentopo') ||
+        (baseLayer === 'cyclosm' && b.key === 'ign'),
+    ),
+  )
 
   return (
     <div className="pointer-events-none absolute right-2.5 top-2.5 sm:right-4 sm:top-4 z-[1000] flex flex-col items-end gap-1.5 sm:gap-2 max-w-[calc(100vw-3.75rem)] sm:max-w-none">
       {/* ─── LIGNE 1 : Fond de carte & Calques majeurs ─── */}
       <div className="pointer-events-auto glass flex flex-nowrap items-center gap-0.5 sm:gap-1 rounded-2xl p-1 sm:p-1.5 shadow-2xl backdrop-blur-xl border border-white/10">
-        {/* Sélecteur Satellite / Relief / CyclOSM */}
+        {/* Sélecteur Satellite / OpenTopo / IGN France */}
         <div className="relative flex rounded-xl bg-black/40 p-0.5">
           <span
             aria-hidden
@@ -77,7 +85,10 @@ export default function MapControlBar({
             }}
           />
           {baseLayers.map(({ key, label, Icon }) => {
-            const isActive = baseLayer === key
+            const isActive =
+              baseLayer === key ||
+              (baseLayer === 'relief' && key === 'opentopo') ||
+              (baseLayer === 'cyclosm' && key === 'ign')
             return (
               <button
                 key={key}

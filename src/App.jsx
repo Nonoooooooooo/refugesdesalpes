@@ -21,8 +21,9 @@ import { trackEvent } from './lib/analytics'
 
 const MIN_ZOOM_FETCH = 9
 const IMAGERY_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
-const TOPO_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}'
-const CYCLOSM_URL = 'https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png'
+const OPENTOPO_URL = 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png'
+const IGN_URL =
+  'https://data.geopf.fr/wmts?SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetTile&LAYER=GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2&STYLE=normal&FORMAT=image/png&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}'
 const LABELS_URL =
   'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}'
 const TRAILS_URL = 'https://tile.waymarkedtrails.org/hiking/{z}/{x}/{y}.png'
@@ -122,7 +123,7 @@ export default function App() {
   const [activeTypes, setActiveTypes] = useState(() => new Set(FILTERABLE.map((t) => t.key)))
   const [flyTarget, setFlyTarget] = useState(null)
   const [reloadKey, setReloadKey] = useState(0)
-  const [baseLayer, setBaseLayer] = useState('cyclosm')
+  const [baseLayer, setBaseLayer] = useState('ign')
   const [showTrails, setShowTrails] = useState(false)
   const [showTransports, setShowTransports] = useState(false)
   const [showParkings, setShowParkings] = useState(false)
@@ -214,20 +215,21 @@ export default function App() {
             <TileLayer key="labels" pane="labels" url={LABELS_URL} maxZoom={18} opacity={0.9} />
           </>
         )}
-        {baseLayer === 'relief' && (
+        {(baseLayer === 'opentopo' || baseLayer === 'relief') && (
           <TileLayer
-            key="topo"
-            attribution="Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, USGS, NPS"
-            url={TOPO_URL}
+            key="opentopo"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors, SRTM | Style: &copy; <a href="https://opentopomap.org" target="_blank" rel="noreferrer">OpenTopoMap</a>'
+            url={OPENTOPO_URL}
+            subdomains={['a', 'b', 'c']}
+            maxNativeZoom={17}
             maxZoom={18}
           />
         )}
-        {baseLayer === 'cyclosm' && (
+        {(baseLayer === 'ign' || baseLayer === 'cyclosm') && (
           <TileLayer
-            key="cyclosm"
-            attribution="&copy; <a href='https://www.cyclosm.org'>CyclOSM</a> &copy; OpenStreetMap"
-            url={CYCLOSM_URL}
-            subdomains={['a', 'b', 'c']}
+            key="ign"
+            attribution='&copy; <a href="https://geoservices.ign.fr/" target="_blank" rel="noreferrer">IGN - Géoplateforme</a>'
+            url={IGN_URL}
             maxZoom={18}
           />
         )}
