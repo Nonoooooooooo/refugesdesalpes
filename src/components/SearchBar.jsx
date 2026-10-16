@@ -235,7 +235,7 @@ export default function SearchBar({
   return (
     <div
       ref={containerRef}
-      className={`absolute top-2.5 sm:top-4 z-[1050] transition-all duration-300 ${
+      className={`absolute top-[calc(0.625rem+env(safe-area-inset-top,0px))] sm:top-4 z-[1050] transition-all duration-300 ${
         hasSelected ? 'left-2.5 sm:left-[448px]' : 'left-2.5 sm:left-4'
       } ${
         isMobileOpen

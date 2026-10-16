@@ -255,7 +255,7 @@ export default function TransportSidebar({ transport, onClose, onSelectTransport
   return (
     <aside className="sidebar-enter glass glass-panel scroll-thin absolute bottom-0 left-0 top-0 z-[1100] flex w-full flex-col overflow-y-auto sm:bottom-4 sm:left-4 sm:top-4 sm:w-[420px] sm:rounded-3xl">
       {/* Header */}
-      <header className="sticky top-0 z-10 flex items-start gap-3 border-b border-white/10 bg-black/40 p-5 backdrop-blur-xl">
+      <header className="sticky top-0 z-10 flex items-start gap-3 border-b border-white/10 bg-black/40 p-5 pt-[max(1.25rem,env(safe-area-inset-top,0px))] backdrop-blur-xl">
         <span
           className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl shadow-lg ring-1 ring-white/20 transition-colors"
           style={{ background: displayColor }}
@@ -285,7 +285,7 @@ export default function TransportSidebar({ transport, onClose, onSelectTransport
       </header>
 
       {/* Corps du panneau */}
-      <div className="flex flex-col gap-5 p-5">
+      <div className="flex flex-col gap-5 p-5 pb-[calc(2rem+env(safe-area-inset-bottom,0px))]">
         {/* En-tête exclusif Trenitalia Frecciarossa */}
         {isFreccia && (
           <div className="relative overflow-hidden rounded-2xl border border-emerald-500/40 bg-gradient-to-br from-[#022c22] via-[#064e3b] to-[#022c22] p-3.5 shadow-xl">

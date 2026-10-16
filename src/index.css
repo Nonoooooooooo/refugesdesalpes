@@ -422,3 +422,51 @@ html, body, #root {
   animation: pulse-radar 2.2s cubic-bezier(0.24, 0, 0.38, 1) infinite;
 }
 
+/* ─── OPTIMISATIONS MOBILES ET IPHONE (ERGONOMIE ET TACTILE) ─── */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button, a, input {
+  touch-action: manipulation;
+}
+
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+.scroll-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+}
+.scroll-thin::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+.scroll-thin::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 9999px;
+}
+.scroll-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Prise en charge fluide des encoches et zones sécurisées iOS / Android */
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.top-safe {
+  top: calc(0.625rem + env(safe-area-inset-top, 0px));
+}
+.bottom-safe {
+  bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+}
+
+

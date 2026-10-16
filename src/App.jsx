@@ -161,11 +161,13 @@ function BboxLoader({ onData, onStatus, reloadKey, onMapChange }) {
           onStatus({ loading: false, error: null, tooFar: false })
           return
         }
+        if (!navigator.onLine) {
+          onStatus({ loading: false, error: null, tooFar: false })
+          return
+        }
         onStatus({
           loading: false,
-          error: !navigator.onLine
-            ? 'Hors-ligne : cette zone n’a pas encore été téléchargée'
-            : e.message,
+          error: e.message,
           tooFar: false,
         })
       })
@@ -371,7 +373,7 @@ export default function App() {
           onMapChange={setMapState}
         />
         <FlyToSelected target={flyTarget} />
-        <MapControls />
+        <MapControls hasSelected={Boolean(selected)} />
         <MarkerClusterGroup
           chunkedLoading
           chunkInterval={40}
@@ -468,30 +470,24 @@ export default function App() {
       <InfoFeedbackButton hasSelected={Boolean(selected)} />
 
       {/* Statut discret */}
-      <div className="pointer-events-none absolute bottom-6 left-1/2 z-[1000] -translate-x-1/2">
-        {!isOnline && (
-          <div className="glass flex items-center gap-2 rounded-full border border-amber-400/40 bg-black/85 px-4 py-2 text-xs font-medium text-amber-200 shadow-xl backdrop-blur-xl">
-            <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
-            <span>Mode hors-ligne actif · Utilisation des données en mémoire</span>
-          </div>
-        )}
+      <div className="pointer-events-none absolute bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))] sm:bottom-6 left-1/2 z-[1000] -translate-x-1/2">
         {isOnline && filterOnlyFavorites && (
           <div className="glass flex items-center gap-2 rounded-full border border-amber-400/35 bg-black/80 px-4 py-2 text-xs font-medium text-amber-200 shadow-xl backdrop-blur-xl">
             <span className="text-amber-400 font-bold">★</span>
             <span>Mode favoris : {visible.length} refuge(s) affiché(s)</span>
           </div>
         )}
-        {!filterOnlyFavorites && status.loading && (
+        {isOnline && !filterOnlyFavorites && status.loading && (
           <div className="glass flex items-center gap-2 rounded-full px-4 py-2 text-sm">
             <Loader2 size={16} className="animate-spin" /> Chargement des refuges…
           </div>
         )}
-        {!filterOnlyFavorites && status.tooFar && !status.loading && (
+        {isOnline && !filterOnlyFavorites && status.tooFar && !status.loading && (
           <div className="glass flex items-center gap-2 rounded-full px-4 py-2 text-sm">
             <ZoomIn size={16} /> Zoomez pour afficher les refuges
           </div>
         )}
-        {status.error && !status.loading && (
+        {isOnline && status.error && !status.loading && (
           <div className="glass pointer-events-auto flex items-center gap-3 rounded-2xl border-red-400/50 px-4 py-2 text-sm">
             <TriangleAlert size={16} className="text-red-300" />
             <span>{status.error}</span>

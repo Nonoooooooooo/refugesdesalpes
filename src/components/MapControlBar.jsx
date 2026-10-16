@@ -81,9 +81,9 @@ export default function MapControlBar({
   )
 
   return (
-    <div className="pointer-events-none absolute right-2.5 top-2.5 sm:right-4 sm:top-4 z-[1000] flex flex-col items-end gap-1.5 sm:gap-2 max-w-[calc(100vw-3.75rem)] sm:max-w-none">
+    <div className="pointer-events-none absolute left-[3.25rem] right-2.5 top-[calc(0.625rem+env(safe-area-inset-top,0px))] sm:left-auto sm:right-4 sm:top-4 z-[1000] flex flex-col items-start sm:items-end gap-1.5 sm:gap-2">
       {/* ─── LIGNE 1 : Fond de carte & Calques majeurs ─── */}
-      <div className="pointer-events-auto glass flex flex-nowrap items-center gap-0.5 sm:gap-1 rounded-2xl p-1 sm:p-1.5 shadow-2xl backdrop-blur-xl border border-white/10">
+      <div className="pointer-events-auto glass flex flex-nowrap items-center justify-start sm:justify-end gap-0.5 sm:gap-1 rounded-2xl p-1 sm:p-1.5 shadow-2xl backdrop-blur-xl border border-white/10 max-w-full overflow-x-auto scrollbar-none">
         {/* Sélecteur Satellite / OpenTopo / IGN France */}
         <div className="relative flex rounded-xl bg-black/40 p-0.5">
           <span
@@ -104,7 +104,7 @@ export default function MapControlBar({
                 key={key}
                 onClick={() => onBaseLayerChange(key)}
                 title={label}
-                className={`relative z-10 flex items-center gap-1 sm:gap-1.5 rounded-lg px-2 py-1 sm:px-2.5 sm:py-1.5 text-xs font-medium transition-colors ${
+                className={`relative z-10 flex items-center justify-center gap-1 sm:gap-1.5 rounded-lg px-2 py-1 sm:px-2.5 sm:py-1.5 text-xs font-medium transition-colors ${
                   isActive ? 'text-white font-semibold' : 'text-white/60 hover:text-white'
                 }`}
               >
@@ -121,7 +121,7 @@ export default function MapControlBar({
         <button
           onClick={onToggleTrails}
           title="Afficher/masquer les sentiers de randonnée (Waymarked Trails)"
-          className={`glass-btn flex items-center gap-1 sm:gap-1.5 rounded-xl px-2 py-1 sm:px-2.5 sm:py-1.5 text-xs font-medium transition-all ${
+          className={`glass-btn flex items-center gap-1 sm:gap-1.5 rounded-xl px-1.5 py-1 sm:px-2.5 sm:py-1.5 text-xs font-medium transition-all ${
             showTrails
               ? 'border border-emerald-400/50 bg-emerald-500/35 text-emerald-200 shadow-[0_0_12px_rgba(16,185,129,0.35)] font-semibold'
               : 'bg-white/5 text-white/65 hover:text-white hover:bg-white/10'
@@ -135,7 +135,7 @@ export default function MapControlBar({
         <button
           onClick={onToggleTransports}
           title="Afficher/masquer le réseau de transports alpins"
-          className={`glass-btn flex items-center gap-1 sm:gap-1.5 rounded-xl px-2 py-1 sm:px-2.5 sm:py-1.5 text-xs font-medium transition-all ${
+          className={`glass-btn flex items-center gap-1 sm:gap-1.5 rounded-xl px-1.5 py-1 sm:px-2.5 sm:py-1.5 text-xs font-medium transition-all ${
             showTransports
               ? 'border border-indigo-400/50 bg-indigo-500/35 text-indigo-200 shadow-[0_0_12px_rgba(99,102,241,0.35)] ring-1 ring-indigo-400/30 font-semibold'
               : 'bg-white/5 text-white/65 hover:text-white hover:bg-white/10'
@@ -149,7 +149,7 @@ export default function MapControlBar({
         <button
           onClick={onToggleWebcams}
           title="Afficher/masquer les webcams Windy en direct (zoom >= 10)"
-          className={`glass-btn flex items-center gap-1 sm:gap-1.5 rounded-xl px-2 py-1 sm:px-2.5 sm:py-1.5 text-xs font-medium transition-all ${
+          className={`glass-btn flex items-center gap-1 sm:gap-1.5 rounded-xl px-1.5 py-1 sm:px-2.5 sm:py-1.5 text-xs font-medium transition-all ${
             showWebcams
               ? 'border border-sky-400/50 bg-sky-500/35 text-sky-200 shadow-[0_0_12px_rgba(14,165,233,0.35)] ring-1 ring-sky-400/30 font-semibold'
               : 'bg-white/5 text-white/65 hover:text-white hover:bg-white/10'
@@ -163,7 +163,7 @@ export default function MapControlBar({
         <button
           onClick={onOpenFavorites}
           title="Ouvrir la liste de mes refuges favoris"
-          className={`glass-btn flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-medium transition-all ${
+          className={`glass-btn flex items-center gap-1 sm:gap-1.5 rounded-xl px-1.5 py-1 sm:px-2.5 sm:py-1.5 text-xs font-medium transition-all ${
             favoritesCount > 0
               ? 'border border-amber-400/35 bg-amber-500/15 text-amber-200 hover:bg-amber-500/25 shadow-sm'
               : 'bg-white/5 text-white/65 hover:text-white hover:bg-white/10'
@@ -175,7 +175,7 @@ export default function MapControlBar({
           />
           <span className="hidden sm:inline">Favoris</span>
           {favoritesCount > 0 && (
-            <span className="rounded-full bg-amber-500/25 px-1.5 py-0.2 text-[10px] font-bold text-amber-200 border border-amber-400/20">
+            <span className="rounded-full bg-amber-500/25 px-1 sm:px-1.5 py-0.2 text-[9px] sm:text-[10px] font-bold text-amber-200 border border-amber-400/20">
               {favoritesCount}
             </span>
           )}
@@ -189,7 +189,7 @@ export default function MapControlBar({
               ? 'Mode hors-ligne actif · Gérer les cartes et zones téléchargées'
               : 'Télécharger des zones de carte hors-ligne & Installer l’application'
           }
-          className={`glass-btn flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-medium transition-all ${
+          className={`glass-btn flex items-center gap-1 sm:gap-1.5 rounded-xl px-1.5 py-1 sm:px-2.5 sm:py-1.5 text-xs font-medium transition-all ${
             !isOnline
               ? 'border border-amber-400/60 bg-amber-400/25 text-amber-100 shadow-[0_0_12px_rgba(245,158,11,0.35)] ring-1 ring-amber-400/40 font-semibold'
               : savedZonesCount > 0
@@ -209,7 +209,7 @@ export default function MapControlBar({
           />
           <span className="hidden sm:inline">Hors-ligne</span>
           {savedZonesCount > 0 && (
-            <span className="rounded-full bg-amber-500/20 px-1.5 py-0.2 text-[10px] font-bold text-amber-200 border border-amber-400/20">
+            <span className="rounded-full bg-amber-500/20 px-1 sm:px-1.5 py-0.2 text-[9px] sm:text-[10px] font-bold text-amber-200 border border-amber-400/20">
               {savedZonesCount}
             </span>
           )}
@@ -221,7 +221,7 @@ export default function MapControlBar({
         <button
           onClick={() => setShowFilters((prev) => !prev)}
           title="Afficher/masquer les filtres"
-          className={`glass-btn flex items-center gap-1 sm:gap-1.5 rounded-xl px-2 py-1 sm:px-2.5 sm:py-1.5 text-xs font-medium transition-all ${
+          className={`glass-btn flex items-center gap-1 sm:gap-1.5 rounded-xl px-1.5 py-1 sm:px-2.5 sm:py-1.5 text-xs font-medium transition-all ${
             showFilters
               ? 'bg-white/20 text-white font-semibold'
               : 'bg-white/5 text-white/70 hover:text-white'
@@ -229,7 +229,7 @@ export default function MapControlBar({
         >
           <Filter size={13} className="text-white/80" />
           <span className="hidden md:inline">Filtres</span>
-          <span className="rounded-full bg-white/20 px-1.5 py-0.2 text-[10px] font-bold">
+          <span className="rounded-full bg-white/20 px-1 sm:px-1.5 py-0.2 text-[9px] sm:text-[10px] font-bold">
             {activeCount}/{FILTERABLE.length}
           </span>
           {showFilters ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
@@ -238,7 +238,7 @@ export default function MapControlBar({
 
       {/* ─── LIGNE 2 : Bulle ajustée des filtres d'hébergements & Parkings ─── */}
       {showFilters && (
-        <div className="pointer-events-auto glass flex w-fit max-w-[280px] sm:max-w-none flex-wrap sm:flex-nowrap items-center justify-center sm:justify-end gap-1 sm:gap-1.5 rounded-2xl p-1 sm:p-1.5 shadow-2xl backdrop-blur-xl border border-white/10 animate-in fade-in slide-in-from-top-1 duration-200">
+        <div className="pointer-events-auto glass flex w-fit max-w-full sm:max-w-none flex-wrap sm:flex-nowrap items-center justify-start sm:justify-end gap-1 sm:gap-1.5 rounded-2xl p-1 sm:p-1.5 shadow-2xl backdrop-blur-xl border border-white/10 animate-in fade-in slide-in-from-top-1 duration-200">
           {FILTERABLE.map(({ key, label, shortLabel, color, Icon }) => {
             const on = activeTypes.has(key)
             return (

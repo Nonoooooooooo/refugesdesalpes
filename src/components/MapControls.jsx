@@ -12,7 +12,7 @@ import {
   X,
 } from 'lucide-react'
 
-export default function MapControls() {
+export default function MapControls({ hasSelected = false }) {
   const map = useMap()
   const [trackingState, setTrackingState] = useState('idle') // 'idle' | 'searching' | 'active'
   const [userLocation, setUserLocation] = useState(null)
@@ -193,7 +193,9 @@ export default function MapControls() {
       {/* ─── HUD FLOTTANT GPS MONTAGNE (Altitude + Précision en temps réel) ─── */}
       {userLocation && (
         <div
-          className="pointer-events-auto absolute bottom-8 left-4 z-[1000] animate-in fade-in slide-in-from-bottom-2 duration-200"
+          className={`pointer-events-auto absolute bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] sm:bottom-20 z-[1000] transition-all duration-300 animate-in fade-in slide-in-from-bottom-2 ${
+            hasSelected ? 'left-3 sm:left-[444px]' : 'left-3 sm:left-4'
+          }`}
           onMouseDown={(e) => e.stopPropagation()}
           onDoubleClick={(e) => e.stopPropagation()}
         >
@@ -245,7 +247,9 @@ export default function MapControls() {
       {/* ─── MESSAGE D'AVERTISSEMENT OU D'AIDE GPS ─── */}
       {errorMsg && (
         <div
-          className="pointer-events-auto absolute bottom-24 right-4 z-[1000] max-w-xs animate-in fade-in duration-200"
+          className={`pointer-events-auto absolute bottom-[calc(7.75rem+env(safe-area-inset-bottom,0px))] sm:bottom-28 z-[1000] max-w-xs transition-all duration-300 animate-in fade-in duration-200 ${
+            hasSelected ? 'left-3 sm:left-[444px]' : 'left-3 sm:left-4'
+          }`}
           onMouseDown={(e) => e.stopPropagation()}
           onDoubleClick={(e) => e.stopPropagation()}
         >
@@ -261,7 +265,7 @@ export default function MapControls() {
 
       {/* ─── CONTRÔLES DROITE : Zoom & Bouton GPS Haute Précision ─── */}
       <div
-        className="absolute bottom-8 right-4 z-[1000] flex flex-col gap-2"
+        className="absolute bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))] sm:bottom-8 right-3 sm:right-4 z-[1000] flex flex-col gap-2"
         onMouseDown={(e) => e.stopPropagation()}
         onDoubleClick={(e) => e.stopPropagation()}
       >
