@@ -1,9 +1,37 @@
-# robots.txt pour Refuges des Alpes (https://refugesdesalpes.vercel.app)
+# robots.txt pour Refuges des Alpes (https://refugesdesalpes.fr)
+
+# ─── Moteurs de recherche principaux ───
+User-agent: Googlebot
+Allow: /
+Disallow: /api/
+Disallow: /assets/
+
+User-agent: Bingbot
+Allow: /
+Disallow: /api/
+Disallow: /assets/
+
+# ─── Tous les autres robots ───
 User-agent: *
 Allow: /
-
-# Ne pas indexer les routes d'API internes et de proxys
 Disallow: /api/
+Disallow: /assets/
 
-# Déclaration officielle du sitemap XML pour les moteurs de recherche
-Sitemap: https://refugesdesalpes.vercel.app/sitemap.xml
+# ─── Blocage des crawlers IA voraces ───
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+# ─── Déclaration officielle du sitemap XML ───
+Sitemap: https://refugesdesalpes.fr/sitemap.xml

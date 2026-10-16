@@ -27,7 +27,7 @@
     />
     <meta name="author" content="Refuges des Alpes" />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-    <link rel="canonical" href="https://refugesdesalpes.vercel.app/" />
+    <link rel="canonical" href="https://refugesdesalpes.fr/" />
 
     <!-- ─── BALISES GÉOGRAPHIQUES (SEO LOCAL ALPIN) ─── -->
     <meta name="geo.region" content="FR" />
@@ -44,9 +44,9 @@
       property="og:description"
       content="Carte interactive complète des refuges, cabanes, sentiers, webcams et transports en montagne dans les Alpes françaises."
     />
-    <meta property="og:url" content="https://refugesdesalpes.vercel.app/" />
-    <meta property="og:image" content="https://refugesdesalpes.vercel.app/og-image.jpg" />
-    <meta property="og:image:secure_url" content="https://refugesdesalpes.vercel.app/og-image.jpg" />
+    <meta property="og:url" content="https://refugesdesalpes.fr/" />
+    <meta property="og:image" content="https://refugesdesalpes.fr/og-image.jpg" />
+    <meta property="og:image:secure_url" content="https://refugesdesalpes.fr/og-image.jpg" />
     <meta property="og:image:type" content="image/jpeg" />
     <meta property="og:image:width" content="1792" />
     <meta property="og:image:height" content="1024" />
@@ -59,7 +59,7 @@
       name="twitter:description"
       content="Carte interactive complète des refuges, cabanes, sentiers, webcams et transports en montagne dans les Alpes françaises."
     />
-    <meta name="twitter:image" content="https://refugesdesalpes.vercel.app/og-image.jpg" />
+    <meta name="twitter:image" content="https://refugesdesalpes.fr/og-image.jpg" />
 
     <!-- ─── FAVICONS & APPLICATION MOBILE PWA ─── -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -85,9 +85,9 @@
         "@graph": [
           {
             "@type": "WebApplication",
-            "@id": "https://refugesdesalpes.vercel.app/#webapp",
+            "@id": "https://refugesdesalpes.fr/#webapp",
             "name": "Refuges des Alpes",
-            "url": "https://refugesdesalpes.vercel.app/",
+            "url": "https://refugesdesalpes.fr/",
             "applicationCategory": "TravelApplication",
             "operatingSystem": "All",
             "description": "Carte interactive des refuges gardés, cabanes non gardées, sentiers de randonnée, réseau de transports en commun alpins et bulletins d'estimation du risque d'avalanche (BERA).",
@@ -103,12 +103,96 @@
           },
           {
             "@type": "Place",
-            "@id": "https://refugesdesalpes.vercel.app/#place",
+            "@id": "https://refugesdesalpes.fr/#place",
             "name": "Alpes françaises",
             "geo": {
               "@type": "GeoCoordinates",
               "latitude": 45.9237,
               "longitude": 6.8694
+            }
+          },
+          {
+            "@type": "Organization",
+            "@id": "https://refugesdesalpes.fr/#organization",
+            "name": "Refuges des Alpes",
+            "url": "https://refugesdesalpes.fr/",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://refugesdesalpes.fr/logo.png"
+            },
+            "description": "Carte interactive gratuite des refuges, cabanes, transports et sentiers dans les Alpes françaises.",
+            "sameAs": []
+          },
+          {
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Accueil",
+                "item": "https://refugesdesalpes.fr/"
+              }
+            ]
+          },
+          {
+            "@type": "SiteNavigationElement",
+            "name": ["Refuges", "Transports", "Sentiers", "Webcams", "Avalanches BERA"],
+            "url": [
+              "https://refugesdesalpes.fr/",
+              "https://refugesdesalpes.fr/#transports",
+              "https://refugesdesalpes.fr/#sentiers",
+              "https://refugesdesalpes.fr/#webcams",
+              "https://refugesdesalpes.fr/#avalanches"
+            ]
+          }
+        ]
+      }
+    </script>
+
+    <!-- ─── DONNÉES STRUCTURÉES FAQ (RICH RESULTS GOOGLE) ─── -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Comment trouver un refuge dans les Alpes ?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Utilisez la carte interactive de Refuges des Alpes : zoomez sur le massif qui vous intéresse (Mont-Blanc, Vanoise, Écrins, Belledonne, Queyras…), les marqueurs des refuges gardés et cabanes non gardées apparaissent automatiquement avec leur altitude, nombre de places et état d'ouverture."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Peut-on accéder aux refuges des Alpes sans voiture ?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Oui ! Activez la couche Transports sur la carte pour voir toutes les lignes de train (TGV, TER), bus régionaux et navettes estivales qui desservent les vallées alpines. Le réseau couvre les gares de Chambéry, Grenoble, Briançon, Saint-Gervais, Bourg-Saint-Maurice et Modane, avec correspondances en bus et navettes vers les départs de sentier."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Comment consulter le bulletin d'estimation du risque d'avalanche (BERA) ?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Les Bulletins d'Estimation du Risque d'Avalanche (BERA) de Météo-France sont intégrés directement dans la carte interactive. Cliquez sur un massif pour voir l'indice de risque de 1 à 5, les orientations à risque et l'altitude critique."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Quelle est la différence entre un refuge gardé et une cabane non gardée ?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Un refuge gardé est tenu par un gardien en saison (généralement mi-juin à mi-septembre) et propose repas, couchage et demi-pension. Une cabane non gardée (ou abri) est ouverte toute l'année mais sans services : il faut apporter son matériel de couchage et sa nourriture."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Quels massifs des Alpes sont couverts par la carte ?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Tous les massifs des Alpes françaises sont couverts : Mont-Blanc, Vanoise, Écrins, Belledonne, Chartreuse, Vercors, Queyras, Mercantour, Chablais, Aravis, Bauges, Beaufortain, Lauzière, Cerces, Thabor, Oisans, Dévoluy, Briançonnais et plus encore."
             }
           }
         ]
@@ -118,16 +202,101 @@
   <body class="bg-slate-950 text-white antialiased selection:bg-emerald-500 selection:text-white">
     <div id="root">
       <noscript>
-        <div style="padding: 2.5rem; max-width: 800px; margin: 0 auto; font-family: system-ui, sans-serif; line-height: 1.6;">
-          <h1 style="font-size: 1.8rem; font-weight: bold; color: #34d399;">
-            Refuges des Alpes – Carte interactive des refuges, cabanes et transports en montagne
-          </h1>
-          <p style="margin-top: 1rem; color: #cbd5e1;">
-            Explorez les refuges gardés, cabanes non gardées, sentiers de grande randonnée (GR), lignes de bus et navettes d'accès dans tous les massifs des Alpes françaises : Mont-Blanc, Vanoise, Écrins, Belledonne, Queyras, Mercantour, Chartreuse, Vercors, Chablais...
-          </p>
-          <p style="margin-top: 1rem; color: #94a3b8;">
-            Veuillez activer JavaScript dans votre navigateur pour profiter de la carte interactive haute performance.
-          </p>
+        <div style="padding: 2.5rem; max-width: 900px; margin: 0 auto; font-family: system-ui, sans-serif; line-height: 1.7; color: #e2e8f0;">
+          <header>
+            <h1 style="font-size: 2rem; font-weight: bold; color: #34d399; margin-bottom: 0.5rem;">
+              Refuges des Alpes — Carte Interactive des Refuges, Cabanes &amp; Transports de Montagne
+            </h1>
+            <p style="font-size: 1.1rem; color: #94a3b8; margin-bottom: 2rem;">
+              Trouvez et explorez plus de 1 500 refuges gardés, cabanes non gardées, gîtes d'étape et bivouacs dans les Alpes françaises. Accédez aux informations de transports en commun (TGV, TER, cars, navettes estivales), sentiers de randonnée, webcams en direct et bulletins d'estimation du risque d'avalanche (BERA).
+            </p>
+          </header>
+
+          <main>
+            <section>
+              <h2 style="font-size: 1.4rem; font-weight: 700; color: #6ee7b7; margin: 1.5rem 0 0.8rem;">🏔️ Refuges par Massif Alpin</h2>
+              <p>Notre carte interactive couvre l'ensemble des massifs des Alpes françaises :</p>
+              <ul style="columns: 2; column-gap: 2rem; margin: 0.8rem 0; padding-left: 1.2rem; color: #cbd5e1;">
+                <li><strong>Massif du Mont-Blanc</strong> — Refuge du Goûter, Refuge des Cosmiques, Refuge Albert 1er, Refuge de Tête Rousse</li>
+                <li><strong>Parc National de la Vanoise</strong> — Refuge de la Vanoise, Refuge du Col de la Vanoise, Refuge de l'Arpont, Refuge du Fond d'Aussois</li>
+                <li><strong>Parc National des Écrins</strong> — Refuge du Glacier Blanc, Refuge du Pelvoux, Refuge de la Pilatte, Refuge du Sélé</li>
+                <li><strong>Massif de Belledonne</strong> — Refuge de la Pra, Refuge Jean Collet, Cabane de la Balmette</li>
+                <li><strong>Queyras</strong> — Refuge Agnel, Refuge de la Blanche, Gîte du Roux</li>
+                <li><strong>Mercantour</strong> — Refuge de Nice, Refuge des Merveilles, Refuge de la Cougourde</li>
+                <li><strong>Chartreuse</strong> — Chalet de l'Aulp du Seuil, Habert de Chamechaude</li>
+                <li><strong>Vercors</strong> — Cabane de Pré Peyret, Cabane des Aiguillettes, Refuge de Gève</li>
+                <li><strong>Chablais &amp; Aravis</strong> — Refuge de Gramusset, Refuge de la Pointe de Chalune</li>
+                <li><strong>Beaufortain &amp; Lauzière</strong> — Refuge de Presset, Refuge du Plan de la Lai</li>
+              </ul>
+            </section>
+
+            <section>
+              <h2 style="font-size: 1.4rem; font-weight: 700; color: #6ee7b7; margin: 1.5rem 0 0.8rem;">🚌 Accès sans Voiture — Transports en Commun Alpins</h2>
+              <p>Planifiez vos randonnées <strong>sans voiture</strong> grâce à notre réseau de transports complet :</p>
+              <ul style="margin: 0.8rem 0; padding-left: 1.2rem; color: #cbd5e1;">
+                <li><strong>Lignes TGV et TER</strong> — Gares de Chambéry, Albertville, Grenoble, Briançon, Saint-Gervais, Bourg-Saint-Maurice, Modane</li>
+                <li><strong>Cars régionaux et départementaux</strong> — Lignes Transisère, Zou! PACA, Savoie, Haute-Savoie</li>
+                <li><strong>Navettes estivales de montagne</strong> — Accès aux vallées reculées en juillet-août (Vénéon, Vallouise, Val Cenis, Vallée des Merveilles)</li>
+                <li><strong>Correspondances multimodales</strong> — Combinaisons train + bus + navette vers chaque point de départ de randonnée</li>
+              </ul>
+            </section>
+
+            <section>
+              <h2 style="font-size: 1.4rem; font-weight: 700; color: #6ee7b7; margin: 1.5rem 0 0.8rem;">🥾 Sentiers de Randonnée</h2>
+              <p>Visualisez les sentiers balisés officiels superposés sur la carte IGN, OpenTopoMap ou vue satellite :</p>
+              <ul style="margin: 0.8rem 0; padding-left: 1.2rem; color: #cbd5e1;">
+                <li>GR 5 — Grande Traversée des Alpes (Lac Léman → Nice)</li>
+                <li>GR 54 — Tour de l'Oisans et des Écrins</li>
+                <li>Tour du Mont-Blanc (TMB)</li>
+                <li>GR 58 — Tour du Queyras</li>
+                <li>GR 55 — Traversée de la Vanoise</li>
+                <li>Sentiers balisés Waymarked Trails (PR, GRP, GR)</li>
+              </ul>
+            </section>
+
+            <section>
+              <h2 style="font-size: 1.4rem; font-weight: 700; color: #6ee7b7; margin: 1.5rem 0 0.8rem;">📹 Webcams &amp; Conditions en Direct</h2>
+              <p>Consultez les webcams panoramiques en direct pour vérifier les conditions météo et l'enneigement avant votre départ : stations de ski, sommets, cols alpins et refuges équipés.</p>
+            </section>
+
+            <section>
+              <h2 style="font-size: 1.4rem; font-weight: 700; color: #6ee7b7; margin: 1.5rem 0 0.8rem;">⚠️ Bulletins Avalanche BERA — Météo-France</h2>
+              <p>Accédez aux <strong>Bulletins d'Estimation du Risque d'Avalanche (BERA)</strong> de Météo-France directement intégrés à la carte. Indice de risque de 1 à 5, orientations sensibles et altitude critique pour chaque massif.</p>
+            </section>
+
+            <section>
+              <h2 style="font-size: 1.4rem; font-weight: 700; color: #6ee7b7; margin: 1.5rem 0 0.8rem;">❓ Questions Fréquentes</h2>
+
+              <details style="margin-bottom: 1rem; color: #cbd5e1;">
+                <summary style="font-weight: 600; cursor: pointer; color: #e2e8f0;">Comment trouver un refuge dans les Alpes ?</summary>
+                <p style="margin-top: 0.5rem; padding-left: 1rem;">Utilisez notre carte interactive : zoomez sur le massif qui vous intéresse (Mont-Blanc, Vanoise, Écrins, Belledonne, Queyras…), les marqueurs des refuges gardés et cabanes non gardées apparaissent automatiquement avec leur altitude, nombre de places et état d'ouverture.</p>
+              </details>
+
+              <details style="margin-bottom: 1rem; color: #cbd5e1;">
+                <summary style="font-weight: 600; cursor: pointer; color: #e2e8f0;">Peut-on accéder aux refuges sans voiture ?</summary>
+                <p style="margin-top: 0.5rem; padding-left: 1rem;">Oui ! Activez la couche « Transports » sur la carte pour voir toutes les lignes de train (TGV, TER), bus régionaux et navettes estivales qui desservent les vallées alpines. Chaque ligne affiche ses horaires et correspondances.</p>
+              </details>
+
+              <details style="margin-bottom: 1rem; color: #cbd5e1;">
+                <summary style="font-weight: 600; cursor: pointer; color: #e2e8f0;">Comment consulter le risque d'avalanche (BERA) ?</summary>
+                <p style="margin-top: 0.5rem; padding-left: 1rem;">Les Bulletins d'Estimation du Risque d'Avalanche de Météo-France sont intégrés directement dans la carte. Cliquez sur un massif pour voir l'indice de risque (1 à 5), les orientations à risque et l'altitude de départ des avalanches.</p>
+              </details>
+
+              <details style="margin-bottom: 1rem; color: #cbd5e1;">
+                <summary style="font-weight: 600; cursor: pointer; color: #e2e8f0;">Quelle est la différence entre un refuge gardé et une cabane non gardée ?</summary>
+                <p style="margin-top: 0.5rem; padding-left: 1rem;">Un refuge gardé est tenu par un gardien en saison (généralement mi-juin à mi-septembre) et propose repas, couchage et demi-pension. Une cabane non gardée (ou abri) est ouverte toute l'année mais sans services : il faut apporter son matériel de couchage et sa nourriture.</p>
+              </details>
+
+              <details style="margin-bottom: 1rem; color: #cbd5e1;">
+                <summary style="font-weight: 600; cursor: pointer; color: #e2e8f0;">Quels massifs sont couverts par la carte ?</summary>
+                <p style="margin-top: 0.5rem; padding-left: 1rem;">Tous les massifs des Alpes françaises : Mont-Blanc, Vanoise, Écrins, Belledonne, Chartreuse, Vercors, Queyras, Mercantour, Chablais, Aravis, Bauges, Beaufortain, Lauzière, Cerces, Thabor, Oisans, Dévoluy, Briançonnais et plus encore.</p>
+              </details>
+            </section>
+
+            <p style="margin-top: 2rem; color: #64748b; font-size: 0.9rem;">
+              Veuillez activer JavaScript dans votre navigateur pour profiter de la carte interactive haute performance.
+            </p>
+          </main>
         </div>
       </noscript>
     </div>
