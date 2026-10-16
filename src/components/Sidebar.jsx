@@ -97,13 +97,13 @@ export default function Sidebar({ point, onClose }) {
               onClick={handleToggleFav}
               className={`glass-btn flex h-9 w-9 items-center justify-center rounded-full transition-all ${
                 isFav
-                  ? 'border border-rose-500/50 bg-rose-500/25 text-rose-400 shadow-[0_0_12px_rgba(244,63,94,0.35)]'
-                  : 'text-white/70 hover:text-rose-400 hover:bg-white/10'
+                  ? 'border border-amber-400/40 bg-amber-400/15 text-amber-300 shadow-[0_0_10px_rgba(245,158,11,0.2)]'
+                  : 'text-white/70 hover:text-amber-300 hover:bg-white/10'
               }`}
             >
               <Heart
-                size={18}
-                className={isFav ? 'fill-rose-500 text-rose-500 scale-110 transition-transform' : ''}
+                size={17}
+                className={isFav ? 'fill-amber-400 text-amber-400 scale-105 transition-transform' : ''}
               />
             </button>
             <button

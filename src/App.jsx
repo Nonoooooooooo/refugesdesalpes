@@ -42,7 +42,7 @@ function pinIcon(type, selected, isFav = false) {
             style={{ background: color }}
           >
             <Icon size={13} strokeWidth={2.4} />
-            {isFav && <span className="refuge-pin-heart">❤️</span>}
+            {isFav && <span className="refuge-pin-heart" style={{ color: '#fbbf24', fontSize: '10px' }}>★</span>}
           </div>,
         ),
         iconSize: [24, 24],
@@ -301,7 +301,7 @@ export default function App() {
                   <Tooltip permanent direction="top" offset={[0, -14]} className="refuge-tooltip">
                     <div className="refuge-tooltip-name flex items-center justify-between gap-1.5">
                       <span>{p.nom}</span>
-                      {isFav && <span className="text-xs">❤️</span>}
+                      {isFav && <span className="text-amber-300 font-bold text-xs">★</span>}
                     </div>
                     <div className="refuge-tooltip-meta">
                       <span style={{ background: typeInfo(p.type).color }} className="refuge-tooltip-dot" />
@@ -346,7 +346,8 @@ export default function App() {
       {/* Toast discret pour les favoris */}
       {toastMessage && (
         <div className="pointer-events-none fixed top-20 left-1/2 z-[1300] -translate-x-1/2 animate-in fade-in slide-in-from-top-2 duration-200">
-          <div className="glass flex items-center gap-2 rounded-2xl border border-rose-500/40 bg-black/85 px-4 py-2 text-xs font-semibold text-rose-200 shadow-2xl backdrop-blur-xl">
+          <div className="glass flex items-center gap-2 rounded-2xl border border-amber-400/30 bg-black/85 px-4 py-2 text-xs font-medium text-amber-200 shadow-2xl backdrop-blur-xl">
+            <span className="text-amber-400 font-bold">★</span>
             <span>{toastMessage}</span>
           </div>
         </div>
@@ -364,8 +365,9 @@ export default function App() {
       {/* Statut discret */}
       <div className="pointer-events-none absolute bottom-6 left-1/2 z-[1000] -translate-x-1/2">
         {filterOnlyFavorites && (
-          <div className="glass flex items-center gap-2 rounded-full border border-rose-500/40 bg-rose-950/70 px-4 py-2 text-xs font-semibold text-rose-200 shadow-xl backdrop-blur-xl">
-            <span>❤️ Mode favoris : {visible.length} refuge(s) affiché(s)</span>
+          <div className="glass flex items-center gap-2 rounded-full border border-amber-400/35 bg-black/80 px-4 py-2 text-xs font-medium text-amber-200 shadow-xl backdrop-blur-xl">
+            <span className="text-amber-400 font-bold">★</span>
+            <span>Mode favoris : {visible.length} refuge(s) affiché(s)</span>
           </div>
         )}
         {!filterOnlyFavorites && status.loading && (

@@ -86,7 +86,7 @@ export function FavoritesProvider({ children }) {
       }
       return [item, ...prev]
     })
-    showToast(`« ${refuge.nom} » ajouté à vos favoris ❤️`)
+    showToast(`« ${refuge.nom} » ajouté à vos favoris`)
   }, [showToast])
 
   const removeFavorite = useCallback((id) => {

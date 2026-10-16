@@ -95,13 +95,13 @@ export default function FavoritesModal({
         {/* Header */}
         <header className="flex items-center justify-between border-b border-white/10 px-6 py-4 bg-black/40 backdrop-blur-md">
           <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-500/20 text-rose-400 border border-rose-500/30 shadow-[0_0_15px_rgba(244,63,94,0.3)]">
-              <Heart size={20} className="fill-rose-500" />
+            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-500/15 text-amber-300 border border-amber-400/25 shadow-sm">
+              <Heart size={20} className="fill-amber-400 text-amber-400" />
             </span>
             <div>
               <h2 className="text-lg font-bold flex items-center gap-2">
                 Mes Refuges Favoris
-                <span className="rounded-full bg-rose-500/30 text-rose-300 text-xs px-2.5 py-0.5 font-semibold">
+                <span className="rounded-full bg-amber-500/25 text-amber-200 border border-amber-400/20 text-xs px-2.5 py-0.5 font-semibold">
                   {favoritesCount}
                 </span>
               </h2>
@@ -133,7 +133,7 @@ export default function FavoritesModal({
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Filtrer parmi vos favoris…"
-                className="w-full rounded-xl bg-white/5 border border-white/10 pl-9 pr-3 py-2 text-xs text-white placeholder-white/40 focus:border-rose-400/50 focus:bg-white/10 focus:outline-none transition-all"
+                className="w-full rounded-xl bg-white/5 border border-white/10 pl-9 pr-3 py-2 text-xs text-white placeholder-white/40 focus:border-amber-400/50 focus:bg-white/10 focus:outline-none transition-all"
               />
               {query && (
                 <button
@@ -168,7 +168,7 @@ export default function FavoritesModal({
                   type="checkbox"
                   checked={filterOnlyFavorites}
                   onChange={onToggleFilterOnlyFavorites}
-                  className="rounded accent-rose-500 h-4 w-4 cursor-pointer"
+                  className="rounded accent-amber-400 h-4 w-4 cursor-pointer"
                 />
                 <span>N'afficher que mes favoris sur la carte</span>
               </label>
@@ -209,20 +209,20 @@ export default function FavoritesModal({
         <div className="flex-1 overflow-y-auto p-5 scroll-thin flex flex-col gap-2.5">
           {favoritesCount === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center px-4">
-              <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-rose-500/10 text-rose-400 border border-rose-500/20 mb-4 shadow-[0_0_20px_rgba(244,63,94,0.15)]">
-                <Heart size={32} />
+              <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-amber-500/10 text-amber-300 border border-amber-400/20 mb-4 shadow-sm">
+                <Heart size={30} className="fill-amber-400 text-amber-400" />
               </div>
               <h3 className="text-base font-semibold mb-1 text-white">
                 Aucun refuge dans vos favoris
               </h3>
               <p className="text-xs text-white/60 max-w-sm mb-6 leading-relaxed">
-                Cliquez sur l'icône cœur <span className="text-rose-400 font-bold">❤️</span> dans la fiche détaillée de n'importe quel refuge pour l'ajouter ici.
+                Cliquez sur l'icône cœur <span className="text-amber-300 font-semibold">★</span> dans la fiche détaillée d'un refuge pour l'ajouter ici.
               </p>
               <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-xs text-white/70 max-w-sm text-left">
-                <div className="font-semibold text-rose-300 mb-1 flex items-center gap-1.5">
+                <div className="font-semibold text-amber-300 mb-1 flex items-center gap-1.5">
                   <CheckCircle size={14} /> Pas besoin de compte !
                 </div>
-                Vos coups de cœur sont conservés automatiquement dans le stockage local de votre navigateur. Vous pouvez également les exporter en un clic pour les conserver.
+                Vos coups de cœur sont conservés automatiquement dans votre navigateur. Vous pouvez également les exporter en un clic pour les sauvegarder.
               </div>
             </div>
           ) : filteredFavorites.length === 0 ? (
@@ -251,7 +251,7 @@ export default function FavoritesModal({
                       <info.Icon size={16} />
                     </span>
                     <div className="min-w-0 flex-1">
-                      <div className="truncate text-sm font-semibold text-white group-hover:text-rose-200 transition-colors">
+                      <div className="truncate text-sm font-semibold text-white group-hover:text-amber-200 transition-colors">
                         {refuge.nom}
                       </div>
                       <div className="flex items-center gap-2.5 text-xs text-white/60 mt-0.5">
@@ -286,7 +286,7 @@ export default function FavoritesModal({
                     <button
                       onClick={() => removeFavorite(refuge.id)}
                       title="Retirer des favoris"
-                      className="glass-btn flex h-8 w-8 items-center justify-center rounded-xl text-rose-400 hover:text-rose-300 hover:bg-rose-500/20"
+                      className="glass-btn flex h-8 w-8 items-center justify-center rounded-xl text-white/40 hover:text-amber-300 hover:bg-amber-500/15 transition-colors"
                     >
                       <Trash2 size={15} />
                     </button>
@@ -302,13 +302,13 @@ export default function FavoritesModal({
           <footer className="flex items-center justify-between border-t border-white/10 px-6 py-3 bg-black/40 text-xs">
             {confirmClear ? (
               <div className="flex items-center gap-2">
-                <span className="text-rose-400 font-medium">Tout effacer ?</span>
+                <span className="text-amber-300 font-medium">Tout effacer ?</span>
                 <button
                   onClick={() => {
                     clearFavorites()
                     setConfirmClear(false)
                   }}
-                  className="rounded-lg bg-rose-600 px-2.5 py-1 text-white hover:bg-rose-700"
+                  className="rounded-lg bg-amber-600 px-2.5 py-1 text-white hover:bg-amber-700 font-medium"
                 >
                   Oui
                 </button>
@@ -322,7 +322,7 @@ export default function FavoritesModal({
             ) : (
               <button
                 onClick={() => setConfirmClear(true)}
-                className="text-white/40 hover:text-rose-400 transition-colors"
+                className="text-white/40 hover:text-amber-300 transition-colors"
               >
                 Vider la liste
               </button>

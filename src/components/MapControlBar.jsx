@@ -165,17 +165,17 @@ export default function MapControlBar({
           title="Ouvrir la liste de mes refuges favoris"
           className={`glass-btn flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-medium transition-all ${
             favoritesCount > 0
-              ? 'border border-rose-400/50 bg-rose-500/25 text-rose-200 shadow-[0_0_12px_rgba(244,63,94,0.35)] hover:bg-rose-500/35'
+              ? 'border border-amber-400/35 bg-amber-500/15 text-amber-200 hover:bg-amber-500/25 shadow-sm'
               : 'bg-white/5 text-white/65 hover:text-white hover:bg-white/10'
           }`}
         >
           <Heart
             size={14}
-            className={favoritesCount > 0 ? 'fill-rose-400 text-rose-400 animate-in zoom-in' : 'text-rose-300/80'}
+            className={favoritesCount > 0 ? 'fill-amber-400 text-amber-400' : 'text-white/60'}
           />
           <span className="hidden sm:inline">Favoris</span>
           {favoritesCount > 0 && (
-            <span className="rounded-full bg-rose-500/40 px-1.5 py-0.2 text-[10px] font-bold text-rose-100">
+            <span className="rounded-full bg-amber-500/25 px-1.5 py-0.2 text-[10px] font-bold text-amber-200 border border-amber-400/20">
               {favoritesCount}
             </span>
           )}
@@ -272,13 +272,13 @@ export default function MapControlBar({
                 }
                 className={`glass-btn flex items-center gap-1.5 rounded-xl px-2.5 py-1 text-xs font-medium transition-all ${
                   filterOnlyFavorites
-                    ? 'border border-rose-400/60 bg-rose-500/40 text-rose-100 shadow-[0_0_12px_rgba(244,63,94,0.4)] ring-1 ring-rose-400/40 font-semibold'
-                    : 'bg-white/5 text-rose-300/80 hover:text-rose-200 hover:bg-rose-500/20'
+                    ? 'border border-amber-400/50 bg-amber-500/25 text-amber-100 shadow-sm ring-1 ring-amber-400/30 font-semibold'
+                    : 'bg-white/5 text-amber-300/80 hover:text-amber-200 hover:bg-amber-500/15'
                 }`}
               >
                 <Heart
                   size={12}
-                  className={filterOnlyFavorites ? 'fill-rose-300 text-rose-300' : 'text-rose-400'}
+                  className={filterOnlyFavorites ? 'fill-amber-300 text-amber-300' : 'text-amber-400'}
                 />
                 <span className="text-[11px] whitespace-nowrap">Favoris seuls</span>
               </button>
