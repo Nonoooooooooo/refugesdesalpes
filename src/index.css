@@ -397,3 +397,28 @@ html, body, #root {
   color: #fff !important;
 }
 
+/* Marqueur de position GPS utilisateur & onde radar */
+.user-location-marker {
+  background: none !important;
+  border: none !important;
+}
+
+@keyframes pulse-radar {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.85;
+  }
+  60% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+.radar-pulse {
+  animation: pulse-radar 2.2s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+}
+
