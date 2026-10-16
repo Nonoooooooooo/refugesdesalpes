@@ -37,6 +37,7 @@ export function calculateZoneTiles(bbox, minZoom = 10, maxZoom = 13) {
   const [west, south, east, north] = bbox
   let totalTiles = 0
   const levels = []
+  let estimatedSizeBytes = 0
 
   for (let z = minZoom; z <= maxZoom; z++) {
     const xMin = lon2tile(west, z)
@@ -49,6 +50,10 @@ export function calculateZoneTiles(bbox, minZoom = 10, maxZoom = 13) {
     const count = width * height
 
     totalTiles += count
+    // Les tuiles haute résolution IGN/topo (z>=15) avec courbes et rochers pèsent ~45-60 Ko, les vues larges ~25 Ko
+    const bytesPerTile = z >= 15 ? 48 * 1024 : 25 * 1024
+    estimatedSizeBytes += count * bytesPerTile
+
     levels.push({
       zoom: z,
       xMin,
@@ -61,8 +66,6 @@ export function calculateZoneTiles(bbox, minZoom = 10, maxZoom = 13) {
     })
   }
 
-  // Poids moyen par tuile PNG topo / IGN : ~25 Ko
-  const estimatedSizeBytes = totalTiles * 25 * 1024
   const estimatedSizeMb = (estimatedSizeBytes / (1024 * 1024)).toFixed(1)
 
   return {
@@ -90,6 +93,55 @@ export function getTileUrl(layerKey, z, x, y) {
 }
 
 /**
+ * Assure la mise en cache complète du "shell" de l'application (HTML, CSS, JS, manifest, index des refuges)
+ */
+export async function ensureAppShellCached() {
+  if (typeof window === 'undefined' || !('caches' in window)) return
+  try {
+    const cache = await caches.open('refuges-static-v3')
+    const urls = [
+      '/',
+      '/index.html',
+      '/site.webmanifest',
+      '/favicon.svg',
+      '/favicon.png',
+      '/favicon-192x192.png',
+      '/apple-touch-icon.png',
+      '/refuges_index.json',
+    ]
+
+    // Récupère dynamiquement les bundles JS et CSS injectés par Vite dans le document
+    if (typeof document !== 'undefined') {
+      document.querySelectorAll('script[src]').forEach((el) => {
+        const src = el.getAttribute('src')
+        if (src && !src.startsWith('http') && !urls.includes(src)) {
+          urls.push(src)
+        }
+      })
+      document.querySelectorAll('link[rel="stylesheet"][href]').forEach((el) => {
+        const href = el.getAttribute('href')
+        if (href && !href.startsWith('http') && !urls.includes(href)) {
+          urls.push(href)
+        }
+      })
+    }
+
+    await Promise.allSettled(
+      urls.map(async (u) => {
+        try {
+          const res = await fetch(u, { cache: 'no-cache' })
+          if (res.ok) await cache.put(u, res)
+        } catch {
+          // ignore
+        }
+      }),
+    )
+  } catch (err) {
+    console.warn('[Offline] Erreur mise en cache app shell:', err)
+  }
+}
+
+/**
  * Télécharge et met en cache l'ensemble des tuiles et refuges d'une zone géographique
  */
 export async function downloadZone({
@@ -97,15 +149,18 @@ export async function downloadZone({
   name,
   bbox,
   layer = 'ign',
-  minZoom = 10,
-  maxZoom = 13,
+  minZoom = 11,
+  maxZoom = 16,
   onProgress = () => {},
   signal,
 }) {
   const calculation = calculateZoneTiles(bbox, minZoom, maxZoom)
   const total = calculation.totalTiles
 
-  // 1. Génération de toutes les coordonnées de tuiles
+  // 1. Assurer la mise en cache de l'App Shell pour être certain que l'application s'ouvre hors-ligne
+  ensureAppShellCached().catch(() => {})
+
+  // 2. Génération de toutes les coordonnées de tuiles
   const tilesToFetch = []
   for (const level of calculation.levels) {
     const z = level.zoom
@@ -121,13 +176,13 @@ export async function downloadZone({
     }
   }
 
-  // 2. Ouverture du cache de tuiles
+  // 3. Ouverture du cache de tuiles
   const cache = await caches.open(TILES_CACHE_NAME)
   let downloaded = 0
   let totalBytes = 0
-  const CONCURRENCY = 6
+  const CONCURRENCY = 8 // Accélération du téléchargement
 
-  // File d'attente concurrente avec limitation
+  // File d'attente concurrente
   let index = 0
   async function worker() {
     while (index < tilesToFetch.length) {
@@ -148,11 +203,10 @@ export async function downloadZone({
             totalBytes += blob.size
           }
         } else {
-          totalBytes += 25 * 1024 // Estimation
+          totalBytes += current.z >= 15 ? 48 * 1024 : 25 * 1024
         }
       } catch (err) {
         if (signal?.aborted) throw err
-        // Tolérance aux pannes sur quelques tuiles
         console.warn(`[Offline] Échec tuile ${url}:`, err.message)
       }
 
@@ -172,7 +226,7 @@ export async function downloadZone({
   const workers = Array.from({ length: CONCURRENCY }, () => worker())
   await Promise.all(workers)
 
-  // 3. Récupération et sauvegarde des refuges contenus dans la zone
+  // 4. Récupération et sauvegarde des refuges contenus dans la zone
   let zoneRefuges = []
   try {
     const indexRes = await fetch('/refuges_index.json')
@@ -187,7 +241,7 @@ export async function downloadZone({
     console.warn('[Offline] Erreur chargement index refuges:', err)
   }
 
-  // 4. Enregistrement des métadonnées de la zone
+  // 5. Enregistrement des métadonnées de la zone
   const zoneMeta = {
     id: id || `zone-${Date.now()}`,
     name: name || `Zone Alpin (${new Date().toLocaleDateString('fr-FR')})`,
@@ -218,6 +272,16 @@ export function getSavedZones() {
   } catch {
     return []
   }
+}
+
+/**
+ * Récupère le zoom maximal parmi toutes les zones sauvegardées (ou 16 par défaut)
+ */
+export function getSavedZonesMaxZoom(_trigger) {
+  const zones = getSavedZones()
+  if (!zones || zones.length === 0) return 16
+  const max = Math.max(...zones.map((z) => z.maxZoom || 13))
+  return Math.max(max, 15)
 }
 
 /**

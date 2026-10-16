@@ -1,5 +1,5 @@
 // Service Worker pour Refuges des Alpes (PWA + Cartes hors-ligne)
-const STATIC_CACHE = 'refuges-static-v2'
+const STATIC_CACHE = 'refuges-static-v3'
 const TILES_CACHE = 'refuges-map-tiles-v1'
 const DATA_CACHE = 'refuges-data-v1'
 
@@ -22,8 +22,9 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches
       .open(STATIC_CACHE)
-      .then((cache) => {
-        return Promise.allSettled(
+      .then(async (cache) => {
+        // 1. Pré-cache des ressources de base
+        await Promise.allSettled(
           CORE_ASSETS.map((url) =>
             fetch(url, { cache: 'no-cache' })
               .then((res) => {
@@ -34,6 +35,33 @@ self.addEventListener('install', (event) => {
               }),
           ),
         )
+
+        // 2. Découverte et pré-cache dynamique des bundles JS/CSS Vite (/assets/...)
+        try {
+          const indexRes = (await cache.match('/index.html')) || (await fetch('/index.html'))
+          if (indexRes && indexRes.ok) {
+            const html = await indexRes.clone().text()
+            const assetUrls = []
+            // Détection des fichiers JS et CSS générés par Vite dans index.html
+            const regex = /(?:src|href)=["'](\/assets\/[^"']+)["']/g
+            let match
+            while ((match = regex.exec(html)) !== null) {
+              assetUrls.push(match[1])
+            }
+            await Promise.allSettled(
+              assetUrls.map(async (assetUrl) => {
+                try {
+                  const res = await fetch(assetUrl)
+                  if (res.ok) await cache.put(assetUrl, res)
+                } catch {
+                  // Ignore échec individuel
+                }
+              }),
+            )
+          }
+        } catch (e) {
+          console.warn('[SW] Pré-cache dynamique Vite bundles:', e)
+        }
       })
       .then(() => self.skipWaiting()),
   )
@@ -88,7 +116,7 @@ self.addEventListener('fetch', (event) => {
         try {
           const networkRes = await fetch(req)
           if (networkRes && networkRes.ok) {
-            // Mettre en cache automatique des tuiles consultées en ligne (jusqu'à une taille raisonnable)
+            // Mettre en cache automatique des tuiles consultées en ligne
             tilesCache.put(url, networkRes.clone()).catch(() => {})
             return networkRes
           }
@@ -102,7 +130,43 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  // 2. DONNÉES / API (Network First avec fallback cache)
+  // 2. NAVIGATION (Lancement de la PWA ou chargement de page hors-ligne)
+  if (req.mode === 'navigate') {
+    event.respondWith(
+      (async () => {
+        try {
+          // Essai réseau en priorité si connecté
+          const preload = await event.preloadResponse
+          if (preload) return preload
+
+          const networkRes = await fetch(req)
+          if (networkRes && networkRes.ok) {
+            const staticCache = await caches.open(STATIC_CACHE)
+            staticCache.put('/index.html', networkRes.clone()).catch(() => {})
+            return networkRes
+          }
+        } catch {
+          // Réseau indisponible (mode montagne / hors-ligne)
+        }
+
+        // Secours garanti sur l'application shell en cache
+        const cached =
+          (await caches.match('/index.html')) ||
+          (await caches.match('/', { ignoreSearch: true })) ||
+          (await caches.match(req, { ignoreSearch: true }))
+
+        if (cached) return cached
+
+        return new Response(
+          '<!doctype html><html lang="fr"><head><meta charset="UTF-8"><title>Refuges des Alpes</title></head><body style="background:#0f172a;color:#fff;text-align:center;padding:50px;font-family:sans-serif;"><h2>Refuges des Alpes</h2><p>Application en mode hors-ligne.</p></body></html>',
+          { headers: { 'Content-Type': 'text/html; charset=utf-8' } },
+        )
+      })(),
+    )
+    return
+  }
+
+  // 3. DONNÉES / API (Network First avec fallback cache)
   if (url.includes('/api/') || url.includes('/rimg/') || url.includes('refuges.info')) {
     event.respondWith(
       (async () => {
@@ -123,21 +187,40 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  // 3. FICHIERS STATIQUES DE L'APPLICATION (HTML, CSS, JS, Fonts, Images) : Stale-While-Revalidate
+  // 4. FICHIERS STATIQUES DE L'APPLICATION (JS, CSS, Polices, Images, Icons)
+  // Stratégie : Cache First avec revalidation réseau en arrière-plan
   event.respondWith(
     (async () => {
-      const cached = await caches.match(req)
-      const fetchPromise = fetch(req)
-        .then(async (networkRes) => {
-          if (networkRes && networkRes.ok) {
-            const staticCache = await caches.open(STATIC_CACHE)
-            staticCache.put(req, networkRes.clone()).catch(() => {})
-          }
-          return networkRes
-        })
-        .catch(() => cached)
+      const cached = await caches.match(req, { ignoreSearch: true })
+      if (cached) {
+        // En arrière-plan, mise à jour discrète si le réseau est accessible
+        fetch(req)
+          .then(async (networkRes) => {
+            if (networkRes && networkRes.ok) {
+              const staticCache = await caches.open(STATIC_CACHE)
+              staticCache.put(req, networkRes).catch(() => {})
+            }
+          })
+          .catch(() => {})
+        return cached
+      }
 
-      return cached || fetchPromise
+      // Si absent du cache, récupération réseau
+      try {
+        const networkRes = await fetch(req)
+        if (networkRes && networkRes.ok) {
+          const staticCache = await caches.open(STATIC_CACHE)
+          staticCache.put(req, networkRes.clone()).catch(() => {})
+        }
+        return networkRes
+      } catch (err) {
+        // Fallback ultime sur index.html pour les navigations statiques
+        if (url.endsWith('.html') || url === self.location.origin + '/') {
+          const fallback = await caches.match('/index.html')
+          if (fallback) return fallback
+        }
+        throw err
+      }
     })(),
   )
 })

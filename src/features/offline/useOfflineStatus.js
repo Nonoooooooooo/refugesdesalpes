@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { ensureAppShellCached } from './offlineService'
 
 let deferredPrompt = null
 
@@ -10,13 +11,17 @@ export function useOfflineStatus() {
   const [isInstalled, setIsInstalled] = useState(false)
   const [isIos, setIsIos] = useState(false)
 
-  // 1. Enregistrement du Service Worker
+  // 1. Enregistrement du Service Worker et mise en cache préventive de l'App Shell
   useEffect(() => {
-    if ('serviceWorker' in navigator && process.env.NODE_ENV !== 'test') {
+    if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator && import.meta.env.MODE !== 'test') {
       navigator.serviceWorker
         .register('/sw.js')
         .then((reg) => {
           console.log('[PWA] Service Worker actif, portée:', reg.scope)
+          // Synchroniser l'application shell en cache pour garantir un démarrage hors-ligne 100% autonome
+          setTimeout(() => {
+            ensureAppShellCached()
+          }, 1200)
         })
         .catch((err) => {
           console.warn('[PWA] Échec enregistrement Service Worker:', err)
@@ -26,7 +31,10 @@ export function useOfflineStatus() {
 
   // 2. Détection en ligne / hors-ligne
   useEffect(() => {
-    const handleOnline = () => setIsOnline(true)
+    const handleOnline = () => {
+      setIsOnline(true)
+      ensureAppShellCached()
+    }
     const handleOffline = () => setIsOnline(false)
 
     window.addEventListener('online', handleOnline)

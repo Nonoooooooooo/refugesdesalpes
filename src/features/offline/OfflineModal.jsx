@@ -14,6 +14,8 @@ import {
   Share2,
   PlusSquare,
   Compass,
+  Sparkles,
+  Info,
 } from 'lucide-react'
 import {
   calculateZoneTiles,
@@ -38,7 +40,7 @@ export default function OfflineModal({
   const [activeTab, setActiveTab] = useState('download') // 'download' | 'zones' | 'pwa'
   const [zoneName, setZoneName] = useState('')
   const [layer, setLayer] = useState('ign') // 'ign' | 'opentopo'
-  const [detailLevel, setDetailLevel] = useState('standard') // 'standard' (10-13) | 'precise' (10-14)
+  const [detailLevel, setDetailLevel] = useState('ultra') // 'ultra' (11-16) | 'topo' (11-15) | 'standard' (10-13)
   const [savedZones, setSavedZones] = useState([])
   const [storage, setStorage] = useState(null)
 
@@ -60,7 +62,6 @@ export default function OfflineModal({
       refreshZones()
       setDownloadSuccess(null)
       setDownloadError(null)
-      // Génération automatique d'un nom par défaut pertinent selon la position
       if (mapCenter) {
         setZoneName(
           `Massif Alpin (${mapCenter.lat.toFixed(2)}°N, ${mapCenter.lng.toFixed(2)}°E)`,
@@ -82,13 +83,46 @@ export default function OfflineModal({
     ]
   }, [mapBounds])
 
-  const minZoom = 10
-  const maxZoom = detailLevel === 'precise' ? 14 : 13
+  // Configuration des niveaux de précision
+  const zoomConfig = useMemo(() => {
+    switch (detailLevel) {
+      case 'standard':
+        return {
+          minZoom: 10,
+          maxZoom: 13,
+          title: 'Standard (Aperçu)',
+          scale: '1:50 000',
+          badge: 'Léger & Rapide',
+        }
+      case 'topo':
+        return {
+          minZoom: 11,
+          maxZoom: 15,
+          title: 'Randonnée TOP 25',
+          scale: '1:25 000',
+          badge: 'IGN TOP 25',
+        }
+      case 'ultra':
+      default:
+        return {
+          minZoom: 11,
+          maxZoom: 16,
+          title: 'Haute Précision',
+          scale: '1:12 500',
+          badge: 'Identique au Wifi',
+        }
+    }
+  }, [detailLevel])
 
-  // Estimation dynamique en direct
+  const minZoom = zoomConfig.minZoom
+  const maxZoom = zoomConfig.maxZoom
+
+  // Estimation dynamique en direct selon l'emprise et le niveau de zoom
   const estimation = useMemo(() => {
     return calculateZoneTiles(currentBbox, minZoom, maxZoom)
   }, [currentBbox, minZoom, maxZoom])
+
+  const isTooLarge = estimation.totalTiles > 6000
 
   // Lancement du téléchargement
   const handleStartDownload = async () => {
@@ -240,8 +274,8 @@ export default function OfflineModal({
           {activeTab === 'download' && (
             <div className="space-y-4.5">
               <div className="rounded-2xl border border-amber-400/20 bg-amber-400/5 p-4 text-xs text-amber-200/90 leading-relaxed">
-                <span className="font-semibold text-amber-300">💡 Comment ça marche :</span>{' '}
-                Les tuiles cartographiques de l'emprise actuellement affichée à l’écran ainsi que tous les refuges et cabanes de la zone seront enregistrés dans la mémoire de votre téléphone. Vous pourrez explorer la carte même en zone blanche sans aucune connexion internet.
+                <span className="font-semibold text-amber-300">💡 Fonctionnement hors-ligne :</span>{' '}
+                Les tuiles cartographiques de l'emprise visible et l'ensemble des refuges et cabanes sont enregistrés directement dans la mémoire de votre téléphone. Vous pourrez naviguer sur la carte en pleine montagne même en mode avion.
               </div>
 
               {/* Nom de la zone */}
@@ -280,7 +314,7 @@ export default function OfflineModal({
                   >
                     <span className="font-semibold text-xs sm:text-sm text-slate-200">IGN Géoplateforme</span>
                     <span className="text-[11px] text-slate-400 mt-0.5">
-                      Topographie officielle française et courbes de niveau
+                      Topographie officielle française, sentiers GR/PR et courbes de niveau
                     </span>
                   </button>
 
@@ -296,54 +330,96 @@ export default function OfflineModal({
                   >
                     <span className="font-semibold text-xs sm:text-sm text-slate-200">OpenTopoMap</span>
                     <span className="text-[11px] text-slate-400 mt-0.5">
-                      Cartographie topo alpine avec ombrage de relief
+                      Cartographie topo alpine avec ombrage de relief marqué
                     </span>
                   </button>
                 </div>
               </div>
 
-              {/* Choix du niveau de détail */}
+              {/* Choix du niveau de détail & zoom */}
               <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-300">
-                  Niveau de précision & Détail
-                </label>
-                <div className="grid grid-cols-2 gap-2.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-slate-300">
+                    Niveau de précision & Zoom
+                  </label>
+                  <span className="text-[11px] text-amber-300 font-medium">
+                    Zoom max : {maxZoom} ({zoomConfig.scale})
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  {/* Niveau 1 : Haute Précision (Identique au Wifi) */}
+                  <button
+                    type="button"
+                    onClick={() => setDetailLevel('ultra')}
+                    disabled={downloading}
+                    className={`rounded-2xl border p-3 text-left transition flex flex-col justify-between ${
+                      detailLevel === 'ultra'
+                        ? 'border-amber-400 bg-amber-400/15 text-white ring-1 ring-amber-400/60 shadow-lg'
+                        : 'border-white/10 bg-slate-800/50 text-slate-400 hover:border-white/20'
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between gap-1 mb-1">
+                        <span className="text-xs sm:text-sm font-semibold text-slate-100 flex items-center gap-1">
+                          <Sparkles size={13} className="text-amber-400" /> Haute Précision
+                        </span>
+                        <span className="rounded-full bg-amber-400/25 px-1.5 py-0.5 text-[9px] font-bold text-amber-300 uppercase shrink-0">
+                          Comme Wifi
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-300 leading-tight">
+                        <strong>Zooms 11 à 16 (1:12 500)</strong>. Même netteté qu'en ligne : chaque sentier, pierrier, rocher et abords de refuge au mètre près.
+                      </p>
+                    </div>
+                  </button>
+
+                  {/* Niveau 2 : Randonnée TOP 25 */}
+                  <button
+                    type="button"
+                    onClick={() => setDetailLevel('topo')}
+                    disabled={downloading}
+                    className={`rounded-2xl border p-3 text-left transition flex flex-col justify-between ${
+                      detailLevel === 'topo'
+                        ? 'border-amber-400 bg-amber-400/15 text-white ring-1 ring-amber-400/60 shadow-lg'
+                        : 'border-white/10 bg-slate-800/50 text-slate-400 hover:border-white/20'
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between gap-1 mb-1">
+                        <span className="text-xs sm:text-sm font-semibold text-slate-100">Rando TOP 25</span>
+                        <span className="rounded-full bg-slate-700 px-1.5 py-0.5 text-[9px] font-bold text-slate-300 uppercase shrink-0">
+                          1:25 000
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-400 leading-tight">
+                        <strong>Zooms 11 à 15 (1:25 000)</strong>. Carte IGN topo classique de randonnée avec courbes de niveau et sentiers balisés.
+                      </p>
+                    </div>
+                  </button>
+
+                  {/* Niveau 3 : Standard Aperçu */}
                   <button
                     type="button"
                     onClick={() => setDetailLevel('standard')}
                     disabled={downloading}
-                    className={`rounded-2xl border p-3 text-left transition ${
+                    className={`rounded-2xl border p-3 text-left transition flex flex-col justify-between ${
                       detailLevel === 'standard'
-                        ? 'border-amber-400/60 bg-amber-400/10 text-white'
+                        ? 'border-amber-400 bg-amber-400/15 text-white ring-1 ring-amber-400/60 shadow-lg'
                         : 'border-white/10 bg-slate-800/50 text-slate-400 hover:border-white/20'
                     }`}
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs sm:text-sm font-semibold text-slate-200">Standard</span>
-                      <span className="text-[10px] uppercase font-bold text-amber-300">Recommandé</span>
+                    <div>
+                      <div className="flex items-center justify-between gap-1 mb-1">
+                        <span className="text-xs sm:text-sm font-semibold text-slate-100">Standard</span>
+                        <span className="rounded-full bg-slate-700 px-1.5 py-0.5 text-[9px] font-bold text-slate-300 uppercase shrink-0">
+                          Aperçu
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-400 leading-tight">
+                        <strong>Zooms 10 à 13</strong>. Repérage d'ensemble d'un grand massif à très faible volume de données.
+                      </p>
                     </div>
-                    <span className="text-[11px] text-slate-400 block mt-1">
-                      Zooms 10 à 13 · Idéal pour le repérage en rando (~{estimation.levels.slice(0, 4).reduce((a, b) => a + b.count, 0)} tuiles)
-                    </span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setDetailLevel('precise')}
-                    disabled={downloading}
-                    className={`rounded-2xl border p-3 text-left transition ${
-                      detailLevel === 'precise'
-                        ? 'border-amber-400/60 bg-amber-400/10 text-white'
-                        : 'border-white/10 bg-slate-800/50 text-slate-400 hover:border-white/20'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs sm:text-sm font-semibold text-slate-200">Haute précision</span>
-                      <span className="text-[10px] uppercase font-bold text-slate-400">Zoom 14</span>
-                    </div>
-                    <span className="text-[11px] text-slate-400 block mt-1">
-                      Zoom très précis sur chaque sentier (~{estimation.totalTiles} tuiles)
-                    </span>
                   </button>
                 </div>
               </div>
@@ -366,11 +442,23 @@ export default function OfflineModal({
                 </div>
               </div>
 
+              {/* Alerte si la zone est trop vaste pour ce zoom */}
+              {isTooLarge && (
+                <div className="rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4 text-xs text-amber-200 space-y-1 animate-in fade-in">
+                  <div className="font-semibold text-amber-300 flex items-center gap-1.5">
+                    <AlertCircle size={15} /> Zone trop vaste pour la Haute Précision ({estimation.totalTiles} tuiles)
+                  </div>
+                  <p className="text-[11px] text-amber-200/90 leading-relaxed">
+                    Pour télécharger avec le niveau de zoom maximal (Zoom 16, identique au Wifi), fermez cette modale, <strong>zoomez sur votre secteur de rando ou votre vallée sur la carte</strong>, puis réouvrez « Enregistrer ». Cela réduira le nombre de tuiles et assurera un enregistrement rapide.
+                  </p>
+                </div>
+              )}
+
               {/* État de téléchargement / Barre de progression */}
               {downloading && progress && (
                 <div className="rounded-2xl border border-amber-400/30 bg-amber-400/10 p-4 space-y-2.5 animate-in fade-in">
                   <div className="flex items-center justify-between text-xs font-semibold text-amber-300">
-                    <span>Téléchargement des tuiles en cours...</span>
+                    <span>Téléchargement des tuiles IGN en cours...</span>
                     <span>{progress.percent}%</span>
                   </div>
                   <div className="h-2 w-full overflow-hidden rounded-full bg-slate-800">
@@ -394,10 +482,10 @@ export default function OfflineModal({
                   <CheckCircle2 size={18} className="text-emerald-400 shrink-0 mt-0.5" />
                   <div>
                     <span className="font-semibold text-emerald-300 block mb-0.5">
-                      Zone « {downloadSuccess.name} » enregistrée hors-ligne !
+                      Zone « {downloadSuccess.name} » enregistrée avec succès !
                     </span>
                     <span>
-                      {downloadSuccess.tileCount} tuiles stockées ({downloadSuccess.sizeMb} Mo) avec {downloadSuccess.refugesCount} refuges et cabanes inclus. Vous pouvez maintenant consulter cette zone même en mode avion.
+                      {downloadSuccess.tileCount} tuiles stockées ({downloadSuccess.sizeMb} Mo, jusqu'au zoom {downloadSuccess.maxZoom}) avec {downloadSuccess.refugesCount} refuges et cabanes inclus. Vous pouvez maintenant naviguer en montagne sans réseau.
                     </span>
                   </div>
                 </div>
@@ -428,11 +516,15 @@ export default function OfflineModal({
                   <button
                     type="button"
                     onClick={handleStartDownload}
-                    disabled={estimation.totalTiles > 3000}
-                    className="w-full rounded-2xl border border-amber-400/40 bg-amber-400/15 py-3 text-sm font-semibold text-amber-200 hover:bg-amber-400/25 hover:text-amber-100 transition shadow-lg flex items-center justify-center gap-2 disabled:opacity-50"
+                    disabled={isTooLarge}
+                    className="w-full rounded-2xl border border-amber-400/40 bg-amber-400/15 py-3 text-sm font-semibold text-amber-200 hover:bg-amber-400/25 hover:text-amber-100 transition shadow-lg flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <Download size={16} />
-                    <span>Télécharger la zone ({estimation.estimatedSizeMb} Mo)</span>
+                    <span>
+                      {isTooLarge
+                        ? 'Zone trop large · Zoomez d’abord sur la carte'
+                        : `Télécharger la zone (${estimation.totalTiles} tuiles · ~${estimation.estimatedSizeMb} Mo)`}
+                    </span>
                   </button>
                 )}
               </div>
@@ -449,19 +541,19 @@ export default function OfflineModal({
                   </div>
                   <h3 className="text-sm font-semibold text-slate-300">Aucune zone hors-ligne enregistrée</h3>
                   <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                    Naviguez sur la carte jusqu’à votre massif de randonnée, puis utilisez l’onglet « Télécharger une zone » pour le rendre accessible sans connexion.
+                    Naviguez sur la carte jusqu’au massif de votre choix, puis utilisez l’onglet « Télécharger une zone » pour le conserver sur votre téléphone.
                   </p>
                   <button
                     onClick={() => setActiveTab('download')}
-                    className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-xs font-semibold text-amber-300 hover:bg-amber-400/20 transition"
+                    className="rounded-2xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-xs font-semibold text-amber-300 hover:bg-amber-400/20 transition"
                   >
-                    <Download size={14} /> Télécharger l'emprise courante
+                    Télécharger ma première zone
                   </button>
                 </div>
               ) : (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between text-xs text-slate-400 px-1">
-                    <span>{savedZones.length} zone(s) enregistrée(s)</span>
+                <div className="space-y-2.5">
+                  <div className="text-xs text-slate-400 flex items-center justify-between pb-1">
+                    <span>{savedZones.length} zone(s) enregistrée(s) en mémoire</span>
                     <span>
                       Total :{' '}
                       {(
@@ -476,27 +568,22 @@ export default function OfflineModal({
                       key={z.id}
                       onClick={() => {
                         if (onFlyToZone && z.bbox) {
-                          const [west, south, east, north] = z.bbox
-                          onFlyToZone({
-                            lat: (south + north) / 2,
-                            lng: (west + east) / 2,
-                            zoom: z.minZoom ? z.minZoom + 1 : 11,
-                          })
+                          onFlyToZone(z.bbox)
                           onClose()
                         }
                       }}
-                      className="group cursor-pointer rounded-2xl border border-white/10 bg-slate-800/60 p-4 hover:border-amber-400/40 hover:bg-slate-800 transition flex items-center justify-between gap-3"
+                      className="group flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-slate-800/40 p-3.5 hover:border-amber-400/40 hover:bg-slate-800/70 transition cursor-pointer"
                     >
-                      <div className="space-y-1">
+                      <div className="space-y-1 min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          <span className="font-semibold text-sm text-white group-hover:text-amber-200 transition">
+                          <span className="font-semibold text-sm text-slate-200 truncate">
                             {z.name}
                           </span>
-                          <span className="rounded-full bg-slate-700/60 px-2 py-0.5 text-[10px] font-medium text-slate-300 uppercase">
-                            {z.layer === 'ign' ? 'IGN' : 'OpenTopo'}
+                          <span className="rounded bg-slate-700 px-1.5 py-0.5 text-[10px] text-slate-300 shrink-0">
+                            {z.layer === 'ign' ? 'IGN' : 'OpenTopo'} · Zoom {z.maxZoom || 13}
                           </span>
                         </div>
-                        <div className="flex items-center gap-3 text-[11px] text-slate-400">
+                        <div className="flex items-center gap-2 text-xs text-slate-400">
                           <span>{new Date(z.date).toLocaleDateString('fr-FR')}</span>
                           <span>·</span>
                           <span>{z.tileCount} tuiles</span>
@@ -536,11 +623,22 @@ export default function OfflineModal({
                   <Smartphone size={24} />
                 </div>
                 <div className="space-y-1">
-                  <h3 className="text-sm font-semibold text-white">Application mobile autonome</h3>
+                  <h3 className="text-sm font-semibold text-white">Application mobile autonome (PWA)</h3>
                   <p className="text-xs text-slate-400 leading-relaxed">
-                    Installez Refuges des Alpes sur l'écran d'accueil de votre téléphone. L’app s’ouvre en plein écran, sans barre de navigation, et fonctionne même en mode avion.
+                    Installez Refuges des Alpes sur l'écran d'accueil de votre téléphone. L’app démarre en plein écran et fonctionne de manière 100% autonome, même sans réseau en pleine montagne.
                   </p>
                 </div>
+              </div>
+
+              {/* Réponse claire à la question des fichiers du téléphone */}
+              <div className="rounded-2xl border border-blue-400/20 bg-blue-400/5 p-4 space-y-1.5 text-xs text-blue-200">
+                <div className="font-semibold text-blue-300 flex items-center gap-1.5">
+                  <Info size={15} /> Pourquoi l'application ne s'ouvre pas depuis « Mes Fichiers » ?
+                </div>
+                <p className="text-[11px] text-blue-200/80 leading-relaxed">
+                  Sur smartphone (iOS et Android), les navigateurs interdisent aux simples fichiers téléchargés d'accéder au stockage des tuiles et aux cartes interactives pour des raisons de sécurité.
+                  <strong> C'est pour cela qu'il faut utiliser l'option « Sur l'écran d'accueil » ci-dessous</strong> : votre téléphone l'enregistre alors comme une véritable application autonome capable de démarrer sans réseau.
+                </p>
               </div>
 
               {/* Si déjà installée */}
@@ -548,12 +646,12 @@ export default function OfflineModal({
                 <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 flex items-center gap-3 text-xs text-emerald-200">
                   <CheckCircle2 size={18} className="text-emerald-400 shrink-0" />
                   <span>
-                    L'application est déjà installée sur cet appareil et fonctionne en mode autonome !
+                    L'application est installée sur cet appareil et prête pour une utilisation hors-ligne autonome.
                   </span>
                 </div>
               ) : (
                 <div className="space-y-3.5">
-                  {/* Android / Chrome / Desktop install prompt direct */}
+                  {/* Android / Chrome prompt direct */}
                   {installPromptReady && (
                     <button
                       type="button"
@@ -587,7 +685,7 @@ export default function OfflineModal({
                           .
                         </li>
                         <li>
-                          Appuyez sur <strong>« Ajouter »</strong> en haut à droite.
+                          Appuyez sur <strong>« Ajouter »</strong> en haut à droite. L'icône apparaîtra avec vos autres applications.
                         </li>
                       </ol>
                     </div>
@@ -618,10 +716,10 @@ export default function OfflineModal({
 
                 <div className="rounded-2xl border border-white/5 bg-slate-950/40 p-3 space-y-1">
                   <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-200">
-                    <WifiOff size={14} className="text-amber-400" /> Mode avion compatible
+                    <WifiOff size={14} className="text-amber-400" /> 100% Hors-ligne
                   </div>
                   <p className="text-[11px] text-slate-400">
-                    L'application et vos zones enregistrées restent disponibles au fond de la vallée.
+                    Démarre immédiatement au fond des vallées blanches sans aucun signal.
                   </p>
                 </div>
               </div>

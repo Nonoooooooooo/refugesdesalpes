@@ -22,7 +22,7 @@ import FavoritesModal from './components/FavoritesModal.jsx'
 import { useFavorites } from './context/FavoritesContext.jsx'
 import OfflineModal from './features/offline/OfflineModal.jsx'
 import { useOfflineStatus } from './features/offline/useOfflineStatus.js'
-import { getOfflineRefugesForBbox, getSavedZones } from './features/offline/offlineService.js'
+import { getOfflineRefugesForBbox, getSavedZones, getSavedZonesMaxZoom } from './features/offline/offlineService.js'
 
 const MIN_ZOOM_FETCH = 9
 const IMAGERY_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
@@ -219,6 +219,7 @@ export default function App() {
   const [showOfflineModal, setShowOfflineModal] = useState(false)
   const [mapState, setMapState] = useState(null)
   const [savedZonesCount, setSavedZonesCount] = useState(() => getSavedZones().length)
+  const maxSavedZoom = useMemo(() => getSavedZonesMaxZoom(savedZonesCount), [savedZonesCount])
 
   // Cumule les points déjà vus avec détection de changement (évite tout re-render inutile si aucun nouveau point)
   const handleData = useCallback((incoming) => {
@@ -328,7 +329,7 @@ export default function App() {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors, SRTM | Style: &copy; <a href="https://opentopomap.org" target="_blank" rel="noreferrer">OpenTopoMap</a>'
             url={OPENTOPO_URL}
             subdomains={['a', 'b', 'c']}
-            maxNativeZoom={17}
+            maxNativeZoom={!isOnline ? (maxSavedZoom || 16) : 17}
             maxZoom={18}
             keepBuffer={3}
             updateInterval={100}
@@ -339,6 +340,7 @@ export default function App() {
             key="ign"
             attribution='&copy; <a href="https://geoservices.ign.fr/" target="_blank" rel="noreferrer">IGN - Géoplateforme</a>'
             url={IGN_URL}
+            maxNativeZoom={!isOnline ? (maxSavedZoom || 16) : 18}
             maxZoom={18}
             keepBuffer={3}
             updateInterval={100}
@@ -449,7 +451,12 @@ export default function App() {
         mapBounds={mapState?.bounds}
         mapCenter={mapState?.center}
         onFlyToZone={(target) => {
-          setFlyTarget({ lat: target.lat, lng: target.lng, zoom: target.zoom, t: Date.now() })
+          if (Array.isArray(target) && target.length === 4) {
+            const [w, s, e, n] = target
+            setFlyTarget({ lat: (s + n) / 2, lng: (w + e) / 2, zoom: 12, t: Date.now() })
+          } else if (target?.lat && target?.lng) {
+            setFlyTarget({ lat: target.lat, lng: target.lng, zoom: target.zoom || 13, t: Date.now() })
+          }
         }}
         isOnline={isOnline}
         isInstalled={isInstalled}
