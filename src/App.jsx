@@ -16,6 +16,8 @@ import TransportSidebar from './features/transport/TransportSidebar.jsx'
 import OverpassLayer from './features/overpass/OverpassLayer.jsx'
 import WebcamLayer from './features/webcams/WebcamLayer.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
+import FavoritesModal from './components/FavoritesModal.jsx'
+import { useFavorites } from './context/FavoritesContext.jsx'
 
 const MIN_ZOOM_FETCH = 9
 const IMAGERY_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
@@ -26,17 +28,21 @@ const LABELS_URL =
 const TRAILS_URL = 'https://tile.waymarkedtrails.org/hiking/{z}/{x}/{y}.png'
 const iconCache = new Map()
 
-function pinIcon(type, selected) {
+function pinIcon(type, selected, isFav = false) {
   const { color, Icon, key } = typeInfo(type)
-  const cacheKey = `${key}-${selected}`
+  const cacheKey = `${key}-${selected}-${isFav}`
   if (!iconCache.has(cacheKey)) {
     iconCache.set(
       cacheKey,
       L.divIcon({
         className: 'refuge-marker',
         html: renderToStaticMarkup(
-          <div className={`refuge-pin${selected ? ' selected' : ''}`} style={{ background: color }}>
+          <div
+            className={`refuge-pin${selected ? ' selected' : ''}${isFav ? ' favorite' : ''}`}
+            style={{ background: color }}
+          >
             <Icon size={13} strokeWidth={2.4} />
+            {isFav && <span className="refuge-pin-heart">❤️</span>}
           </div>,
         ),
         iconSize: [24, 24],
@@ -114,6 +120,7 @@ function FlyToSelected({ target }) {
 }
 
 export default function App() {
+  const { favorites, isFavorite, toastMessage } = useFavorites()
   const [points, setPoints] = useState([])
   const [status, setStatus] = useState({ loading: false, error: null, tooFar: false })
   const [selected, setSelected] = useState(null)
@@ -126,6 +133,8 @@ export default function App() {
   const [showParkings, setShowParkings] = useState(false)
   const [showPeaks, setShowPeaks] = useState(false)
   const [showWebcams, setShowWebcams] = useState(false)
+  const [showFavoritesModal, setShowFavoritesModal] = useState(false)
+  const [filterOnlyFavorites, setFilterOnlyFavorites] = useState(false)
 
   // Cumule les points déjà vus pour éviter le scintillement, borne la taille.
   const handleData = useCallback((incoming) => {
@@ -136,10 +145,26 @@ export default function App() {
     })
   }, [])
 
-  const visible = useMemo(
-    () => points.filter((p) => activeTypes.has(typeInfo(p.type).key)),
-    [points, activeTypes],
-  )
+  // Filtrage selon types et option "Favoris seuls"
+  const visible = useMemo(() => {
+    if (filterOnlyFavorites) {
+      return favorites.filter((p) => activeTypes.has(typeInfo(p.type).key))
+    }
+    return points.filter((p) => activeTypes.has(typeInfo(p.type).key))
+  }, [points, activeTypes, filterOnlyFavorites, favorites])
+
+  // Centrage automatique lors de l'activation du filtre favoris
+  useEffect(() => {
+    if (filterOnlyFavorites && favorites.length > 0) {
+      if (favorites.length === 1) {
+        setFlyTarget({ lat: favorites[0].lat, lng: favorites[0].lng, zoom: 13, t: Date.now() })
+      } else {
+        const avgLat = favorites.reduce((acc, f) => acc + f.lat, 0) / favorites.length
+        const avgLng = favorites.reduce((acc, f) => acc + f.lng, 0) / favorites.length
+        setFlyTarget({ lat: avgLat, lng: avgLng, zoom: 9, t: Date.now() })
+      }
+    }
+  }, [filterOnlyFavorites, favorites])
 
   const toggleType = (key) =>
     setActiveTypes((prev) => {
@@ -259,29 +284,35 @@ export default function App() {
           spiderfyOnMaxZoom
           iconCreateFunction={clusterIcon}
         >
-          {visible.map((p) => (
-            <Marker
-              key={p.id}
-              position={[p.lat, p.lng]}
-              icon={pinIcon(p.type, selected?.id === p.id)}
-              eventHandlers={{
-                click: () => selectPoint(p),
-                mouseover: () => onHoverStart(p.id),
-                mouseout: onHoverEnd,
-              }}
-            >
-              {hoveredId === p.id && (
-                <Tooltip permanent direction="top" offset={[0, -14]} className="refuge-tooltip">
-                  <div className="refuge-tooltip-name">{p.nom}</div>
-                  <div className="refuge-tooltip-meta">
-                    <span style={{ background: typeInfo(p.type).color }} className="refuge-tooltip-dot" />
-                    {p.alt != null ? `${p.alt} m` : 'Altitude inconnue'}
-                    <span className="opacity-60"> · {typeInfo(p.type).label}</span>
-                  </div>
-                </Tooltip>
-              )}
-            </Marker>
-          ))}
+          {visible.map((p) => {
+            const isFav = isFavorite(p.id)
+            return (
+              <Marker
+                key={p.id}
+                position={[p.lat, p.lng]}
+                icon={pinIcon(p.type, selected?.id === p.id, isFav)}
+                eventHandlers={{
+                  click: () => selectPoint(p),
+                  mouseover: () => onHoverStart(p.id),
+                  mouseout: onHoverEnd,
+                }}
+              >
+                {hoveredId === p.id && (
+                  <Tooltip permanent direction="top" offset={[0, -14]} className="refuge-tooltip">
+                    <div className="refuge-tooltip-name flex items-center justify-between gap-1.5">
+                      <span>{p.nom}</span>
+                      {isFav && <span className="text-xs">❤️</span>}
+                    </div>
+                    <div className="refuge-tooltip-meta">
+                      <span style={{ background: typeInfo(p.type).color }} className="refuge-tooltip-dot" />
+                      {p.alt != null ? `${p.alt} m` : 'Altitude inconnue'}
+                      <span className="opacity-60"> · {typeInfo(p.type).label}</span>
+                    </div>
+                  </Tooltip>
+                )}
+              </Marker>
+            )
+          })}
         </MarkerClusterGroup>
       </MapContainer>
 
@@ -307,16 +338,42 @@ export default function App() {
         onToggleWebcams={() => setShowWebcams((v) => !v)}
         activeTypes={activeTypes}
         onToggleType={toggleType}
+        onOpenFavorites={() => setShowFavoritesModal(true)}
+        filterOnlyFavorites={filterOnlyFavorites}
+        onToggleFilterOnlyFavorites={() => setFilterOnlyFavorites((v) => !v)}
+      />
+
+      {/* Toast discret pour les favoris */}
+      {toastMessage && (
+        <div className="pointer-events-none fixed top-20 left-1/2 z-[1300] -translate-x-1/2 animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="glass flex items-center gap-2 rounded-2xl border border-rose-500/40 bg-black/85 px-4 py-2 text-xs font-semibold text-rose-200 shadow-2xl backdrop-blur-xl">
+            <span>{toastMessage}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Modal des favoris */}
+      <FavoritesModal
+        isOpen={showFavoritesModal}
+        onClose={() => setShowFavoritesModal(false)}
+        onSelectRefuge={handleSelectRefuge}
+        filterOnlyFavorites={filterOnlyFavorites}
+        onToggleFilterOnlyFavorites={() => setFilterOnlyFavorites((v) => !v)}
       />
 
       {/* Statut discret */}
       <div className="pointer-events-none absolute bottom-6 left-1/2 z-[1000] -translate-x-1/2">
-        {status.loading && (
+        {filterOnlyFavorites && (
+          <div className="glass flex items-center gap-2 rounded-full border border-rose-500/40 bg-rose-950/70 px-4 py-2 text-xs font-semibold text-rose-200 shadow-xl backdrop-blur-xl">
+            <span>❤️ Mode favoris : {visible.length} refuge(s) affiché(s)</span>
+          </div>
+        )}
+        {!filterOnlyFavorites && status.loading && (
           <div className="glass flex items-center gap-2 rounded-full px-4 py-2 text-sm">
             <Loader2 size={16} className="animate-spin" /> Chargement des refuges…
           </div>
         )}
-        {status.tooFar && !status.loading && (
+        {!filterOnlyFavorites && status.tooFar && !status.loading && (
           <div className="glass flex items-center gap-2 rounded-full px-4 py-2 text-sm">
             <ZoomIn size={16} /> Zoomez pour afficher les refuges
           </div>
