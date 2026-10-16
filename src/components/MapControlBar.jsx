@@ -12,12 +12,14 @@ import {
   ChevronUp,
   CheckCheck,
   RotateCcw,
+  Heart,
 } from 'lucide-react'
 import { FILTERABLE } from '../lib/types.jsx'
+import { useFavorites } from '../context/FavoritesContext.jsx'
 
 /**
  * Barre de contrôle unifiée :
- * Ligne 1 : Fond de carte (Satellite/OpenTopo/IGN France) | Sentiers | Transports | Webcams | Filtres
+ * Ligne 1 : Fond de carte (Satellite/OpenTopo/IGN France) | Sentiers | Transports | Webcams | Favoris | Filtres
  * Ligne 2 : Bulle ajustée des filtres d'hébergements & parkings
  */
 export default function MapControlBar({
@@ -33,7 +35,11 @@ export default function MapControlBar({
   onToggleWebcams,
   activeTypes,
   onToggleType,
+  onOpenFavorites,
+  filterOnlyFavorites,
+  onToggleFilterOnlyFavorites,
 }) {
+  const { favoritesCount } = useFavorites()
   const [showFilters, setShowFilters] = useState(true)
   const activeCount = FILTERABLE.filter((t) => activeTypes.has(t.key)).length
   const allActive = activeCount === FILTERABLE.length
@@ -149,6 +155,28 @@ export default function MapControlBar({
           <span className="hidden sm:inline">Webcams</span>
         </button>
 
+        {/* Bouton Favoris */}
+        <button
+          onClick={onOpenFavorites}
+          title="Ouvrir la liste de mes refuges favoris"
+          className={`glass-btn flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-medium transition-all ${
+            favoritesCount > 0
+              ? 'border border-amber-400/35 bg-amber-500/15 text-amber-200 hover:bg-amber-500/25 shadow-sm'
+              : 'bg-white/5 text-white/65 hover:text-white hover:bg-white/10'
+          }`}
+        >
+          <Heart
+            size={14}
+            className={favoritesCount > 0 ? 'fill-amber-400 text-amber-400' : 'text-white/60'}
+          />
+          <span className="hidden sm:inline">Favoris</span>
+          {favoritesCount > 0 && (
+            <span className="rounded-full bg-amber-500/25 px-1.5 py-0.2 text-[10px] font-bold text-amber-200 border border-amber-400/20">
+              {favoritesCount}
+            </span>
+          )}
+        </button>
+
         <div className="mx-0.5 h-4 sm:h-5 w-px bg-white/15" />
 
         {/* Bouton Filtres hébergements */}
@@ -228,6 +256,33 @@ export default function MapControlBar({
             <SquareParking size={13} className={showParkings ? 'text-blue-300' : 'text-blue-400'} />
             <span className="text-[11px] whitespace-nowrap">Parkings</span>
           </button>
+
+          {/* Filtre Uniquement mes favoris */}
+          {favoritesCount > 0 && (
+            <>
+              <div className="mx-0.5 h-4 w-px bg-white/15" />
+              <button
+                onClick={onToggleFilterOnlyFavorites}
+                aria-pressed={filterOnlyFavorites}
+                title={
+                  filterOnlyFavorites
+                    ? 'Afficher tous les refuges'
+                    : "N'afficher que mes refuges favoris sur la carte"
+                }
+                className={`glass-btn flex items-center gap-1.5 rounded-xl px-2.5 py-1 text-xs font-medium transition-all ${
+                  filterOnlyFavorites
+                    ? 'border border-amber-400/50 bg-amber-500/25 text-amber-100 shadow-sm ring-1 ring-amber-400/30 font-semibold'
+                    : 'bg-white/5 text-amber-300/80 hover:text-amber-200 hover:bg-amber-500/15'
+                }`}
+              >
+                <Heart
+                  size={12}
+                  className={filterOnlyFavorites ? 'fill-amber-300 text-amber-300' : 'text-amber-400'}
+                />
+                <span className="text-[11px] whitespace-nowrap">Favoris seuls</span>
+              </button>
+            </>
+          )}
         </div>
       )}
     </div>

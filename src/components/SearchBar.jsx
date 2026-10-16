@@ -1,21 +1,20 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
 import {
   Search,
   X,
   MapPin,
   Home,
-  Tent,
-  Bed,
   TrainFront,
   Bus,
   CableCar,
   ChevronRight,
   Loader2,
   Navigation,
-  Compass
+  Heart,
 } from 'lucide-react'
 import { typeInfo } from '../lib/types.jsx'
 import { trackEvent } from '../lib/analytics'
+import { useFavorites } from '../context/FavoritesContext.jsx'
 
 const norm = (str = '') =>
   str
@@ -52,10 +51,11 @@ export default function SearchBar({
   onSelectCity,
   hasSelected,
 }) {
+  const { favorites, isFavorite } = useFavorites()
   const [query, setQuery] = useState('')
   const [isOpen, setIsOpen] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
-  const [activeTab, setActiveTab] = useState('all') // 'all' | 'refuges' | 'transports' | 'villes'
+  const [activeTab, setActiveTab] = useState('all') // 'all' | 'refuges' | 'favoris' | 'transports' | 'villes'
   
   const [refugesData, setRefugesData] = useState([])
   const [transportsData, setTransportsData] = useState([])
@@ -187,7 +187,17 @@ export default function SearchBar({
     return matches.slice(0, 6)
   }, [query, transportsData])
 
-  const totalResults = filteredRefuges.length + filteredTransports.length + cityResults.length
+  const filteredFavorites = useMemo(() => {
+    const q = norm(query)
+    if (!q || q.length < 2) return []
+    return favorites.filter((f) => norm(f.nom).includes(q) || (f.type && norm(f.type).includes(q))).slice(0, 5)
+  }, [query, favorites])
+
+  const totalResults =
+    filteredRefuges.length +
+    filteredTransports.length +
+    cityResults.length +
+    (activeTab === 'favoris' ? filteredFavorites.length : 0)
   const hasQuery = query.trim().length >= 2
 
   const handleSelectRefuge = (r) => {
@@ -300,6 +310,48 @@ export default function SearchBar({
         )}
       </div>
 
+      {/* Suggestions rapides : Favoris récents quand la recherche est vide */}
+      {isOpen && !hasQuery && favorites.length > 0 && (
+        <div className="glass glass-panel scroll-thin mt-2 flex max-h-[50vh] flex-col overflow-y-auto rounded-2xl border border-white/15 bg-black/85 p-2.5 shadow-2xl backdrop-blur-2xl animate-in fade-in slide-in-from-top-1 duration-150">
+          <div className="mb-1.5 flex items-center justify-between px-2 text-[10px] font-bold uppercase tracking-wider text-amber-300">
+            <span className="flex items-center gap-1.5">
+              <Heart size={12} className="fill-amber-400 text-amber-400" /> Vos Favoris ({favorites.length})
+            </span>
+            <span className="text-[10px] text-white/40 font-normal lowercase">accès rapide</span>
+          </div>
+          <div className="flex flex-col gap-1">
+            {favorites.slice(0, 5).map((r) => {
+              const info = typeInfo(r.type)
+              return (
+                <button
+                  key={`quick-fav-${r.id}`}
+                  onClick={() => handleSelectRefuge(r)}
+                  className="flex items-center gap-2.5 rounded-xl p-2 text-left transition-colors hover:bg-white/10"
+                >
+                  <span
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg shadow-sm"
+                    style={{ background: info.color }}
+                  >
+                    <info.Icon size={14} className="text-white" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-xs font-semibold text-white flex items-center gap-1.5">
+                      {r.nom}
+                      <Heart size={10} className="fill-amber-400 text-amber-400 shrink-0" />
+                    </div>
+                    <div className="flex items-center gap-2 text-[10px] text-white/60">
+                      {r.alt ? <span>{r.alt} m</span> : null}
+                      <span>· {info.label}</span>
+                    </div>
+                  </div>
+                  <ChevronRight size={14} className="text-white/30" />
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Dropdown des résultats */}
       {isOpen && hasQuery && (
         <div className="glass glass-panel scroll-thin mt-1.5 sm:mt-2 flex max-h-[65vh] sm:max-h-[72vh] flex-col overflow-y-auto rounded-2xl border border-white/15 bg-black/90 p-2 shadow-2xl backdrop-blur-2xl">
@@ -345,11 +397,63 @@ export default function SearchBar({
             >
               Villes ({cityResults.length})
             </button>
+            {favorites.length > 0 && (
+              <button
+                onClick={() => setActiveTab('favoris')}
+                className={`flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-medium transition-colors ${
+                  activeTab === 'favoris'
+                    ? 'bg-amber-500/25 text-amber-200 border border-amber-400/20'
+                    : 'text-white/60 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                <Heart size={11} className="fill-amber-400 text-amber-400" />
+                <span>Favoris ({filteredFavorites.length})</span>
+              </button>
+            )}
           </div>
 
           {totalResults === 0 && !isSearchingCities && (
             <div className="py-6 text-center text-xs text-white/50">
               Aucun résultat pour « {query} »
+            </div>
+          )}
+
+          {/* Section Favoris */}
+          {(activeTab === 'all' || activeTab === 'favoris') && filteredFavorites.length > 0 && (
+            <div className="mb-3">
+              <div className="mb-1 flex items-center gap-1.5 px-2 text-[10px] font-bold uppercase tracking-wider text-amber-300">
+                <Heart size={12} className="fill-amber-400 text-amber-400" /> Vos Favoris ({filteredFavorites.length})
+              </div>
+              <div className="flex flex-col gap-1">
+                {filteredFavorites.map((r) => {
+                  const info = typeInfo(r.type)
+                  return (
+                    <button
+                      key={`fav-${r.id}`}
+                      onClick={() => handleSelectRefuge(r)}
+                      className="flex items-center gap-2.5 rounded-xl p-2 text-left transition-colors border border-amber-400/20 bg-amber-500/10 hover:bg-amber-500/20"
+                    >
+                      <span
+                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg shadow-sm"
+                        style={{ background: info.color }}
+                      >
+                        <info.Icon size={14} className="text-white" />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-xs font-semibold text-white flex items-center gap-1.5">
+                          {r.nom}
+                          <Heart size={11} className="fill-amber-400 text-amber-400 shrink-0" />
+                        </div>
+                        <div className="flex items-center gap-2 text-[10px] text-white/60">
+                          {r.alt ? <span>{r.alt} m</span> : null}
+                          <span>· {info.label}</span>
+                        </div>
+                      </div>
+                      <ChevronRight size={14} className="text-white/30" />
+                    </button>
+                  )
+                })}
+              </div>
             </div>
           )}
 
@@ -362,6 +466,7 @@ export default function SearchBar({
               <div className="flex flex-col gap-1">
                 {filteredRefuges.map((r) => {
                   const info = typeInfo(r.type)
+                  const fav = isFavorite(r.id)
                   return (
                     <button
                       key={r.id}
@@ -375,8 +480,9 @@ export default function SearchBar({
                         <info.Icon size={14} className="text-white" />
                       </span>
                       <div className="min-w-0 flex-1">
-                        <div className="truncate text-xs font-semibold text-white">
+                        <div className="truncate text-xs font-semibold text-white flex items-center gap-1.5">
                           {r.nom}
+                          {fav && <Heart size={11} className="fill-amber-400 text-amber-400 shrink-0" />}
                         </div>
                         <div className="flex items-center gap-2 text-[10px] text-white/60">
                           {r.alt ? <span>{r.alt} m</span> : null}

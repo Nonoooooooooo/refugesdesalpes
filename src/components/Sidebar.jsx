@@ -1,11 +1,12 @@
 import { useEffect, useState, useCallback } from 'react'
-import { X, Loader2, TriangleAlert, Mountain, BedDouble, ExternalLink, RefreshCw, MessageSquare, FileText } from 'lucide-react'
+import { X, Loader2, TriangleAlert, Mountain, BedDouble, ExternalLink, RefreshCw, MessageSquare, FileText, Heart } from 'lucide-react'
 import { fetchPoint } from '../lib/api'
 import { fetchCommonsPhotos } from '../lib/wikimedia'
 import { fetchGooglePlacesPhotos } from '../lib/google-places'
 import { dedupePhotos } from '../lib/dedupe'
 import { typeInfo, isPointClosed } from '../lib/types.jsx'
 import { cleanText } from '../lib/text'
+import { useFavorites } from '../context/FavoritesContext.jsx'
 import Gallery from './Gallery.jsx'
 import Terrain3DModal from '../features/terrain3d/Terrain3DModal.jsx'
 import AvalancheModal from '../features/avalanche/AvalancheModal.jsx'
@@ -78,6 +79,21 @@ export default function Sidebar({ point, onClose }) {
   const { color, Icon, label } = typeInfo(point.type)
   const d = state.data
   const description = d && cleanText(d.description)
+  const { isFavorite, toggleFavorite } = useFavorites()
+  const isFav = isFavorite(point.id)
+
+  const handleToggleFav = () => {
+    toggleFavorite({
+      id: point.id,
+      nom: d?.nom ?? point.nom,
+      type: d?.type ?? point.type,
+      alt: d?.alt ?? point.alt,
+      lat: point.lat,
+      lng: point.lng,
+      places: d?.places ?? point.places,
+      etat: d?.etat ?? point.etat,
+    })
+  }
 
   const etatValue = d?.etat ?? point.etat
   const isClosed = isPointClosed(etatValue)
@@ -103,9 +119,31 @@ export default function Sidebar({ point, onClose }) {
             </div>
             <p className="text-sm text-white/70">{d?.type ?? point.type ?? label}</p>
           </div>
-          <button aria-label="Fermer" onClick={onClose} className="glass-btn rounded-full p-2">
-            <X size={18} />
-          </button>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              type="button"
+              aria-label={isFav ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+              title={isFav ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+              onClick={handleToggleFav}
+              className={`glass-btn flex h-9 w-9 items-center justify-center rounded-full transition-all ${
+                isFav
+                  ? 'border border-amber-400/40 bg-amber-400/15 text-amber-300 shadow-[0_0_10px_rgba(245,158,11,0.2)]'
+                  : 'text-white/70 hover:text-amber-300 hover:bg-white/10'
+              }`}
+            >
+              <Heart
+                size={17}
+                className={isFav ? 'fill-amber-400 text-amber-400 scale-105 transition-transform' : ''}
+              />
+            </button>
+            <button
+              aria-label="Fermer"
+              onClick={onClose}
+              className="glass-btn flex h-9 w-9 items-center justify-center rounded-full text-white/70 hover:text-white"
+            >
+              <X size={18} />
+            </button>
+          </div>
         </header>
 
         <div className="flex flex-col gap-5 p-5">
