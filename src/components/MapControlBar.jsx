@@ -13,13 +13,14 @@ import {
   CheckCheck,
   RotateCcw,
   Heart,
+  HardDrive,
 } from 'lucide-react'
 import { FILTERABLE } from '../lib/types.jsx'
 import { useFavorites } from '../context/FavoritesContext.jsx'
 
 /**
  * Barre de contrôle unifiée :
- * Ligne 1 : Fond de carte (Satellite/OpenTopo/IGN France) | Sentiers | Transports | Webcams | Favoris | Filtres
+ * Ligne 1 : Fond de carte (Satellite/OpenTopo/IGN France) | Sentiers | Transports | Webcams | Favoris | Hors-ligne | Filtres
  * Ligne 2 : Bulle ajustée des filtres d'hébergements & parkings
  */
 export default function MapControlBar({
@@ -38,6 +39,9 @@ export default function MapControlBar({
   onOpenFavorites,
   filterOnlyFavorites,
   onToggleFilterOnlyFavorites,
+  onOpenOffline,
+  isOnline = true,
+  savedZonesCount = 0,
 }) {
   const { favoritesCount } = useFavorites()
   const [showFilters, setShowFilters] = useState(true)
@@ -173,6 +177,40 @@ export default function MapControlBar({
           {favoritesCount > 0 && (
             <span className="rounded-full bg-amber-500/25 px-1.5 py-0.2 text-[10px] font-bold text-amber-200 border border-amber-400/20">
               {favoritesCount}
+            </span>
+          )}
+        </button>
+
+        {/* Bouton Hors-Ligne & PWA */}
+        <button
+          onClick={onOpenOffline}
+          title={
+            !isOnline
+              ? 'Mode hors-ligne actif · Gérer les cartes et zones téléchargées'
+              : 'Télécharger des zones de carte hors-ligne & Installer l’application'
+          }
+          className={`glass-btn flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-medium transition-all ${
+            !isOnline
+              ? 'border border-amber-400/60 bg-amber-400/25 text-amber-100 shadow-[0_0_12px_rgba(245,158,11,0.35)] ring-1 ring-amber-400/40 font-semibold'
+              : savedZonesCount > 0
+                ? 'border border-amber-400/30 bg-amber-500/10 text-amber-200 hover:bg-amber-500/20'
+                : 'bg-white/5 text-white/65 hover:text-white hover:bg-white/10'
+          }`}
+        >
+          <HardDrive
+            size={14}
+            className={
+              !isOnline
+                ? 'text-amber-300 animate-pulse'
+                : savedZonesCount > 0
+                  ? 'text-amber-400'
+                  : 'text-white/60'
+            }
+          />
+          <span className="hidden sm:inline">Hors-ligne</span>
+          {savedZonesCount > 0 && (
+            <span className="rounded-full bg-amber-500/20 px-1.5 py-0.2 text-[10px] font-bold text-amber-200 border border-amber-400/20">
+              {savedZonesCount}
             </span>
           )}
         </button>

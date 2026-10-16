@@ -20,6 +20,9 @@ import ErrorBoundary from './components/ErrorBoundary.jsx'
 import { trackEvent } from './lib/analytics'
 import FavoritesModal from './components/FavoritesModal.jsx'
 import { useFavorites } from './context/FavoritesContext.jsx'
+import OfflineModal from './features/offline/OfflineModal.jsx'
+import { useOfflineStatus } from './features/offline/useOfflineStatus.js'
+import { getOfflineRefugesForBbox, getSavedZones } from './features/offline/offlineService.js'
 
 const MIN_ZOOM_FETCH = 9
 const IMAGERY_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
@@ -122,18 +125,20 @@ function clusterIcon(cluster) {
 }
 
 /** Écoute `moveend` et ne charge que les points de l'étendue visible. */
-function BboxLoader({ onData, onStatus, reloadKey }) {
+function BboxLoader({ onData, onStatus, reloadKey, onMapChange }) {
   const map = useMap()
   const abortRef = useRef(null)
   const timerRef = useRef(null)
 
   const load = useCallback(() => {
     abortRef.current?.abort()
+    const b = map.getBounds()
+    onMapChange?.({ bounds: b, center: map.getCenter() })
+
     if (map.getZoom() < MIN_ZOOM_FETCH) {
       onStatus({ loading: false, error: null, tooFar: true })
       return
     }
-    const b = map.getBounds()
     const ctrl = new AbortController()
     abortRef.current = ctrl
     onStatus({ loading: true, error: null, tooFar: false })
@@ -144,9 +149,27 @@ function BboxLoader({ onData, onStatus, reloadKey }) {
       })
       .catch((e) => {
         if (ctrl.signal.aborted) return
-        onStatus({ loading: false, error: e.message, tooFar: false })
+        // Fallback automatique sur les refuges de la zone hors-ligne
+        const offlinePoints = getOfflineRefugesForBbox([
+          b.getWest(),
+          b.getSouth(),
+          b.getEast(),
+          b.getNorth(),
+        ])
+        if (offlinePoints.length > 0) {
+          onData(offlinePoints)
+          onStatus({ loading: false, error: null, tooFar: false })
+          return
+        }
+        onStatus({
+          loading: false,
+          error: !navigator.onLine
+            ? 'Hors-ligne : cette zone n’a pas encore été téléchargée'
+            : e.message,
+          tooFar: false,
+        })
       })
-  }, [map, onData, onStatus])
+  }, [map, onData, onStatus, onMapChange])
 
   const schedule = useCallback(() => {
     clearTimeout(timerRef.current)
@@ -192,6 +215,10 @@ export default function App() {
   const [showWebcams, setShowWebcams] = useState(false)
   const [showFavoritesModal, setShowFavoritesModal] = useState(false)
   const [filterOnlyFavorites, setFilterOnlyFavorites] = useState(false)
+  const { isOnline, isInstalled, isIos, installPromptReady, promptInstall } = useOfflineStatus()
+  const [showOfflineModal, setShowOfflineModal] = useState(false)
+  const [mapState, setMapState] = useState(null)
+  const [savedZonesCount, setSavedZonesCount] = useState(() => getSavedZones().length)
 
   // Cumule les points déjà vus avec détection de changement (évite tout re-render inutile si aucun nouveau point)
   const handleData = useCallback((incoming) => {
@@ -335,7 +362,12 @@ export default function App() {
         />
         <OverpassLayer showParkings={showParkings} />
         <WebcamLayer active={showWebcams} />
-        <BboxLoader onData={handleData} onStatus={setStatus} reloadKey={reloadKey} />
+        <BboxLoader
+          onData={handleData}
+          onStatus={setStatus}
+          reloadKey={reloadKey}
+          onMapChange={setMapState}
+        />
         <FlyToSelected target={flyTarget} />
         <MapControls />
         <MarkerClusterGroup
@@ -383,6 +415,9 @@ export default function App() {
         onOpenFavorites={() => setShowFavoritesModal(true)}
         filterOnlyFavorites={filterOnlyFavorites}
         onToggleFilterOnlyFavorites={() => setFilterOnlyFavorites((v) => !v)}
+        onOpenOffline={() => setShowOfflineModal(true)}
+        isOnline={isOnline}
+        savedZonesCount={savedZonesCount}
       />
 
       {/* Toast discret pour les favoris */}
@@ -404,11 +439,36 @@ export default function App() {
         onToggleFilterOnlyFavorites={() => setFilterOnlyFavorites((v) => !v)}
       />
 
+      {/* Modal Hors-ligne & PWA */}
+      <OfflineModal
+        isOpen={showOfflineModal}
+        onClose={() => {
+          setShowOfflineModal(false)
+          setSavedZonesCount(getSavedZones().length)
+        }}
+        mapBounds={mapState?.bounds}
+        mapCenter={mapState?.center}
+        onFlyToZone={(target) => {
+          setFlyTarget({ lat: target.lat, lng: target.lng, zoom: target.zoom, t: Date.now() })
+        }}
+        isOnline={isOnline}
+        isInstalled={isInstalled}
+        isIos={isIos}
+        installPromptReady={installPromptReady}
+        onPromptInstall={promptInstall}
+      />
+
       <InfoFeedbackButton hasSelected={Boolean(selected)} />
 
       {/* Statut discret */}
       <div className="pointer-events-none absolute bottom-6 left-1/2 z-[1000] -translate-x-1/2">
-        {filterOnlyFavorites && (
+        {!isOnline && (
+          <div className="glass flex items-center gap-2 rounded-full border border-amber-400/40 bg-black/85 px-4 py-2 text-xs font-medium text-amber-200 shadow-xl backdrop-blur-xl">
+            <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
+            <span>Mode hors-ligne actif · Utilisation des données en mémoire</span>
+          </div>
+        )}
+        {isOnline && filterOnlyFavorites && (
           <div className="glass flex items-center gap-2 rounded-full border border-amber-400/35 bg-black/80 px-4 py-2 text-xs font-medium text-amber-200 shadow-xl backdrop-blur-xl">
             <span className="text-amber-400 font-bold">★</span>
             <span>Mode favoris : {visible.length} refuge(s) affiché(s)</span>
