@@ -1,11 +1,26 @@
 import { useEffect, useState, useCallback } from 'react'
-import { X, Loader2, TriangleAlert, Mountain, BedDouble, ExternalLink, RefreshCw, MessageSquare, FileText, CloudRain, CloudSun, Sun } from 'lucide-react'
+import {
+  X,
+  Loader2,
+  TriangleAlert,
+  Mountain,
+  BedDouble,
+  ExternalLink,
+  RefreshCw,
+  MessageSquare,
+  FileText,
+  CloudRain,
+  CloudSun,
+  Sun,
+  Heart,
+} from 'lucide-react'
 import { fetchPoint } from '../lib/api'
 import { fetchCommonsPhotos } from '../lib/wikimedia'
 import { fetchGooglePlacesPhotos } from '../lib/google-places'
 import { dedupePhotos } from '../lib/dedupe'
 import { typeInfo, isPointClosed } from '../lib/types.jsx'
 import { cleanText } from '../lib/text'
+import { useFavorites } from '../context/FavoritesContext.jsx'
 import Gallery from './Gallery.jsx'
 import Terrain3DModal from '../features/terrain3d/Terrain3DModal.jsx'
 import AvalancheModal from '../features/avalanche/AvalancheModal.jsx'
@@ -82,6 +97,21 @@ export default function Sidebar({ point, onClose, onOpenRadar }) {
   const { color, Icon, label } = typeInfo(point.type)
   const d = state.data
   const description = d && cleanText(d.description)
+  const { isFavorite, toggleFavorite } = useFavorites()
+  const isFav = isFavorite(point.id)
+
+  const handleToggleFav = () => {
+    toggleFavorite({
+      id: point.id,
+      nom: d?.nom ?? point.nom,
+      type: d?.type ?? point.type,
+      alt: d?.alt ?? point.alt,
+      lat: point.lat,
+      lng: point.lng,
+      places: d?.places ?? point.places,
+      etat: d?.etat ?? point.etat,
+    })
+  }
 
   const etatValue = d?.etat ?? point.etat
   const isClosed = isPointClosed(etatValue)
@@ -89,7 +119,7 @@ export default function Sidebar({ point, onClose, onOpenRadar }) {
   return (
     <>
       <aside className="sidebar-enter glass glass-panel scroll-thin absolute bottom-0 left-0 top-0 z-[1100] flex w-full flex-col overflow-y-auto sm:bottom-4 sm:left-4 sm:top-4 sm:w-[420px] sm:rounded-3xl">
-        <header className="sticky top-0 z-10 flex items-start gap-3 border-b border-white/10 bg-black/30 p-5 backdrop-blur-xl">
+        <header className="sticky top-0 z-10 flex items-start gap-3 border-b border-white/10 bg-black/30 p-5 pt-[max(1.25rem,env(safe-area-inset-top,0px))] backdrop-blur-xl">
           <span
             className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
             style={{ background: isClosed ? '#ef4444' : color }}
@@ -107,12 +137,34 @@ export default function Sidebar({ point, onClose, onOpenRadar }) {
             </div>
             <p className="text-sm text-white/70">{d?.type ?? point.type ?? label}</p>
           </div>
-          <button aria-label="Fermer" onClick={onClose} className="glass-btn rounded-full p-2">
-            <X size={18} />
-          </button>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              type="button"
+              aria-label={isFav ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+              title={isFav ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+              onClick={handleToggleFav}
+              className={`glass-btn flex h-9 w-9 items-center justify-center rounded-full transition-all ${
+                isFav
+                  ? 'border border-amber-400/40 bg-amber-400/15 text-amber-300 shadow-[0_0_10px_rgba(245,158,11,0.2)]'
+                  : 'text-white/70 hover:text-amber-300 hover:bg-white/10'
+              }`}
+            >
+              <Heart
+                size={17}
+                className={isFav ? 'fill-amber-400 text-amber-400 scale-105 transition-transform' : ''}
+              />
+            </button>
+            <button
+              aria-label="Fermer"
+              onClick={onClose}
+              className="glass-btn flex h-9 w-9 items-center justify-center rounded-full text-white/70 hover:text-white"
+            >
+              <X size={18} />
+            </button>
+          </div>
         </header>
 
-        <div className="flex flex-col gap-5 p-5">
+        <div className="flex flex-col gap-5 p-5 pb-[calc(2rem+env(safe-area-inset-bottom,0px))]">
           {/* Alerte fermeture ou destruction */}
           {isClosed && (
             <div className="rounded-2xl border border-red-500/45 bg-red-950/45 p-4 text-sm text-red-100 shadow-xl backdrop-blur-md flex items-start gap-3">

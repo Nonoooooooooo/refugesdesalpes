@@ -13,13 +13,16 @@ import {
   ChevronUp,
   CheckCheck,
   RotateCcw,
+  Heart,
+  HardDrive,
 } from 'lucide-react'
 import { FILTERABLE } from '../lib/types.jsx'
 
 /**
- * Barre de contrôle unifiée :
- * Ligne 1 : Fond de carte (Satellite/OpenTopo/IGN France) | Sentiers | Transports | Webcams | Filtres
- * Ligne 2 : Bulle ajustée des filtres d'hébergements & parkings
+ * Barre de contrôle divisée en 2 rangées ergonomiques (adaptée mobile & desktop) :
+ * LIGNE 1 : Fond de carte (Satellite / OpenTopo / IGN) & Outils personnels (Favoris / Hors-ligne)
+ * LIGNE 2 : Calques interactifs (Sentiers / Transports / Webcams / Météo) & Dérouleur Filtres
+ * LIGNE 3 : Tiroir des filtres d'hébergements & parkings
  */
 export default function MapControlBar({
   baseLayer,
@@ -36,15 +39,22 @@ export default function MapControlBar({
   onToggleMeteo,
   activeTypes,
   onToggleType,
+  onOpenFavorites,
+  filterOnlyFavorites,
+  onToggleFilterOnlyFavorites,
+  onOpenOffline,
+  isOnline = true,
+  savedZonesCount = 0,
 }) {
-  const [showFilters, setShowFilters] = useState(true)
+  const [showFilters, setShowFilters] = useState(false)
+
   const activeCount = FILTERABLE.filter((t) => activeTypes.has(t.key)).length
   const allActive = activeCount === FILTERABLE.length
 
   const handleToggleAll = () => {
     if (allActive) {
       FILTERABLE.forEach((t) => {
-        if (t.key !== 'garde' && activeTypes.has(t.key)) {
+        if (t.key !== 'refuge' && activeTypes.has(t.key)) {
           onToggleType(t.key)
         }
       })
@@ -73,43 +83,102 @@ export default function MapControlBar({
     ),
   )
 
+  const favoritesCount = 0 // ou prop si transmise
+
   return (
-    <div className="pointer-events-none absolute right-2.5 top-2.5 sm:right-4 sm:top-4 z-[1000] flex flex-col items-end gap-1.5 sm:gap-2 max-w-[calc(100vw-3.75rem)] sm:max-w-none">
-      {/* ─── LIGNE 1 : Fond de carte & Calques majeurs ─── */}
-      <div className="pointer-events-auto glass flex flex-nowrap items-center gap-0.5 sm:gap-1 rounded-2xl p-1 sm:p-1.5 shadow-2xl backdrop-blur-xl border border-white/10">
-        {/* Sélecteur Satellite / OpenTopo / IGN France */}
-        <div className="relative flex rounded-xl bg-black/40 p-0.5">
-          <span
-            aria-hidden
-            className="absolute bottom-0.5 top-0.5 w-[calc(33.33%-2px)] rounded-lg bg-white/20 shadow-sm transition-transform duration-300 ease-out"
-            style={{
-              transform: `translateX(${activeBaseIdx * 100}%)`,
-              left: 2,
-            }}
-          />
-          {baseLayers.map(({ key, label, Icon }) => {
-            const isActive =
-              baseLayer === key ||
-              (baseLayer === 'relief' && key === 'opentopo') ||
-              (baseLayer === 'cyclosm' && key === 'ign')
-            return (
-              <button
-                key={key}
-                onClick={() => onBaseLayerChange(key)}
-                title={label}
-                className={`relative z-10 flex items-center gap-1 sm:gap-1.5 rounded-lg px-2 py-1 sm:px-2.5 sm:py-1.5 text-xs font-medium transition-colors ${
-                  isActive ? 'text-white font-semibold' : 'text-white/60 hover:text-white'
-                }`}
-              >
-                <Icon size={13} />
-                <span className="hidden md:inline">{label}</span>
-              </button>
-            )
-          })}
+    <div className="pointer-events-none absolute left-[3.25rem] right-2.5 top-[calc(0.625rem+env(safe-area-inset-top,0px))] sm:left-auto sm:right-4 sm:top-4 z-[1000] flex flex-col items-end gap-1.5 sm:gap-2 max-w-[calc(100vw-3.75rem)] sm:max-w-none">
+      {/* ─── LIGNE 1 : Fond de carte & Outils personnels (Favoris / Hors-ligne) ─── */}
+      <div className="flex items-center justify-end gap-1.5 flex-wrap sm:flex-nowrap">
+        {/* Sélecteur Fond de Carte (Satellite / OpenTopo / IGN) */}
+        <div className="pointer-events-auto glass flex items-center rounded-2xl p-0.5 sm:p-1 shadow-2xl backdrop-blur-xl border border-white/10">
+          <div className="relative flex rounded-xl bg-black/40 p-0.5">
+            <span
+              aria-hidden
+              className="absolute bottom-0.5 top-0.5 w-[calc(33.33%-2px)] rounded-lg bg-white/20 shadow-sm transition-transform duration-300 ease-out"
+              style={{
+                transform: `translateX(${activeBaseIdx * 100}%)`,
+                left: 2,
+              }}
+            />
+            {baseLayers.map(({ key, label, Icon }) => {
+              const isActive =
+                baseLayer === key ||
+                (baseLayer === 'relief' && key === 'opentopo') ||
+                (baseLayer === 'cyclosm' && key === 'ign')
+              return (
+                <button
+                  key={key}
+                  onClick={() => onBaseLayerChange(key)}
+                  title={label}
+                  className={`relative z-10 flex items-center justify-center gap-1 sm:gap-1.5 rounded-lg px-2 py-1 sm:px-2.5 sm:py-1.5 text-xs font-medium transition-colors ${
+                    isActive ? 'text-white font-semibold' : 'text-white/60 hover:text-white'
+                  }`}
+                >
+                  <Icon size={13} />
+                  <span className="hidden md:inline">{label}</span>
+                </button>
+              )
+            })}
+          </div>
         </div>
 
-        <div className="mx-0.5 h-4 sm:h-5 w-px bg-white/15" />
+        {/* Outils personnels : Favoris & Hors-Ligne */}
+        <div className="pointer-events-auto glass flex items-center gap-0.5 sm:gap-1 rounded-2xl p-1 sm:p-1.5 shadow-2xl backdrop-blur-xl border border-white/10">
+          {/* Bouton Favoris */}
+          <button
+            onClick={onOpenFavorites}
+            title="Ouvrir la liste de mes refuges favoris"
+            className={`glass-btn flex items-center gap-1 sm:gap-1.5 rounded-xl px-2 py-1 sm:px-2.5 sm:py-1.5 text-xs font-medium transition-all ${
+              filterOnlyFavorites
+                ? 'border border-amber-400/50 bg-amber-500/25 text-amber-200 shadow-sm font-semibold'
+                : 'bg-white/5 text-white/75 hover:text-white hover:bg-white/10'
+            }`}
+          >
+            <Heart
+              size={13}
+              className={filterOnlyFavorites ? 'fill-amber-400 text-amber-400' : 'text-white/70'}
+            />
+            <span className="hidden sm:inline">Favoris</span>
+          </button>
 
+          {/* Bouton Hors-Ligne & PWA */}
+          <button
+            onClick={onOpenOffline}
+            title={
+              !isOnline
+                ? 'Mode hors-ligne actif · Gérer les cartes et zones téléchargées'
+                : 'Télécharger des zones de carte hors-ligne & Installer l’application'
+            }
+            className={`glass-btn flex items-center gap-1 sm:gap-1.5 rounded-xl px-2 py-1 sm:px-2.5 sm:py-1.5 text-xs font-medium transition-all ${
+              !isOnline
+                ? 'border border-amber-400/60 bg-amber-400/25 text-amber-100 shadow-[0_0_12px_rgba(245,158,11,0.35)] ring-1 ring-amber-400/40 font-semibold'
+                : savedZonesCount > 0
+                  ? 'border border-amber-400/30 bg-amber-500/10 text-amber-200 hover:bg-amber-500/20'
+                  : 'bg-white/5 text-white/75 hover:text-white hover:bg-white/10'
+            }`}
+          >
+            <HardDrive
+              size={13}
+              className={
+                !isOnline
+                  ? 'text-amber-300 animate-pulse'
+                  : savedZonesCount > 0
+                    ? 'text-amber-400'
+                    : 'text-white/70'
+              }
+            />
+            <span className="hidden sm:inline">Hors-ligne</span>
+            {savedZonesCount > 0 && (
+              <span className="rounded-full bg-amber-500/25 px-1 sm:px-1.5 py-0.2 text-[9px] sm:text-[10px] font-bold text-amber-200 border border-amber-400/20">
+                {savedZonesCount}
+              </span>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* ─── LIGNE 2 : Calques (Sentiers, Transports, Webcams, Météo) & Bouton Filtres ─── */}
+      <div className="pointer-events-auto glass flex flex-nowrap items-center justify-end gap-0.5 sm:gap-1 rounded-2xl p-1 sm:p-1.5 shadow-2xl backdrop-blur-xl border border-white/10 max-w-full overflow-x-auto scrollbar-none">
         {/* Bouton Sentiers */}
         <button
           onClick={onToggleTrails}
@@ -155,7 +224,7 @@ export default function MapControlBar({
         {/* Bouton Météo (AROME-PI Météo-France) */}
         <button
           onClick={onToggleMeteo}
-          title="Afficher/masquer le radar et prévisions météo AROME-PI (Météo-France)"
+          title="Afficher/masquer le radar précipitations et vent AROME-PI (Météo-France)"
           className={`glass-btn flex items-center gap-1 sm:gap-1.5 rounded-xl px-2 py-1 sm:px-2.5 sm:py-1.5 text-xs font-medium transition-all ${
             showMeteo
               ? 'border border-cyan-400/50 bg-cyan-500/35 text-cyan-200 shadow-[0_0_12px_rgba(6,182,212,0.35)] ring-1 ring-cyan-400/30 font-semibold'
@@ -180,16 +249,16 @@ export default function MapControlBar({
         >
           <Filter size={13} className="text-white/80" />
           <span className="hidden md:inline">Filtres</span>
-          <span className="rounded-full bg-white/20 px-1.5 py-0.2 text-[10px] font-bold">
+          <span className="rounded-full bg-white/20 px-1 sm:px-1.5 py-0.2 text-[9px] sm:text-[10px] font-bold">
             {activeCount}/{FILTERABLE.length}
           </span>
           {showFilters ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
         </button>
       </div>
 
-      {/* ─── LIGNE 2 : Bulle ajustée des filtres d'hébergements & Parkings ─── */}
+      {/* ─── LIGNE 3 : Tiroir ajusté des filtres d'hébergements & Parkings ─── */}
       {showFilters && (
-        <div className="pointer-events-auto glass flex w-fit max-w-[280px] sm:max-w-none flex-wrap sm:flex-nowrap items-center justify-center sm:justify-end gap-1 sm:gap-1.5 rounded-2xl p-1 sm:p-1.5 shadow-2xl backdrop-blur-xl border border-white/10 animate-in fade-in slide-in-from-top-1 duration-200">
+        <div className="pointer-events-auto glass flex w-fit max-w-full sm:max-w-none flex-wrap sm:flex-nowrap items-center justify-start sm:justify-end gap-1 sm:gap-1.5 rounded-2xl p-1 sm:p-1.5 shadow-2xl backdrop-blur-xl border border-white/10 animate-in fade-in slide-in-from-top-1 duration-200">
           {FILTERABLE.map(({ key, label, shortLabel, color, Icon }) => {
             const on = activeTypes.has(key)
             return (
@@ -245,6 +314,33 @@ export default function MapControlBar({
             <SquareParking size={13} className={showParkings ? 'text-blue-300' : 'text-blue-400'} />
             <span className="text-[11px] whitespace-nowrap">Parkings</span>
           </button>
+
+          {/* Filtre Uniquement mes favoris */}
+          {onToggleFilterOnlyFavorites && (
+            <>
+              <div className="mx-0.5 h-4 w-px bg-white/15" />
+              <button
+                onClick={onToggleFilterOnlyFavorites}
+                aria-pressed={filterOnlyFavorites}
+                title={
+                  filterOnlyFavorites
+                    ? 'Afficher tous les refuges'
+                    : "N'afficher que mes refuges favoris sur la carte"
+                }
+                className={`glass-btn flex items-center gap-1.5 rounded-xl px-2.5 py-1 text-xs font-medium transition-all ${
+                  filterOnlyFavorites
+                    ? 'border border-amber-400/50 bg-amber-500/25 text-amber-100 shadow-sm ring-1 ring-amber-400/30 font-semibold'
+                    : 'bg-white/5 text-amber-300/80 hover:text-amber-200 hover:bg-amber-500/15'
+                }`}
+              >
+                <Heart
+                  size={12}
+                  className={filterOnlyFavorites ? 'fill-amber-300 text-amber-300' : 'text-amber-400'}
+                />
+                <span className="text-[11px] whitespace-nowrap">Favoris seuls</span>
+              </button>
+            </>
+          )}
         </div>
       )}
     </div>

@@ -21,6 +21,11 @@ import { trackEvent } from './lib/analytics'
 import AromeLayer from './features/meteo/AromeLayer.jsx'
 import AromeTimelinePlayer from './features/meteo/AromeTimelinePlayer.jsx'
 import { fetchAromeCapabilities } from './features/meteo/aromeService'
+import FavoritesModal from './components/FavoritesModal.jsx'
+import { useFavorites } from './context/FavoritesContext.jsx'
+import OfflineModal from './features/offline/OfflineModal.jsx'
+import { useOfflineStatus } from './features/offline/useOfflineStatus.js'
+import { getOfflineRefugesForBbox, getSavedZones, getSavedZonesMaxZoom } from './features/offline/offlineService.js'
 
 const MIN_ZOOM_FETCH = 9
 const IMAGERY_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
@@ -32,10 +37,10 @@ const LABELS_URL =
 const TRAILS_URL = 'https://tile.waymarkedtrails.org/hiking/{z}/{x}/{y}.png'
 const iconCache = new Map()
 
-function pinIcon(type, selected, etat) {
+function pinIcon(type, selected, etat, isFav = false) {
   const { color, Icon, key } = typeInfo(type)
   const closed = isPointClosed(etat)
-  const cacheKey = `${key}-${selected}-${closed ? 'closed' : 'open'}`
+  const cacheKey = `${key}-${selected}-${closed ? 'closed' : 'open'}-${isFav ? 'fav' : 'norm'}`
   if (!iconCache.has(cacheKey)) {
     iconCache.set(
       cacheKey,
@@ -43,7 +48,7 @@ function pinIcon(type, selected, etat) {
         className: 'refuge-marker',
         html: renderToStaticMarkup(
           <div
-            className={`refuge-pin${selected ? ' selected' : ''}${closed ? ' closed' : ''}`}
+            className={`refuge-pin${selected ? ' selected' : ''}${closed ? ' closed' : ''}${isFav ? ' favorite' : ''}`}
             style={{
               background: closed ? '#64748b' : color,
               position: 'relative',
@@ -53,6 +58,11 @@ function pinIcon(type, selected, etat) {
             {closed && (
               <span className="refuge-pin-closed-badge" title="Fermé / Détruit">
                 ✕
+              </span>
+            )}
+            {isFav && (
+              <span className="refuge-pin-heart" style={{ color: '#fbbf24', fontSize: '10px' }}>
+                ★
               </span>
             )}
           </div>,
@@ -66,10 +76,10 @@ function pinIcon(type, selected, etat) {
 }
 
 /** Marqueur refuge haute performance mémoïsé (zéro re-render sur survol ou pan) */
-const RefugeMarker = memo(function RefugeMarker({ point, isSelected, onSelect }) {
+const RefugeMarker = memo(function RefugeMarker({ point, isSelected, isFavorite, onSelect }) {
   const icon = useMemo(
-    () => pinIcon(point.type, isSelected, point.etat),
-    [point.type, isSelected, point.etat],
+    () => pinIcon(point.type, isSelected, point.etat, isFavorite),
+    [point.type, isSelected, point.etat, isFavorite],
   )
   const closed = isPointClosed(point.etat)
   const info = typeInfo(point.type)
@@ -83,13 +93,16 @@ const RefugeMarker = memo(function RefugeMarker({ point, isSelected, onSelect })
   return (
     <Marker position={[point.lat, point.lng]} icon={icon} eventHandlers={eventHandlers}>
       <Tooltip direction="top" offset={[0, -14]} className="refuge-tooltip">
-        <div className="refuge-tooltip-name flex items-center gap-1.5">
-          <span>{point.nom}</span>
-          {closed && (
-            <span className="rounded bg-red-600/90 px-1 py-0.2 text-[9px] font-bold text-white uppercase tracking-wider shadow-sm">
-              {point.etat || 'Fermé'}
-            </span>
-          )}
+        <div className="refuge-tooltip-name flex items-center justify-between gap-1.5">
+          <div className="flex items-center gap-1.5 truncate">
+            <span>{point.nom}</span>
+            {closed && (
+              <span className="rounded bg-red-600/90 px-1 py-0.2 text-[9px] font-bold text-white uppercase tracking-wider shadow-sm">
+                {point.etat || 'Fermé'}
+              </span>
+            )}
+          </div>
+          {isFavorite && <span className="text-amber-300 font-bold text-xs shrink-0">★</span>}
         </div>
         <div className="refuge-tooltip-meta">
           <span
@@ -115,18 +128,20 @@ function clusterIcon(cluster) {
 }
 
 /** Écoute `moveend` et ne charge que les points de l'étendue visible. */
-function BboxLoader({ onData, onStatus, reloadKey }) {
+function BboxLoader({ onData, onStatus, reloadKey, onMapChange }) {
   const map = useMap()
   const abortRef = useRef(null)
   const timerRef = useRef(null)
 
   const load = useCallback(() => {
     abortRef.current?.abort()
+    const b = map.getBounds()
+    onMapChange?.({ bounds: b, center: map.getCenter() })
+
     if (map.getZoom() < MIN_ZOOM_FETCH) {
       onStatus({ loading: false, error: null, tooFar: true })
       return
     }
-    const b = map.getBounds()
     const ctrl = new AbortController()
     abortRef.current = ctrl
     onStatus({ loading: true, error: null, tooFar: false })
@@ -137,9 +152,29 @@ function BboxLoader({ onData, onStatus, reloadKey }) {
       })
       .catch((e) => {
         if (ctrl.signal.aborted) return
-        onStatus({ loading: false, error: e.message, tooFar: false })
+        // Fallback automatique sur les refuges de la zone hors-ligne
+        const offlinePoints = getOfflineRefugesForBbox([
+          b.getWest(),
+          b.getSouth(),
+          b.getEast(),
+          b.getNorth(),
+        ])
+        if (offlinePoints.length > 0) {
+          onData(offlinePoints)
+          onStatus({ loading: false, error: null, tooFar: false })
+          return
+        }
+        if (!navigator.onLine) {
+          onStatus({ loading: false, error: null, tooFar: false })
+          return
+        }
+        onStatus({
+          loading: false,
+          error: e.message,
+          tooFar: false,
+        })
       })
-  }, [map, onData, onStatus])
+  }, [map, onData, onStatus, onMapChange])
 
   const schedule = useCallback(() => {
     clearTimeout(timerRef.current)
@@ -171,6 +206,7 @@ function FlyToSelected({ target }) {
 }
 
 export default function App() {
+  const { favorites, isFavorite, toastMessage } = useFavorites()
   const [points, setPoints] = useState([])
   const [status, setStatus] = useState({ loading: false, error: null, tooFar: false })
   const [selected, setSelected] = useState(null)
@@ -219,6 +255,14 @@ export default function App() {
     }
   }, [showMeteo, aromeTime])
 
+  const [showFavoritesModal, setShowFavoritesModal] = useState(false)
+  const [filterOnlyFavorites, setFilterOnlyFavorites] = useState(false)
+  const { isOnline, isInstalled, isIos, installPromptReady, promptInstall } = useOfflineStatus()
+  const [showOfflineModal, setShowOfflineModal] = useState(false)
+  const [mapState, setMapState] = useState(null)
+  const [savedZonesCount, setSavedZonesCount] = useState(() => getSavedZones().length)
+  const maxSavedZoom = useMemo(() => getSavedZonesMaxZoom(savedZonesCount), [savedZonesCount])
+
   // Cumule les points déjà vus avec détection de changement (évite tout re-render inutile si aucun nouveau point)
   const handleData = useCallback((incoming) => {
     setPoints((prev) => {
@@ -236,10 +280,26 @@ export default function App() {
     })
   }, [])
 
-  const visible = useMemo(
-    () => points.filter((p) => activeTypes.has(typeInfo(p.type).key)),
-    [points, activeTypes],
-  )
+  // Filtrage selon types et option "Favoris seuls"
+  const visible = useMemo(() => {
+    if (filterOnlyFavorites) {
+      return favorites.filter((p) => activeTypes.has(typeInfo(p.type).key))
+    }
+    return points.filter((p) => activeTypes.has(typeInfo(p.type).key))
+  }, [points, activeTypes, filterOnlyFavorites, favorites])
+
+  // Centrage automatique lors de l'activation du filtre favoris
+  useEffect(() => {
+    if (filterOnlyFavorites && favorites.length > 0) {
+      if (favorites.length === 1) {
+        setFlyTarget({ lat: favorites[0].lat, lng: favorites[0].lng, zoom: 13, t: Date.now() })
+      } else {
+        const avgLat = favorites.reduce((acc, f) => acc + f.lat, 0) / favorites.length
+        const avgLng = favorites.reduce((acc, f) => acc + f.lng, 0) / favorites.length
+        setFlyTarget({ lat: avgLat, lng: avgLng, zoom: 9, t: Date.now() })
+      }
+    }
+  }, [filterOnlyFavorites, favorites])
 
   const toggleType = (key) =>
     setActiveTypes((prev) => {
@@ -317,7 +377,7 @@ export default function App() {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors, SRTM | Style: &copy; <a href="https://opentopomap.org" target="_blank" rel="noreferrer">OpenTopoMap</a>'
             url={OPENTOPO_URL}
             subdomains={['a', 'b', 'c']}
-            maxNativeZoom={17}
+            maxNativeZoom={!isOnline ? (maxSavedZoom || 16) : 17}
             maxZoom={18}
             keepBuffer={3}
             updateInterval={100}
@@ -328,6 +388,7 @@ export default function App() {
             key="ign"
             attribution='&copy; <a href="https://geoservices.ign.fr/" target="_blank" rel="noreferrer">IGN - Géoplateforme</a>'
             url={IGN_URL}
+            maxNativeZoom={!isOnline ? (maxSavedZoom || 16) : 18}
             maxZoom={18}
             keepBuffer={3}
             updateInterval={100}
@@ -358,9 +419,14 @@ export default function App() {
           opacity={aromeOpacity}
           onLoadingChange={setAromeLoading}
         />
-        <BboxLoader onData={handleData} onStatus={setStatus} reloadKey={reloadKey} />
+        <BboxLoader
+          onData={handleData}
+          onStatus={setStatus}
+          reloadKey={reloadKey}
+          onMapChange={setMapState}
+        />
         <FlyToSelected target={flyTarget} />
-        <MapControls />
+        <MapControls hasSelected={Boolean(selected)} />
         <MarkerClusterGroup
           chunkedLoading
           chunkInterval={40}
@@ -376,6 +442,7 @@ export default function App() {
               key={p.id}
               point={p}
               isSelected={selected?.id === p.id}
+              isFavorite={isFavorite(p.id)}
               onSelect={selectPoint}
             />
           ))}
@@ -410,6 +477,55 @@ export default function App() {
         }}
         activeTypes={activeTypes}
         onToggleType={toggleType}
+        onOpenFavorites={() => setShowFavoritesModal(true)}
+        filterOnlyFavorites={filterOnlyFavorites}
+        onToggleFilterOnlyFavorites={() => setFilterOnlyFavorites((v) => !v)}
+        onOpenOffline={() => setShowOfflineModal(true)}
+        isOnline={isOnline}
+        savedZonesCount={savedZonesCount}
+      />
+
+      {/* Toast discret pour les favoris */}
+      {toastMessage && (
+        <div className="pointer-events-none fixed top-20 left-1/2 z-[1300] -translate-x-1/2 animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="glass flex items-center gap-2 rounded-2xl border border-amber-400/30 bg-black/85 px-4 py-2 text-xs font-medium text-amber-200 shadow-2xl backdrop-blur-xl">
+            <span className="text-amber-400 font-bold">★</span>
+            <span>{toastMessage}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Modal des favoris */}
+      <FavoritesModal
+        isOpen={showFavoritesModal}
+        onClose={() => setShowFavoritesModal(false)}
+        onSelectRefuge={handleSelectRefuge}
+        filterOnlyFavorites={filterOnlyFavorites}
+        onToggleFilterOnlyFavorites={() => setFilterOnlyFavorites((v) => !v)}
+      />
+
+      {/* Modal Hors-ligne & PWA */}
+      <OfflineModal
+        isOpen={showOfflineModal}
+        onClose={() => {
+          setShowOfflineModal(false)
+          setSavedZonesCount(getSavedZones().length)
+        }}
+        mapBounds={mapState?.bounds}
+        mapCenter={mapState?.center}
+        onFlyToZone={(target) => {
+          if (Array.isArray(target) && target.length === 4) {
+            const [w, s, e, n] = target
+            setFlyTarget({ lat: (s + n) / 2, lng: (w + e) / 2, zoom: 12, t: Date.now() })
+          } else if (target?.lat && target?.lng) {
+            setFlyTarget({ lat: target.lat, lng: target.lng, zoom: target.zoom || 13, t: Date.now() })
+          }
+        }}
+        isOnline={isOnline}
+        isInstalled={isInstalled}
+        isIos={isIos}
+        installPromptReady={installPromptReady}
+        onPromptInstall={promptInstall}
       />
 
       <InfoFeedbackButton hasSelected={Boolean(selected)} />
@@ -430,18 +546,30 @@ export default function App() {
       )}
 
       {/* Statut discret */}
-      <div className={`pointer-events-none absolute left-1/2 z-[1000] -translate-x-1/2 transition-all duration-300 ${showMeteo ? 'bottom-28 sm:bottom-24' : 'bottom-6'}`}>
-        {status.loading && (
+      <div
+        className={`pointer-events-none absolute left-1/2 z-[1000] -translate-x-1/2 transition-all duration-300 ${
+          showMeteo
+            ? 'bottom-28 sm:bottom-24'
+            : 'bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))] sm:bottom-6'
+        }`}
+      >
+        {isOnline && filterOnlyFavorites && (
+          <div className="glass flex items-center gap-2 rounded-full border border-amber-400/35 bg-black/80 px-4 py-2 text-xs font-medium text-amber-200 shadow-xl backdrop-blur-xl">
+            <span className="text-amber-400 font-bold">★</span>
+            <span>Mode favoris : {visible.length} refuge(s) affiché(s)</span>
+          </div>
+        )}
+        {isOnline && !filterOnlyFavorites && status.loading && (
           <div className="glass flex items-center gap-2 rounded-full px-4 py-2 text-sm">
             <Loader2 size={16} className="animate-spin" /> Chargement des refuges…
           </div>
         )}
-        {status.tooFar && !status.loading && (
+        {isOnline && !filterOnlyFavorites && status.tooFar && !status.loading && (
           <div className="glass flex items-center gap-2 rounded-full px-4 py-2 text-sm">
             <ZoomIn size={16} /> Zoomez pour afficher les refuges
           </div>
         )}
-        {status.error && !status.loading && (
+        {isOnline && status.error && !status.loading && (
           <div className="glass pointer-events-auto flex items-center gap-3 rounded-2xl border-red-400/50 px-4 py-2 text-sm">
             <TriangleAlert size={16} className="text-red-300" />
             <span>{status.error}</span>
