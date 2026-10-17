@@ -17,6 +17,7 @@ import {
   HardDrive,
 } from 'lucide-react'
 import { FILTERABLE } from '../lib/types.jsx'
+import { useFavorites } from '../context/FavoritesContext.jsx'
 
 /**
  * Barre de contrôle divisée en 2 rangées ergonomiques (adaptée mobile & desktop) :
@@ -46,6 +47,7 @@ export default function MapControlBar({
   isOnline = true,
   savedZonesCount = 0,
 }) {
+  const { favoritesCount } = useFavorites()
   const [showFilters, setShowFilters] = useState(false)
 
   const activeCount = FILTERABLE.filter((t) => activeTypes.has(t.key)).length
@@ -54,7 +56,7 @@ export default function MapControlBar({
   const handleToggleAll = () => {
     if (allActive) {
       FILTERABLE.forEach((t) => {
-        if (t.key !== 'refuge' && activeTypes.has(t.key)) {
+        if (t.key !== 'garde' && activeTypes.has(t.key)) {
           onToggleType(t.key)
         }
       })
@@ -82,8 +84,6 @@ export default function MapControlBar({
         (baseLayer === 'cyclosm' && b.key === 'ign'),
     ),
   )
-
-  const favoritesCount = 0 // ou prop si transmise
 
   return (
     <div className="pointer-events-none absolute left-[3.25rem] right-2.5 top-[calc(0.625rem+env(safe-area-inset-top,0px))] sm:left-auto sm:right-4 sm:top-4 z-[1000] flex flex-col items-end gap-1.5 sm:gap-2 max-w-[calc(100vw-3.75rem)] sm:max-w-none">
@@ -129,16 +129,21 @@ export default function MapControlBar({
             onClick={onOpenFavorites}
             title="Ouvrir la liste de mes refuges favoris"
             className={`glass-btn flex items-center gap-1 sm:gap-1.5 rounded-xl px-2 py-1 sm:px-2.5 sm:py-1.5 text-xs font-medium transition-all ${
-              filterOnlyFavorites
-                ? 'border border-amber-400/50 bg-amber-500/25 text-amber-200 shadow-sm font-semibold'
+              filterOnlyFavorites || favoritesCount > 0
+                ? 'border border-amber-400/40 bg-amber-500/20 text-amber-200 hover:bg-amber-500/30 shadow-sm'
                 : 'bg-white/5 text-white/75 hover:text-white hover:bg-white/10'
             }`}
           >
             <Heart
               size={13}
-              className={filterOnlyFavorites ? 'fill-amber-400 text-amber-400' : 'text-white/70'}
+              className={filterOnlyFavorites || favoritesCount > 0 ? 'fill-amber-400 text-amber-400' : 'text-white/70'}
             />
             <span className="hidden sm:inline">Favoris</span>
+            {favoritesCount > 0 && (
+              <span className="rounded-full bg-amber-500/25 px-1 sm:px-1.5 py-0.2 text-[9px] sm:text-[10px] font-bold text-amber-200 border border-amber-400/20">
+                {favoritesCount}
+              </span>
+            )}
           </button>
 
           {/* Bouton Hors-Ligne & PWA */}
