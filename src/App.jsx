@@ -487,16 +487,10 @@ export default function App() {
         <MapControls hasSelected={Boolean(selected)} />
         <MarkerClusterGroup
           chunkedLoading
-          chunkInterval={100}
-          chunkDelay={20}
+          chunkInterval={200}
+          chunkDelay={10}
           showCoverageOnHover={false}
-          maxClusterRadius={(zoom) => {
-            if (zoom >= 13) return 40
-            if (zoom >= 12) return 55
-            if (zoom >= 11) return 70
-            if (zoom >= 10) return 85
-            return 100
-          }}
+          maxClusterRadius={(zoom) => (zoom >= 13 ? 30 : zoom >= 11 ? 42 : 52)}
           disableClusteringAtZoom={14}
           spiderfyOnMaxZoom
           animate={HAS_HOVER}
