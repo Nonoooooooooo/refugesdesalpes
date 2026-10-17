@@ -12,7 +12,7 @@ import AvalancheModal from '../features/avalanche/AvalancheModal.jsx'
 import AvalanchePdfModal from '../features/avalanche/AvalanchePdfModal.jsx'
 import { findMassifByCoords } from '../features/avalanche/massifLookup'
 import RefugeWeatherSection from '../features/meteo/RefugeWeatherSection.jsx'
-import RefugeSunSection from '../features/sun/RefugeSunSection.jsx'
+import SunModal from '../features/sun/SunModal.jsx'
 
 export default function Sidebar({ point, onClose, onOpenRadar }) {
   const [state, setState] = useState({ loading: true, error: null, data: null })
@@ -21,7 +21,7 @@ export default function Sidebar({ point, onClose, onOpenRadar }) {
   const [showPdf, setShowPdf] = useState(false)
   const [showAvalanche, setShowAvalanche] = useState(false)
   const [showWeather, setShowWeather] = useState(false)
-  const [showSun, setShowSun] = useState(false)
+  const [showSunModal, setShowSunModal] = useState(false)
   const [massifInfo, setMassifInfo] = useState(null)
 
   useEffect(() => {
@@ -165,15 +165,11 @@ export default function Sidebar({ point, onClose, onOpenRadar }) {
             </button>
 
             <button
-              onClick={() => setShowSun((v) => !v)}
-              className={`rounded-xl px-3 py-1.5 text-xs font-medium transition-all active:scale-95 flex items-center gap-1.5 ${
-                showSun
-                  ? 'border border-amber-400/50 bg-amber-500/25 text-amber-200 shadow-sm font-semibold'
-                  : 'bg-white/5 hover:bg-white/10 border border-white/10 text-white/75 hover:text-white'
-              }`}
-              title="Consulter les heures de lever/coucher de soleil et la courbe d'ensoleillement"
+              onClick={() => setShowSunModal(true)}
+              className="rounded-xl px-3 py-1.5 text-xs font-medium transition-all active:scale-95 flex items-center gap-1.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white/75 hover:text-white"
+              title="Consulter l'éphéméride et la courbe d'ensoleillement au refuge"
             >
-              <Sun size={13} className={showSun ? 'text-amber-300' : 'text-white/70'} />
+              <Sun size={13} className="text-amber-300" />
               <span>Soleil</span>
             </button>
 
@@ -200,16 +196,6 @@ export default function Sidebar({ point, onClose, onOpenRadar }) {
               alt={d?.alt ?? point.alt}
               nom={d?.nom ?? point.nom}
               onOpenRadar={() => onOpenRadar?.(point)}
-            />
-          )}
-
-          {/* Section Éphéméride & Course solaire (affichée au clic sur le bouton Soleil) */}
-          {showSun && point.lat != null && point.lng != null && (
-            <RefugeSunSection
-              lat={point.lat}
-              lng={point.lng}
-              alt={d?.alt ?? point.alt}
-              nom={d?.nom ?? point.nom}
             />
           )}
 
@@ -316,6 +302,19 @@ export default function Sidebar({ point, onClose, onOpenRadar }) {
             lng: point.lng,
           }}
           onClose={() => setShowAvalanche(false)}
+        />
+      )}
+
+      {showSunModal && (
+        <SunModal
+          point={{
+            ...point,
+            nom: d?.nom ?? point.nom,
+            alt: d?.alt ?? point.alt,
+            lat: point.lat,
+            lng: point.lng,
+          }}
+          onClose={() => setShowSunModal(false)}
         />
       )}
     </>
