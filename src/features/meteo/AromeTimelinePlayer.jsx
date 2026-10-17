@@ -143,17 +143,17 @@ export default function AromeTimelinePlayer({
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
                 <span className="text-xs font-bold text-white tracking-wide truncate">
-                  Radar AROME-PI
+                  Radar Météo-France
                 </span>
-                <span className="rounded-full bg-sky-500/20 border border-sky-400/40 px-1.5 py-0.2 text-[9px] font-semibold text-sky-200">
-                  Météo-France 0.01°
+                <span className="rounded-full bg-sky-500/20 border border-sky-400/40 px-1.5 py-0.5 text-[9px] font-semibold text-sky-200">
+                  AROME-PI 0.01°
                 </span>
                 {isLoading && (
                   <span className="flex h-2 w-2 rounded-full bg-sky-400 animate-ping" title="Chargement du calque…" />
                 )}
               </div>
               <p className="text-[11px] text-white/60 truncate">
-                {activeLayerObj.label}
+                {activeLayerObj.label} · Alpes
               </p>
             </div>
           </div>
@@ -173,8 +173,8 @@ export default function AromeTimelinePlayer({
 
               {showLayerMenu && (
                 <div className="absolute right-0 bottom-full mb-2 w-56 rounded-2xl border border-white/15 bg-slate-900/95 p-1.5 shadow-2xl backdrop-blur-xl z-50 animate-in fade-in zoom-in-95">
-                  <div className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-white/40">
-                    Données AROME-PI
+                  <div className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-sky-300/80">
+                    Météo-France · AROME-PI
                   </div>
                   {AROME_LAYERS.map((l) => (
                     <button
@@ -366,6 +366,15 @@ export default function AromeTimelinePlayer({
                   </div>
                 </div>
               )}
+            </div>
+
+            {/* Mention officielle Météo-France sur le radar */}
+            <div className="flex items-center justify-between text-[10px] text-white/50 pt-1.5 border-t border-white/10">
+              <div className="flex items-center gap-1.5 text-sky-200/90 font-medium">
+                <span className="h-1.5 w-1.5 rounded-full bg-sky-400 shrink-0" />
+                <span>Source officielle : <strong>Météo-France</strong> (Modèle AROME-PI)</span>
+              </div>
+              <span className="text-white/40 hidden sm:inline">Résolution 1 km · Pas 15 min</span>
             </div>
           </div>
         )}

@@ -81,10 +81,6 @@ export default function RefugeWeatherSection({
               <span className="text-xs text-emerald-200 font-medium">
                 {weather.codeInfo.label}
               </span>
-              <span className="text-[10px] text-white/40">·</span>
-              <span className="text-[10px] text-emerald-300/90 font-medium bg-emerald-500/15 rounded px-1 py-0.2 border border-emerald-400/25">
-                Météo-France
-              </span>
             </div>
           </div>
         </div>
@@ -262,22 +258,10 @@ export default function RefugeWeatherSection({
         </div>
       )}
 
-      {/* ─── Mention de source officielle et précision d'altitude ─── */}
-      <div className="mt-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-xl bg-black/35 border border-emerald-400/30 p-2.5 text-xs shadow-inner">
-        <div className="flex items-center gap-2 text-emerald-200">
-          <span className="text-lg shrink-0">🏔️</span>
-          <div className="leading-tight">
-            <div className="font-semibold text-white text-xs">
-              Prévisions calculées à l’altitude du refuge : <strong className="text-emerald-300 font-bold">{alt != null ? `${alt} m` : 'haute montagne'}</strong>
-            </div>
-            <div className="text-[10px] text-emerald-200/60 mt-0.5">
-              Profil thermique d'altitude (gradient adiabatique)
-            </div>
-          </div>
-        </div>
-        <div className="flex items-center gap-1 self-start sm:self-auto rounded-lg bg-emerald-500/25 border border-emerald-400/40 px-2 py-1 text-[10px] font-bold text-emerald-100 shadow-sm whitespace-nowrap">
-          <span>🇫🇷 Données Météo-France & Modèle AROME</span>
-        </div>
+      {/* ─── Mention discrète et compacte (sans encombrer ni déborder) ─── */}
+      <div className="flex items-center justify-between text-[11px] text-emerald-200/70 pt-2 border-t border-emerald-500/15">
+        <span>Altitude {alt != null ? `${alt} m` : 'du refuge'}</span>
+        <span className="font-semibold text-emerald-300">Données Météo-France</span>
       </div>
     </div>
   )
