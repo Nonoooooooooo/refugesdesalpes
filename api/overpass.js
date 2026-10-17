@@ -22,6 +22,7 @@ function isAllowedOrigin(req) {
   if (!origin) return true // Navigation directe ou même origine
   try {
     const url = new URL(origin)
+    const host = url.hostname.toLowerCase()
     if (
       host === 'localhost' ||
       host === '127.0.0.1' ||

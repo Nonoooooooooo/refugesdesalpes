@@ -214,6 +214,32 @@ export default defineConfig(({ mode }) => {
         },
       },
     ],
+    build: {
+      chunkSizeWarningLimit: 900,
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              if (id.includes('maplibre-gl')) {
+                return 'vendor-maplibre'
+              }
+              if (id.includes('leaflet') || id.includes('react-leaflet')) {
+                return 'vendor-leaflet'
+              }
+              if (id.includes('lucide-react')) {
+                return 'vendor-icons'
+              }
+              if (id.includes('suncalc')) {
+                return 'vendor-suncalc'
+              }
+              if (id.includes('react') || id.includes('scheduler')) {
+                return 'vendor-react'
+              }
+            }
+          },
+        },
+      },
+    },
     server: {
       proxy: {
         '/rimg': {

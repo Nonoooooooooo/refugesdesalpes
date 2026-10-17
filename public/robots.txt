@@ -4,18 +4,15 @@
 User-agent: Googlebot
 Allow: /
 Disallow: /api/
-Disallow: /assets/
 
 User-agent: Bingbot
 Allow: /
 Disallow: /api/
-Disallow: /assets/
 
 # ─── Tous les autres robots ───
 User-agent: *
 Allow: /
 Disallow: /api/
-Disallow: /assets/
 
 # ─── Blocage des crawlers IA voraces ───
 User-agent: GPTBot

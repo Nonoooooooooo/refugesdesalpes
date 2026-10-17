@@ -101,9 +101,45 @@ function parseCapabilities(xmlText) {
   }
 }
 
+function isAllowedOrigin(req) {
+  const origin = req.headers?.origin || req.headers?.referer
+  if (!origin) return true // Requêtes directes ou PWA
+  try {
+    const url = new URL(origin)
+    const host = url.hostname.toLowerCase()
+    if (
+      host === 'localhost' ||
+      host === '127.0.0.1' ||
+      host.endsWith('.vercel.app') ||
+      host.includes('refugesdesalpes')
+    ) {
+      return true
+    }
+    const reqHost = (req.headers?.host || '').split(':')[0].toLowerCase()
+    if (reqHost && host === reqHost) {
+      return true
+    }
+    return false
+  } catch {
+    return false
+  }
+}
+
+const ALLOWED_LAYERS = new Set([
+  'TOTAL_PRECIPITATION_RATE__GROUND_OR_WATER_SURFACE',
+  'TOTAL_SNOW_PRECIPITATION__GROUND_OR_WATER_SURFACE',
+  'REFLECTIVITY_MAX_DBZ__GROUND_OR_WATER_SURFACE',
+  'WIND_SPEED_GUST_15MIN__SPECIFIC_HEIGHT_LEVEL_ABOVE_GROUND',
+])
+
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Méthode non autorisée (GET uniquement)' })
+  }
+
+  // Contrôle d'origine pour protéger notre quota Météo-France contre les abus externes
+  if (!isAllowedOrigin(req)) {
+    return res.status(403).json({ error: 'Accès interdit : origine non autorisée' })
   }
 
   const token = getToken(req)
@@ -120,6 +156,7 @@ export default async function handler(req, res) {
     if (capabilitiesCache && now - capabilitiesCacheTime < CAPABILITIES_CACHE_TTL_MS) {
       res.setHeader('Content-Type', 'application/json')
       res.setHeader('Cache-Control', 'public, max-age=600, stale-while-revalidate=1200')
+      res.setHeader('X-Content-Type-Options', 'nosniff')
       return res.status(200).json(capabilitiesCache)
     }
 
@@ -144,6 +181,7 @@ export default async function handler(req, res) {
 
       res.setHeader('Content-Type', 'application/json')
       res.setHeader('Cache-Control', 'public, max-age=600, stale-while-revalidate=1200')
+      res.setHeader('X-Content-Type-Options', 'nosniff')
       return res.status(200).json(parsed)
     } catch (err) {
       return res.status(500).json({ error: err.message })
@@ -151,16 +189,21 @@ export default async function handler(req, res) {
   }
 
   // 2. Action : GetMap (retourne une image PNG superposable)
-  const layer = query.layers || query.layer || 'TOTAL_PRECIPITATION_RATE__GROUND_OR_WATER_SURFACE'
-  const bbox = query.bbox
-  const width = query.width || '512'
-  const height = query.height || '512'
-  const time = query.time || ''
-  const crs = query.crs || 'EPSG:4326'
+  const rawLayer = query.layers || query.layer || 'TOTAL_PRECIPITATION_RATE__GROUND_OR_WATER_SURFACE'
+  const layer = ALLOWED_LAYERS.has(rawLayer)
+    ? rawLayer
+    : 'TOTAL_PRECIPITATION_RATE__GROUND_OR_WATER_SURFACE'
 
-  if (!bbox) {
-    return res.status(400).json({ error: 'Paramètre bbox requis (format: minLat,minLng,maxLat,maxLng)' })
+  const rawBbox = String(query.bbox || '').trim()
+  if (!rawBbox || !/^-?\d+(\.\d+)?,-?\d+(\.\d+)?,-?\d+(\.\d+)?,-?\d+(\.\d+)?$/.test(rawBbox)) {
+    return res.status(400).json({ error: 'Paramètre bbox requis et valide (format: minLat,minLng,maxLat,maxLng)' })
   }
+  const bbox = rawBbox
+
+  const width = Math.min(Math.max(parseInt(query.width, 10) || 512, 128), 2048)
+  const height = Math.min(Math.max(parseInt(query.height, 10) || 512, 128), 2048)
+  const time = query.time ? String(query.time).slice(0, 30) : ''
+  const crs = query.crs === 'CRS:84' ? 'CRS:84' : 'EPSG:4326'
 
   const cacheKey = `${layer}|${bbox}|${time}|${width}|${height}|${crs}`
   const cached = imageCache.get(cacheKey)
@@ -168,6 +211,7 @@ export default async function handler(req, res) {
     res.setHeader('Content-Type', 'image/png')
     res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600')
     res.setHeader('X-Cache', 'HIT')
+    res.setHeader('X-Content-Type-Options', 'nosniff')
     return res.send(cached.buffer)
   }
 
