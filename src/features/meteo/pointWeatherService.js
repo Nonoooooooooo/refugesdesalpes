@@ -118,6 +118,7 @@ export async function fetchRefugeWeather(lat, lng, elevation, signal) {
     const currentCodeInfo = getWeatherCodeInfo(currentCode)
 
     // Formater les prévisions quotidiennes (3 jours : Aujourd'hui, Demain, Après-demain)
+    const nowMs = Date.now() - 30 * 60 * 1000
     const dailyDays = (raw.daily?.time || []).map((dateStr, i) => {
       const date = new Date(dateStr)
       let dayName = ''
@@ -128,6 +129,29 @@ export async function fetchRefugeWeather(lat, lng, elevation, signal) {
       }
 
       const code = raw.daily?.weather_code?.[i] ?? 0
+
+      // Récupérer toutes les heures de cette journée précise
+      const dayHourly = []
+      for (let h = 0; h < (raw.hourly?.time || []).length; h++) {
+        const hTime = raw.hourly.time[h]
+        if (hTime.startsWith(dateStr)) {
+          const hDate = new Date(hTime)
+          // Pour Aujourd'hui (i === 0), n'afficher qu'à partir de l'heure courante
+          if (i === 0 && hDate.getTime() < nowMs) continue
+
+          const hCode = raw.hourly?.weather_code?.[h] ?? 0
+          dayHourly.push({
+            timeStr: hDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+            isoTime: hTime,
+            hour: hDate.getHours(),
+            temp: Math.round(raw.hourly?.temperature_2m?.[h] ?? 0),
+            precipProb: Math.round(raw.hourly?.precipitation_probability?.[h] ?? 0),
+            gust: Math.round(raw.hourly?.wind_gusts_10m?.[h] ?? 0),
+            codeInfo: getWeatherCodeInfo(hCode),
+          })
+        }
+      }
+
       return {
         dateStr,
         dayName,
@@ -139,6 +163,7 @@ export async function fetchRefugeWeather(lat, lng, elevation, signal) {
         precipProb: Math.round(raw.daily?.precipitation_probability_max?.[i] ?? 0),
         precipSum: Math.round(raw.daily?.precipitation_sum?.[i] ?? 0),
         windGustMax: Math.round(raw.daily?.wind_gusts_10m_max?.[i] ?? 0),
+        hourly: dayHourly,
       }
     })
 

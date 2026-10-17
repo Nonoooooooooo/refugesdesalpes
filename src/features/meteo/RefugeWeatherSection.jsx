@@ -221,17 +221,19 @@ export default function RefugeWeatherSection({
         )
       )}
 
-      {/* ─── Prévision heure par heure (Aujourd'hui) ─── */}
-      {selectedDayIdx === 0 && weather.hourly && weather.hourly.length > 0 && (
+      {/* ─── Prévision heure par heure (pour le jour sélectionné : Aujourd'hui, Demain ou Après-demain) ─── */}
+      {selectedDay?.hourly && selectedDay.hourly.length > 0 && (
         <div>
           <div className="text-[10px] font-semibold uppercase tracking-wider text-emerald-200/60 mb-1.5 flex items-center justify-between">
             <span className="flex items-center gap-1">
-              <Clock size={10} /> Heures à venir
+              <Clock size={10} /> Déroulé heure par heure
             </span>
-            <span className="text-[9px] lowercase font-normal text-white/40">aujourd’hui</span>
+            <span className="text-[9px] lowercase font-normal text-white/50">
+              {selectedDayIdx === 0 ? "aujourd’hui" : selectedDay.dayName}
+            </span>
           </div>
           <div className="flex gap-1.5 overflow-x-auto pb-1 scroll-thin">
-            {weather.hourly.map((h, idx) => (
+            {selectedDay.hourly.map((h, idx) => (
               <div
                 key={idx}
                 className="flex flex-col items-center justify-between rounded-xl bg-black/25 px-2 py-1.5 text-center shrink-0 min-w-[50px] border border-white/5 hover:border-emerald-400/30 transition-colors"
@@ -241,10 +243,12 @@ export default function RefugeWeatherSection({
                 <span className="text-xs font-bold text-white">
                   {h.temp > 0 ? `+${h.temp}` : h.temp}°
                 </span>
-                {h.precipProb > 0 && (
+                {h.precipProb > 0 ? (
                   <span className="text-[9px] text-sky-300 font-semibold mt-0.5">
                     {h.precipProb}%
                   </span>
+                ) : (
+                  <span className="text-[9px] text-white/20 mt-0.5">0%</span>
                 )}
               </div>
             ))}
