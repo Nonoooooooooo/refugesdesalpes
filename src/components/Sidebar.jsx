@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { X, Loader2, TriangleAlert, Mountain, BedDouble, ExternalLink, RefreshCw, MessageSquare, FileText, CloudRain, CloudSun } from 'lucide-react'
+import { X, Loader2, TriangleAlert, Mountain, BedDouble, ExternalLink, RefreshCw, MessageSquare, FileText, CloudRain, CloudSun, Sun } from 'lucide-react'
 import { fetchPoint } from '../lib/api'
 import { fetchCommonsPhotos } from '../lib/wikimedia'
 import { fetchGooglePlacesPhotos } from '../lib/google-places'
@@ -12,6 +12,7 @@ import AvalancheModal from '../features/avalanche/AvalancheModal.jsx'
 import AvalanchePdfModal from '../features/avalanche/AvalanchePdfModal.jsx'
 import { findMassifByCoords } from '../features/avalanche/massifLookup'
 import RefugeWeatherSection from '../features/meteo/RefugeWeatherSection.jsx'
+import RefugeSunSection from '../features/sun/RefugeSunSection.jsx'
 
 export default function Sidebar({ point, onClose, onOpenRadar }) {
   const [state, setState] = useState({ loading: true, error: null, data: null })
@@ -20,6 +21,7 @@ export default function Sidebar({ point, onClose, onOpenRadar }) {
   const [showPdf, setShowPdf] = useState(false)
   const [showAvalanche, setShowAvalanche] = useState(false)
   const [showWeather, setShowWeather] = useState(false)
+  const [showSun, setShowSun] = useState(false)
   const [massifInfo, setMassifInfo] = useState(null)
 
   useEffect(() => {
@@ -162,6 +164,19 @@ export default function Sidebar({ point, onClose, onOpenRadar }) {
               <span>Météo</span>
             </button>
 
+            <button
+              onClick={() => setShowSun((v) => !v)}
+              className={`rounded-xl px-3 py-1.5 text-xs font-medium transition-all active:scale-95 flex items-center gap-1.5 ${
+                showSun
+                  ? 'border border-amber-400/50 bg-amber-500/25 text-amber-200 shadow-sm font-semibold'
+                  : 'bg-white/5 hover:bg-white/10 border border-white/10 text-white/75 hover:text-white'
+              }`}
+              title="Consulter les heures de lever/coucher de soleil et la courbe d'ensoleillement"
+            >
+              <Sun size={13} className={showSun ? 'text-amber-300' : 'text-white/70'} />
+              <span>Soleil</span>
+            </button>
+
             {massifInfo && (
               <button
                 onClick={() => setShowPdf(true)}
@@ -185,6 +200,16 @@ export default function Sidebar({ point, onClose, onOpenRadar }) {
               alt={d?.alt ?? point.alt}
               nom={d?.nom ?? point.nom}
               onOpenRadar={() => onOpenRadar?.(point)}
+            />
+          )}
+
+          {/* Section Éphéméride & Course solaire (affichée au clic sur le bouton Soleil) */}
+          {showSun && point.lat != null && point.lng != null && (
+            <RefugeSunSection
+              lat={point.lat}
+              lng={point.lng}
+              alt={d?.alt ?? point.alt}
+              nom={d?.nom ?? point.nom}
             />
           )}
 
