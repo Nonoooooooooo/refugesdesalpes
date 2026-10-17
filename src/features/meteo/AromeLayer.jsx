@@ -67,17 +67,11 @@ export default function AromeLayer({
 
   if (!active || !currentUrl) return null
 
-  // Ajuster l'opacité selon le type de couche (les rasters thermiques pleins sont plus lisibles à 0.65)
-  const effectiveOpacity =
-    layerId === 'TEMPERATURE__GROUND_OR_WATER_SURFACE'
-      ? Math.min(opacity, 0.68)
-      : opacity
-
   return (
     <ImageOverlay
       url={currentUrl}
       bounds={ALPS_BOUNDS}
-      opacity={effectiveOpacity}
+      opacity={opacity}
       zIndex={350}
       interactive={false}
     />

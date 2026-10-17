@@ -37,15 +37,6 @@ export const AROME_LAYERS = [
     color: '#c084fc',
     description: 'Rafales de vent maximales sur 15 minutes en altitude',
   },
-  {
-    id: 'TEMPERATURE__GROUND_OR_WATER_SURFACE',
-    label: 'Température au sol',
-    shortLabel: 'Température',
-    unit: '°C',
-    icon: '🌡️',
-    color: '#f43f5e',
-    description: 'Température au niveau du sol calculée par le modèle AROME',
-  },
 ]
 
 let cachedCapabilities = null

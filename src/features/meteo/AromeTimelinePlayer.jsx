@@ -55,15 +55,6 @@ const LEGENDS = {
       { label: '> 90', color: '#ef4444' },
     ],
   },
-  TEMPERATURE__GROUND_OR_WATER_SURFACE: {
-    title: 'Température au sol (°C)',
-    items: [
-      { label: '< -5°', color: '#60a5fa' },
-      { label: '0° (Gel)', color: '#38bdf8' },
-      { label: '5° - 15°', color: '#34d399' },
-      { label: '> 20°', color: '#f87171' },
-    ],
-  },
 }
 
 export default function AromeTimelinePlayer({

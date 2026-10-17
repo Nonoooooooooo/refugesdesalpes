@@ -61,14 +61,6 @@ function parseCapabilities(xmlText) {
       icon: '💨',
       color: '#a855f7',
     },
-    {
-      id: 'TEMPERATURE__GROUND_OR_WATER_SURFACE',
-      label: 'Température au sol',
-      shortLabel: 'Température',
-      unit: '°C',
-      icon: '🌡️',
-      color: '#ec4899',
-    },
   ]
 
   const results = []
