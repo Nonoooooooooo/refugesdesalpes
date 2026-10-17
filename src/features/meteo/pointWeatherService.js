@@ -108,7 +108,11 @@ export async function fetchRefugeWeather(lat, lng, elevation, signal) {
   const url = `https://api.open-meteo.com/v1/forecast?${params.toString()}`
 
   try {
-    const res = await fetch(url, { signal })
+    let res = await fetch(url, { signal })
+    if ((res.status === 503 || res.status === 429) && !signal?.aborted) {
+      await new Promise((r) => setTimeout(r, 600))
+      res = await fetch(url, { signal })
+    }
     if (!res.ok) {
       throw new Error(`Erreur météo (${res.status})`)
     }
