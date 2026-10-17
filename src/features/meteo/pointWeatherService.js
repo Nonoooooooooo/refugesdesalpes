@@ -79,6 +79,17 @@ export async function fetchRefugeWeather(lat, lng, elevation, signal) {
       'wind_speed_10m',
       'wind_gusts_10m',
     ].join(','),
+    daily: [
+      'weather_code',
+      'temperature_2m_max',
+      'temperature_2m_min',
+      'apparent_temperature_max',
+      'apparent_temperature_min',
+      'precipitation_sum',
+      'precipitation_probability_max',
+      'wind_speed_10m_max',
+      'wind_gusts_10m_max',
+    ].join(','),
     hourly: [
       'temperature_2m',
       'precipitation_probability',
@@ -86,7 +97,7 @@ export async function fetchRefugeWeather(lat, lng, elevation, signal) {
       'freezing_level_height',
       'wind_gusts_10m',
     ].join(','),
-    forecast_days: '2',
+    forecast_days: '3',
     timezone: 'auto',
   })
 
@@ -105,6 +116,31 @@ export async function fetchRefugeWeather(lat, lng, elevation, signal) {
 
     const currentCode = raw.current?.weather_code ?? 0
     const currentCodeInfo = getWeatherCodeInfo(currentCode)
+
+    // Formater les prévisions quotidiennes (3 jours : Aujourd'hui, Demain, Après-demain)
+    const dailyDays = (raw.daily?.time || []).map((dateStr, i) => {
+      const date = new Date(dateStr)
+      let dayName = ''
+      if (i === 0) dayName = "Aujourd'hui"
+      else if (i === 1) dayName = 'Demain'
+      else {
+        dayName = date.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })
+      }
+
+      const code = raw.daily?.weather_code?.[i] ?? 0
+      return {
+        dateStr,
+        dayName,
+        codeInfo: getWeatherCodeInfo(code),
+        tempMax: Math.round(raw.daily?.temperature_2m_max?.[i] ?? 0),
+        tempMin: Math.round(raw.daily?.temperature_2m_min?.[i] ?? 0),
+        feelsMax: Math.round(raw.daily?.apparent_temperature_max?.[i] ?? 0),
+        feelsMin: Math.round(raw.daily?.apparent_temperature_min?.[i] ?? 0),
+        precipProb: Math.round(raw.daily?.precipitation_probability_max?.[i] ?? 0),
+        precipSum: Math.round(raw.daily?.precipitation_sum?.[i] ?? 0),
+        windGustMax: Math.round(raw.daily?.wind_gusts_10m_max?.[i] ?? 0),
+      }
+    })
 
     // Formater les prochaines 24h
     const currentHourIndex = Math.max(
@@ -139,6 +175,7 @@ export async function fetchRefugeWeather(lat, lng, elevation, signal) {
       precipitation: raw.current?.precipitation ?? 0,
       codeInfo: currentCodeInfo,
       freezingLevel,
+      daily: dailyDays,
       hourly: next24Hours,
       updatedAt: new Date().toISOString(),
     }

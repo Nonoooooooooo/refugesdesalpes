@@ -1,116 +1,83 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
-import { useMap, ImageOverlay } from 'react-leaflet'
-import L from 'leaflet'
+import { ImageOverlay } from 'react-leaflet'
 import { buildAromeMapUrl, preloadAromeImage } from './aromeService'
 
+// Emprise alpine globale et continue :
+// Couvre l'intégralité du massif alpin (Haute-Savoie, Savoie, Isère, Hautes-Alpes, Alpes-de-Haute-Provence, Alpes-Maritimes)
+// ainsi que le Jura, le Léman, le Vercors, les Préalpes et les massifs frontaliers suisses/italiens.
+export const ALPS_BOUNDS = [
+  [43.0, 4.5], // Sud-Ouest (Méditerranée / Provence / Drôme)
+  [47.6, 8.8], // Nord-Est (Jura / Léman / Valais / Italie)
+]
+
+export const ALPS_BBOX = ['43.0', '4.5', '47.6', '8.8']
+
 /**
- * Calque cartographique AROME-PI haute performance.
- * Utilise une projection ImageOverlay dynamique par emprise (BBOX) avec double tampon
- * pour des transitions fluides sans scintillement lors de l'animation temporelle.
+ * Calque AROME-PI continu sans coupure :
+ * Utilise une emprise alpine constante et stable pour garantir :
+ * 1. Zéro coupure horizontale ou verticale lors du déplacement de la carte.
+ * 2. Zéro rechargement intempestif lors du pan/zoom.
+ * 3. 100% d'efficacité de cache mémoire serveur (aucun risque de quota 429).
+ * 4. Défilement temporel fluide et préchargé.
  */
 export default function AromeLayer({
   active = false,
   layerId = 'TOTAL_PRECIPITATION_RATE__GROUND_OR_WATER_SURFACE',
   time = '',
-  opacity = 0.82,
+  opacity = 0.78,
   onLoadingChange,
 }) {
-  const map = useMap()
-  const [currentOverlay, setCurrentOverlay] = useState(null)
-  const timerRef = useRef(null)
-  const abortCtrlRef = useRef(null)
-  const prevKeyRef = useRef('')
+  const [currentUrl, setCurrentUrl] = useState('')
+  const prevUrlRef = useRef('')
 
   const updateOverlay = useCallback(() => {
-    if (!active || !map) {
-      setCurrentOverlay(null)
+    if (!active) {
+      setCurrentUrl('')
+      prevUrlRef.current = ''
       return
     }
 
-    const bounds = map.getBounds()
-    const size = map.getSize()
-
-    // Bounding box avec légère marge (buffer 8%)
-    const latSpan = bounds.getNorth() - bounds.getSouth()
-    const lngSpan = bounds.getEast() - bounds.getWest()
-    const minLat = Math.max(38.0, bounds.getSouth() - latSpan * 0.08)
-    const maxLat = Math.min(55.0, bounds.getNorth() + latSpan * 0.08)
-    const minLng = Math.max(-11.5, bounds.getWest() - lngSpan * 0.08)
-    const maxLng = Math.min(15.5, bounds.getEast() + lngSpan * 0.08)
-
-    const w = Math.min(1280, Math.max(320, Math.round(size.x * 1.15)))
-    const h = Math.min(1280, Math.max(320, Math.round(size.y * 1.15)))
-
-    const bbox = [
-      minLat.toFixed(4),
-      minLng.toFixed(4),
-      maxLat.toFixed(4),
-      maxLng.toFixed(4),
-    ]
-
     const url = buildAromeMapUrl({
       layer: layerId,
-      bbox,
-      width: w,
-      height: h,
+      bbox: ALPS_BBOX,
+      width: 1024,
+      height: 1024,
       time,
     })
 
-    const requestKey = `${layerId}-${bbox.join(',')}-${time}`
-    if (requestKey === prevKeyRef.current) return
-    prevKeyRef.current = requestKey
+    if (url === prevUrlRef.current) return
+    prevUrlRef.current = url
 
     onLoadingChange?.(true)
 
-    // Préchargement de l'image pour affichage instantané et sans saut
+    // Précharge l'image avant de l'afficher pour éviter tout flash blanc ou scintillement
     preloadAromeImage(url)
       .then(() => {
         if (!active) return
-        setCurrentOverlay({
-          url,
-          bounds: [
-            [minLat, minLng],
-            [maxLat, maxLng],
-          ],
-        })
+        setCurrentUrl(url)
       })
       .finally(() => {
         onLoadingChange?.(false)
       })
-  }, [active, map, layerId, time, onLoadingChange])
+  }, [active, layerId, time, onLoadingChange])
 
-  // Écoute les mouvements de la carte avec débounce pour économiser les requêtes
   useEffect(() => {
-    if (!active) {
-      setCurrentOverlay(null)
-      return
-    }
-
-    const onMove = () => {
-      clearTimeout(timerRef.current)
-      timerRef.current = setTimeout(updateOverlay, 300)
-    }
-
-    map.on('moveend', onMove)
-    map.on('zoomend', onMove)
-
-    // Mise à jour immédiate à l'activation ou au changement de paramètre
     updateOverlay()
+  }, [updateOverlay])
 
-    return () => {
-      clearTimeout(timerRef.current)
-      map.off('moveend', onMove)
-      map.off('zoomend', onMove)
-    }
-  }, [active, map, updateOverlay])
+  if (!active || !currentUrl) return null
 
-  if (!active || !currentOverlay) return null
+  // Ajuster l'opacité selon le type de couche (les rasters thermiques pleins sont plus lisibles à 0.65)
+  const effectiveOpacity =
+    layerId === 'TEMPERATURE__GROUND_OR_WATER_SURFACE'
+      ? Math.min(opacity, 0.68)
+      : opacity
 
   return (
     <ImageOverlay
-      url={currentOverlay.url}
-      bounds={currentOverlay.bounds}
-      opacity={opacity}
+      url={currentUrl}
+      bounds={ALPS_BOUNDS}
+      opacity={effectiveOpacity}
       zIndex={350}
       interactive={false}
     />

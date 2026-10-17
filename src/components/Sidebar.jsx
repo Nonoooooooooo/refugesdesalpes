@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { X, Loader2, TriangleAlert, Mountain, BedDouble, ExternalLink, RefreshCw, MessageSquare, FileText, CloudRain } from 'lucide-react'
+import { X, Loader2, TriangleAlert, Mountain, BedDouble, ExternalLink, RefreshCw, MessageSquare, FileText, CloudRain, CloudSun } from 'lucide-react'
 import { fetchPoint } from '../lib/api'
 import { fetchCommonsPhotos } from '../lib/wikimedia'
 import { fetchGooglePlacesPhotos } from '../lib/google-places'
@@ -19,6 +19,7 @@ export default function Sidebar({ point, onClose, onOpenRadar }) {
   const [show3D, setShow3D] = useState(false)
   const [showPdf, setShowPdf] = useState(false)
   const [showAvalanche, setShowAvalanche] = useState(false)
+  const [showWeather, setShowWeather] = useState(false)
   const [massifInfo, setMassifInfo] = useState(null)
 
   useEffect(() => {
@@ -149,12 +150,16 @@ export default function Sidebar({ point, onClose, onOpenRadar }) {
             </button>
 
             <button
-              onClick={() => onOpenRadar?.(point)}
-              className="group rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/35 px-3 py-1.5 text-xs font-semibold text-cyan-200 transition-all active:scale-95 flex items-center gap-1.5"
-              title="Afficher le radar de précipitations AROME-PI sur ce secteur"
+              onClick={() => setShowWeather((v) => !v)}
+              className={`rounded-xl px-3 py-1.5 text-xs font-medium transition-all active:scale-95 flex items-center gap-1.5 ${
+                showWeather
+                  ? 'border border-emerald-400/50 bg-emerald-500/25 text-emerald-200 shadow-sm font-semibold'
+                  : 'bg-white/5 hover:bg-white/10 border border-white/10 text-white/75 hover:text-white'
+              }`}
+              title="Consulter les prévisions météo d'altitude au refuge (3 jours)"
             >
-              <CloudRain size={13} className="text-cyan-300 group-hover:scale-110 transition-transform" />
-              <span>Radar Météo</span>
+              <CloudSun size={13} className={showWeather ? 'text-emerald-300' : 'text-white/70'} />
+              <span>Météo</span>
             </button>
 
             {massifInfo && (
@@ -172,8 +177,8 @@ export default function Sidebar({ point, onClose, onOpenRadar }) {
             )}
           </div>
 
-          {/* Section Météo locale au refuge */}
-          {point.lat != null && point.lng != null && (
+          {/* Section Météo locale au refuge (affichée au clic sur le bouton Météo) */}
+          {showWeather && point.lat != null && point.lng != null && (
             <RefugeWeatherSection
               lat={point.lat}
               lng={point.lng}
