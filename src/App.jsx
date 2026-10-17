@@ -35,7 +35,9 @@ const IGN_URL =
 const LABELS_URL =
   'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}'
 const TRAILS_URL = 'https://tile.waymarkedtrails.org/hiking/{z}/{x}/{y}.png'
+const HAS_HOVER = typeof window !== 'undefined' && window.matchMedia('(hover: hover)').matches
 const iconCache = new Map()
+const clusterIconCache = new Map()
 
 function pinIcon(type, selected, etat, isFav = false) {
   const { color, Icon, key } = typeInfo(type)
@@ -92,27 +94,29 @@ const RefugeMarker = memo(function RefugeMarker({ point, isSelected, isFavorite,
 
   return (
     <Marker position={[point.lat, point.lng]} icon={icon} eventHandlers={eventHandlers}>
-      <Tooltip direction="top" offset={[0, -14]} className="refuge-tooltip">
-        <div className="refuge-tooltip-name flex items-center justify-between gap-1.5">
-          <div className="flex items-center gap-1.5 truncate">
-            <span>{point.nom}</span>
-            {closed && (
-              <span className="rounded bg-red-600/90 px-1 py-0.2 text-[9px] font-bold text-white uppercase tracking-wider shadow-sm">
-                {point.etat || 'Fermé'}
-              </span>
-            )}
+      {HAS_HOVER && (
+        <Tooltip direction="top" offset={[0, -14]} className="refuge-tooltip">
+          <div className="refuge-tooltip-name flex items-center justify-between gap-1.5">
+            <div className="flex items-center gap-1.5 truncate">
+              <span>{point.nom}</span>
+              {closed && (
+                <span className="rounded bg-red-600/90 px-1 py-0.2 text-[9px] font-bold text-white uppercase tracking-wider shadow-sm">
+                  {point.etat || 'Fermé'}
+                </span>
+              )}
+            </div>
+            {isFavorite && <span className="text-amber-300 font-bold text-xs shrink-0">★</span>}
           </div>
-          {isFavorite && <span className="text-amber-300 font-bold text-xs shrink-0">★</span>}
-        </div>
-        <div className="refuge-tooltip-meta">
-          <span
-            style={{ background: closed ? '#ef4444' : info.color }}
-            className="refuge-tooltip-dot"
-          />
-          {point.alt != null ? `${point.alt} m` : 'Altitude inconnue'}
-          <span className="opacity-60"> · {info.label}</span>
-        </div>
-      </Tooltip>
+          <div className="refuge-tooltip-meta">
+            <span
+              style={{ background: closed ? '#ef4444' : info.color }}
+              className="refuge-tooltip-dot"
+            />
+            {point.alt != null ? `${point.alt} m` : 'Altitude inconnue'}
+            <span className="opacity-60"> · {info.label}</span>
+          </div>
+        </Tooltip>
+      )}
     </Marker>
   )
 })
@@ -120,11 +124,18 @@ const RefugeMarker = memo(function RefugeMarker({ point, isSelected, isFavorite,
 function clusterIcon(cluster) {
   const n = cluster.getChildCount()
   const size = n < 10 ? 30 : n < 50 ? 36 : 42
-  return L.divIcon({
-    className: 'refuge-marker',
-    html: `<div class="refuge-cluster" style="width:${size}px;height:${size}px">${n}</div>`,
-    iconSize: [size, size],
-  })
+  const cacheKey = `${n}_${size}`
+  let icon = clusterIconCache.get(cacheKey)
+  if (!icon) {
+    icon = L.divIcon({
+      className: 'refuge-marker',
+      html: `<div class="refuge-cluster" style="width:${size}px;height:${size}px">${n}</div>`,
+      iconSize: [size, size],
+      iconAnchor: [size / 2, size / 2],
+    })
+    clusterIconCache.set(cacheKey, icon)
+  }
+  return icon
 }
 
 /** Écoute `moveend` et ne charge que les points de l'étendue visible. */
@@ -139,12 +150,12 @@ function BboxLoader({ onData, onStatus, reloadKey, onMapChange }) {
     onMapChange?.({ bounds: b, center: map.getCenter() })
 
     if (map.getZoom() < MIN_ZOOM_FETCH) {
-      onStatus({ loading: false, error: null, tooFar: true })
+      onStatus((prev) => (prev.tooFar && !prev.loading && !prev.error ? prev : { loading: false, error: null, tooFar: true }))
       return
     }
     const ctrl = new AbortController()
     abortRef.current = ctrl
-    onStatus({ loading: true, error: null, tooFar: false })
+    onStatus((prev) => (prev.loading && !prev.error && !prev.tooFar ? prev : { loading: true, error: null, tooFar: false }))
     fetchBbox([b.getWest(), b.getSouth(), b.getEast(), b.getNorth()], ctrl.signal)
       .then((points) => {
         onData(points)
@@ -178,7 +189,7 @@ function BboxLoader({ onData, onStatus, reloadKey, onMapChange }) {
 
   const schedule = useCallback(() => {
     clearTimeout(timerRef.current)
-    timerRef.current = setTimeout(load, 250)
+    timerRef.current = setTimeout(load, 300)
   }, [load])
 
   useMapEvents({ moveend: schedule })
@@ -259,9 +270,28 @@ export default function App() {
   const [filterOnlyFavorites, setFilterOnlyFavorites] = useState(false)
   const { isOnline, isInstalled, isIos, installPromptReady, promptInstall } = useOfflineStatus()
   const [showOfflineModal, setShowOfflineModal] = useState(false)
-  const [mapState, setMapState] = useState(null)
+  const [offlineMapState, setOfflineMapState] = useState(null)
+  const mapStateRef = useRef(null)
   const [savedZonesCount, setSavedZonesCount] = useState(() => getSavedZones().length)
   const maxSavedZoom = useMemo(() => getSavedZonesMaxZoom(savedZonesCount), [savedZonesCount])
+
+  const handleMapChange = useCallback((state) => {
+    mapStateRef.current = state
+  }, [])
+
+  const handleStatus = useCallback((next) => {
+    setStatus((prev) => {
+      const resolved = typeof next === 'function' ? next(prev) : next
+      if (
+        prev.loading === resolved.loading &&
+        prev.error === resolved.error &&
+        prev.tooFar === resolved.tooFar
+      ) {
+        return prev
+      }
+      return resolved
+    })
+  }, [])
 
   // Cumule les points déjà vus avec détection de changement (évite tout re-render inutile si aucun nouveau point)
   const handleData = useCallback((incoming) => {
@@ -285,8 +315,13 @@ export default function App() {
     if (filterOnlyFavorites) {
       return favorites.filter((p) => activeTypes.has(typeInfo(p.type).key))
     }
+    // Quand l'utilisateur a dézoomé au-delà du seuil (< 9), on masque les points massifs
+    // pour garder un dézoom 100% fluide sur mobile et cohérent avec l'alerte "Zoomez pour afficher les refuges"
+    if (status.tooFar) {
+      return selected ? [selected] : []
+    }
     return points.filter((p) => activeTypes.has(typeInfo(p.type).key))
-  }, [points, activeTypes, filterOnlyFavorites, favorites])
+  }, [points, activeTypes, filterOnlyFavorites, favorites, status.tooFar, selected])
 
   // Centrage automatique lors de l'activation du filtre favoris
   useEffect(() => {
@@ -353,7 +388,16 @@ export default function App() {
       <MapContainer
         center={[45.9237, 6.8694]}
         zoom={11}
+        minZoom={6}
+        maxZoom={18}
         zoomControl={false}
+        preferCanvas={true}
+        zoomAnimation={true}
+        zoomAnimationThreshold={4}
+        fadeAnimation={true}
+        markerZoomAnimation={true}
+        bounceAtLimits={false}
+        wheelDebounceTime={40}
         className="h-full w-full"
       >
         {/* Panes: tuiles (200) < toponymie (250) < overlay (400) < marqueurs (600) */}
@@ -365,10 +409,20 @@ export default function App() {
               attribution="Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics"
               url={IMAGERY_URL}
               maxZoom={18}
-              keepBuffer={3}
-              updateInterval={100}
+              keepBuffer={2}
+              updateWhenZooming={false}
+              updateWhenIdle={true}
             />
-            <TileLayer key="labels" pane="labels" url={LABELS_URL} maxZoom={18} opacity={0.9} keepBuffer={3} />
+            <TileLayer
+              key="labels"
+              pane="labels"
+              url={LABELS_URL}
+              maxZoom={18}
+              opacity={0.9}
+              keepBuffer={2}
+              updateWhenZooming={false}
+              updateWhenIdle={true}
+            />
           </>
         )}
         {(baseLayer === 'opentopo' || baseLayer === 'relief') && (
@@ -379,8 +433,9 @@ export default function App() {
             subdomains={['a', 'b', 'c']}
             maxNativeZoom={!isOnline ? (maxSavedZoom || 16) : 17}
             maxZoom={18}
-            keepBuffer={3}
-            updateInterval={100}
+            keepBuffer={2}
+            updateWhenZooming={false}
+            updateWhenIdle={true}
           />
         )}
         {(baseLayer === 'ign' || baseLayer === 'cyclosm') && (
@@ -390,8 +445,9 @@ export default function App() {
             url={IGN_URL}
             maxNativeZoom={!isOnline ? (maxSavedZoom || 16) : 18}
             maxZoom={18}
-            keepBuffer={3}
-            updateInterval={100}
+            keepBuffer={2}
+            updateWhenZooming={false}
+            updateWhenIdle={true}
           />
         )}
         {showTrails && (
@@ -402,7 +458,9 @@ export default function App() {
             attribution="Sentiers &copy; <a href='https://hiking.waymarkedtrails.org' target='_blank' rel='noreferrer'>Waymarked Trails</a>"
             opacity={0.85}
             maxZoom={18}
-            keepBuffer={3}
+            keepBuffer={2}
+            updateWhenZooming={false}
+            updateWhenIdle={true}
           />
         )}
         <TransportLayer
@@ -421,20 +479,29 @@ export default function App() {
         />
         <BboxLoader
           onData={handleData}
-          onStatus={setStatus}
+          onStatus={handleStatus}
           reloadKey={reloadKey}
-          onMapChange={setMapState}
+          onMapChange={handleMapChange}
         />
         <FlyToSelected target={flyTarget} />
         <MapControls hasSelected={Boolean(selected)} />
         <MarkerClusterGroup
           chunkedLoading
-          chunkInterval={40}
-          chunkDelay={15}
+          chunkInterval={100}
+          chunkDelay={20}
           showCoverageOnHover={false}
-          maxClusterRadius={(zoom) => (zoom >= 13 ? 28 : zoom >= 11 ? 40 : 50)}
+          maxClusterRadius={(zoom) => {
+            if (zoom >= 13) return 40
+            if (zoom >= 12) return 55
+            if (zoom >= 11) return 70
+            if (zoom >= 10) return 85
+            return 100
+          }}
           disableClusteringAtZoom={14}
           spiderfyOnMaxZoom
+          animate={HAS_HOVER}
+          animateAddingMarkers={false}
+          removeOutsideVisibleBounds={true}
           iconCreateFunction={clusterIcon}
         >
           {visible.map((p) => (
@@ -480,7 +547,10 @@ export default function App() {
         onOpenFavorites={() => setShowFavoritesModal(true)}
         filterOnlyFavorites={filterOnlyFavorites}
         onToggleFilterOnlyFavorites={() => setFilterOnlyFavorites((v) => !v)}
-        onOpenOffline={() => setShowOfflineModal(true)}
+        onOpenOffline={() => {
+          setOfflineMapState(mapStateRef.current)
+          setShowOfflineModal(true)
+        }}
         isOnline={isOnline}
         savedZonesCount={savedZonesCount}
       />
@@ -511,8 +581,8 @@ export default function App() {
           setShowOfflineModal(false)
           setSavedZonesCount(getSavedZones().length)
         }}
-        mapBounds={mapState?.bounds}
-        mapCenter={mapState?.center}
+        mapBounds={offlineMapState?.bounds}
+        mapCenter={offlineMapState?.center}
         onFlyToZone={(target) => {
           if (Array.isArray(target) && target.length === 4) {
             const [w, s, e, n] = target

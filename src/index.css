@@ -71,6 +71,7 @@ html, body, #root {
 .refuge-marker {
   background: none !important;
   border: none !important;
+  will-change: transform;
 }
 .refuge-pin {
   width: 24px !important;
@@ -82,9 +83,19 @@ html, body, #root {
   color: #fff;
   border: 1.5px solid rgba(255, 255, 255, 0.9) !important;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45) !important;
-  transition: transform 0.15s;
+  contain: layout paint;
 }
-.refuge-pin:hover { transform: scale(1.25); }
+@media (hover: hover) {
+  .refuge-pin {
+    transition: transform 0.15s;
+  }
+  .refuge-pin:hover {
+    transform: scale(1.25);
+  }
+  .refuge-cluster:hover {
+    transform: scale(1.1);
+  }
+}
 .refuge-pin.selected {
   transform: scale(1.45);
   box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.35), 0 4px 12px rgba(0, 0, 0, 0.5) !important;
@@ -135,17 +146,28 @@ html, body, #root {
   border-radius: 9999px;
   color: #fff;
   font-size: 12px;
-  font-weight: 600;
-  background: rgba(15, 23, 20, 0.78);
-  backdrop-filter: blur(6px);
-  border: 2px solid rgba(255, 255, 255, 0.85);
-  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.18), 0 3px 10px rgba(0, 0, 0, 0.45);
-  transition: transform 0.15s;
+  font-weight: 700;
+  background: linear-gradient(135deg, rgba(15, 23, 20, 0.95), rgba(28, 40, 35, 0.95));
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+  contain: layout paint;
+  will-change: transform;
 }
-.refuge-cluster:hover { transform: scale(1.1); }
-.leaflet-marker-icon, .leaflet-marker-shadow { transition: opacity 0.2s; }
 
-.leaflet-container { background: #0b1210; font-family: inherit; }
+.leaflet-container {
+  background: #0b1210;
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+.leaflet-tile {
+  will-change: transform;
+}
+.leaflet-zoom-animated {
+  will-change: transform;
+}
+.leaflet-marker-pane {
+  will-change: transform;
+}
 
 .sidebar-enter { animation: slideIn 0.3s ease-out; }
 @keyframes slideIn {
