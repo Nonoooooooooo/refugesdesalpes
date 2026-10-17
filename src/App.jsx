@@ -18,6 +18,9 @@ import WebcamLayer from './features/webcams/WebcamLayer.jsx'
 import InfoFeedbackButton from './components/InfoFeedbackButton.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
 import { trackEvent } from './lib/analytics'
+import AromeLayer from './features/meteo/AromeLayer.jsx'
+import AromeTimelinePlayer from './features/meteo/AromeTimelinePlayer.jsx'
+import { fetchAromeCapabilities } from './features/meteo/aromeService'
 
 const MIN_ZOOM_FETCH = 9
 const IMAGERY_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
@@ -179,6 +182,42 @@ export default function App() {
   const [showTransports, setShowTransports] = useState(false)
   const [showParkings, setShowParkings] = useState(false)
   const [showWebcams, setShowWebcams] = useState(false)
+  const [showMeteo, setShowMeteo] = useState(false)
+  const [aromeLayer, setAromeLayer] = useState('TOTAL_PRECIPITATION_RATE__GROUND_OR_WATER_SURFACE')
+  const [aromeTimes, setAromeTimes] = useState([])
+  const [aromeTime, setAromeTime] = useState('')
+  const [aromeOpacity, setAromeOpacity] = useState(0.82)
+  const [aromeLoading, setAromeLoading] = useState(false)
+
+  // Chargement des échéances temporelles AROME-PI à l'activation
+  useEffect(() => {
+    if (!showMeteo) return
+    let active = true
+    const ctrl = new AbortController()
+
+    fetchAromeCapabilities(ctrl.signal).then((data) => {
+      if (!active || !data?.times?.length) return
+      setAromeTimes(data.times)
+      if (!aromeTime) {
+        const nowMs = Date.now()
+        let closest = data.times[0]
+        let minDiff = Infinity
+        for (const t of data.times) {
+          const diff = Math.abs(new Date(t).getTime() - nowMs)
+          if (diff < minDiff) {
+            minDiff = diff
+            closest = t
+          }
+        }
+        setAromeTime(closest)
+      }
+    })
+
+    return () => {
+      active = false
+      ctrl.abort()
+    }
+  }, [showMeteo, aromeTime])
 
   // Cumule les points déjà vus avec détection de changement (évite tout re-render inutile si aucun nouveau point)
   const handleData = useCallback((incoming) => {
@@ -241,7 +280,13 @@ export default function App() {
     setFlyTarget({ lat: city.lat, lng: city.lng, zoom: 12, t: Date.now() })
   }, [])
 
-
+  const handleOpenRefugeRadar = useCallback((refugePoint) => {
+    setShowMeteo(true)
+    trackEvent('select_content', { content_type: 'meteo_radar', item_id: refugePoint.id, item_name: refugePoint.nom })
+    if (refugePoint.lat && refugePoint.lng) {
+      setFlyTarget({ lat: refugePoint.lat, lng: refugePoint.lng, zoom: 11, t: Date.now() })
+    }
+  }, [])
 
   return (
     <div className="relative h-screen w-screen overflow-hidden">
@@ -306,6 +351,13 @@ export default function App() {
         />
         <OverpassLayer showParkings={showParkings} />
         <WebcamLayer active={showWebcams} />
+        <AromeLayer
+          active={showMeteo}
+          layerId={aromeLayer}
+          time={aromeTime}
+          opacity={aromeOpacity}
+          onLoadingChange={setAromeLoading}
+        />
         <BboxLoader onData={handleData} onStatus={setStatus} reloadKey={reloadKey} />
         <FlyToSelected target={flyTarget} />
         <MapControls />
@@ -348,14 +400,37 @@ export default function App() {
         onToggleParkings={() => setShowParkings((v) => !v)}
         showWebcams={showWebcams}
         onToggleWebcams={() => setShowWebcams((v) => !v)}
+        showMeteo={showMeteo}
+        onToggleMeteo={() => {
+          setShowMeteo((v) => {
+            const next = !v
+            if (next) trackEvent('toggle_layer', { layer: 'arome_meteo', state: 'on' })
+            return next
+          })
+        }}
         activeTypes={activeTypes}
         onToggleType={toggleType}
       />
 
       <InfoFeedbackButton hasSelected={Boolean(selected)} />
 
+      {/* Lecteur et contrôles d'animation AROME-PI */}
+      {showMeteo && (
+        <AromeTimelinePlayer
+          times={aromeTimes}
+          selectedTime={aromeTime}
+          onTimeChange={setAromeTime}
+          selectedLayer={aromeLayer}
+          onLayerChange={setAromeLayer}
+          opacity={aromeOpacity}
+          onOpacityChange={setAromeOpacity}
+          onClose={() => setShowMeteo(false)}
+          isLoading={aromeLoading}
+        />
+      )}
+
       {/* Statut discret */}
-      <div className="pointer-events-none absolute bottom-6 left-1/2 z-[1000] -translate-x-1/2">
+      <div className={`pointer-events-none absolute left-1/2 z-[1000] -translate-x-1/2 transition-all duration-300 ${showMeteo ? 'bottom-28 sm:bottom-24' : 'bottom-6'}`}>
         {status.loading && (
           <div className="glass flex items-center gap-2 rounded-full px-4 py-2 text-sm">
             <Loader2 size={16} className="animate-spin" /> Chargement des refuges…
@@ -389,7 +464,11 @@ export default function App() {
               onSelectTransport={handleSelectTransport}
             />
           ) : (
-            <Sidebar point={selected} onClose={() => setSelected(null)} />
+            <Sidebar
+              point={selected}
+              onClose={() => setSelected(null)}
+              onOpenRadar={handleOpenRefugeRadar}
+            />
           )}
         </ErrorBoundary>
       )}

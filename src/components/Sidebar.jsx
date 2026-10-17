@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { X, Loader2, TriangleAlert, Mountain, BedDouble, ExternalLink, RefreshCw, MessageSquare, FileText } from 'lucide-react'
+import { X, Loader2, TriangleAlert, Mountain, BedDouble, ExternalLink, RefreshCw, MessageSquare, FileText, CloudRain } from 'lucide-react'
 import { fetchPoint } from '../lib/api'
 import { fetchCommonsPhotos } from '../lib/wikimedia'
 import { fetchGooglePlacesPhotos } from '../lib/google-places'
@@ -11,8 +11,9 @@ import Terrain3DModal from '../features/terrain3d/Terrain3DModal.jsx'
 import AvalancheModal from '../features/avalanche/AvalancheModal.jsx'
 import AvalanchePdfModal from '../features/avalanche/AvalanchePdfModal.jsx'
 import { findMassifByCoords } from '../features/avalanche/massifLookup'
+import RefugeWeatherSection from '../features/meteo/RefugeWeatherSection.jsx'
 
-export default function Sidebar({ point, onClose }) {
+export default function Sidebar({ point, onClose, onOpenRadar }) {
   const [state, setState] = useState({ loading: true, error: null, data: null })
   const [attempt, setAttempt] = useState(0)
   const [show3D, setShow3D] = useState(false)
@@ -138,13 +139,22 @@ export default function Sidebar({ point, onClose }) {
             )}
           </div>
 
-          {/* Boutons d'actions rapides (Vue 3D et Bulletin Avalanche BERA) */}
+          {/* Boutons d'actions rapides (Vue 3D, Radar Météo et Bulletin Avalanche BERA) */}
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => setShow3D(true)}
               className="rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 text-xs font-medium text-white/75 hover:text-white transition-all active:scale-95"
             >
               Vue 3D
+            </button>
+
+            <button
+              onClick={() => onOpenRadar?.(point)}
+              className="group rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/35 px-3 py-1.5 text-xs font-semibold text-cyan-200 transition-all active:scale-95 flex items-center gap-1.5"
+              title="Afficher le radar de précipitations AROME-PI sur ce secteur"
+            >
+              <CloudRain size={13} className="text-cyan-300 group-hover:scale-110 transition-transform" />
+              <span>Radar Météo</span>
             </button>
 
             {massifInfo && (
@@ -161,6 +171,17 @@ export default function Sidebar({ point, onClose }) {
               </button>
             )}
           </div>
+
+          {/* Section Météo locale au refuge */}
+          {point.lat != null && point.lng != null && (
+            <RefugeWeatherSection
+              lat={point.lat}
+              lng={point.lng}
+              alt={d?.alt ?? point.alt}
+              nom={d?.nom ?? point.nom}
+              onOpenRadar={() => onOpenRadar?.(point)}
+            />
+          )}
 
           {state.loading && (
             <div className="flex items-center justify-center gap-2 py-10 text-sm text-white/70">

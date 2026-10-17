@@ -4,12 +4,14 @@ import { defineConfig, loadEnv } from 'vite'
 import placesHandler from './api/places-photos.js'
 import overpassHandler from './api/overpass.js'
 import feedbackHandler from './api/feedback.js'
+import aromeHandler from './api/arome.js'
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   process.env.GOOGLE_PLACES_API_KEY = env.GOOGLE_PLACES_API_KEY || process.env.GOOGLE_PLACES_API_KEY
   process.env.DISCORD_WEBHOOK_URL = env.DISCORD_WEBHOOK_URL || process.env.DISCORD_WEBHOOK_URL
+  process.env.METEOFRANCE_AROME_TOKEN = env.METEOFRANCE_AROME_TOKEN || env.VITE_METEOFRANCE_API_KEY || process.env.METEOFRANCE_AROME_TOKEN
 
   return {
     plugins: [
@@ -159,6 +161,50 @@ export default defineConfig(({ mode }) => {
             }
             try {
               await feedbackHandler(fakeReq, fakeRes)
+            } catch (err) {
+              res.statusCode = 500
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({ error: err.message }))
+            }
+          })
+
+          server.middlewares.use('/api/arome', async (req, res) => {
+            const parsedUrl = new URL(req.url, 'http://localhost')
+            const query = Object.fromEntries(parsedUrl.searchParams)
+            const fakeReq = {
+              method: req.method,
+              headers: req.headers,
+              query,
+              url: req.url,
+            }
+            const fakeRes = {
+              statusCode: 200,
+              setHeader(k, v) {
+                res.setHeader(k, v)
+                return this
+              },
+              status(code) {
+                res.statusCode = code
+                return this
+              },
+              json(data) {
+                res.setHeader('Content-Type', 'application/json')
+                res.end(JSON.stringify(data))
+              },
+              send(data) {
+                if (typeof data === 'object' && !Buffer.isBuffer(data)) {
+                  res.setHeader('Content-Type', 'application/json')
+                  res.end(JSON.stringify(data))
+                } else {
+                  res.end(data)
+                }
+              },
+              end(data) {
+                res.end(data)
+              },
+            }
+            try {
+              await aromeHandler(fakeReq, fakeRes)
             } catch (err) {
               res.statusCode = 500
               res.setHeader('Content-Type', 'application/json')

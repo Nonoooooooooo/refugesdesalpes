@@ -7,6 +7,7 @@ import {
   SquareParking,
   Compass,
   Camera,
+  CloudRain,
   Filter,
   ChevronDown,
   ChevronUp,
@@ -31,6 +32,8 @@ export default function MapControlBar({
   onToggleParkings,
   showWebcams,
   onToggleWebcams,
+  showMeteo,
+  onToggleMeteo,
   activeTypes,
   onToggleType,
 }) {
@@ -147,6 +150,20 @@ export default function MapControlBar({
         >
           <Camera size={14} className={showWebcams ? 'text-sky-300' : ''} />
           <span className="hidden sm:inline">Webcams</span>
+        </button>
+
+        {/* Bouton Météo (AROME-PI Météo-France) */}
+        <button
+          onClick={onToggleMeteo}
+          title="Afficher/masquer le radar et prévisions météo AROME-PI (Météo-France)"
+          className={`glass-btn flex items-center gap-1 sm:gap-1.5 rounded-xl px-2 py-1 sm:px-2.5 sm:py-1.5 text-xs font-medium transition-all ${
+            showMeteo
+              ? 'border border-cyan-400/50 bg-cyan-500/35 text-cyan-200 shadow-[0_0_12px_rgba(6,182,212,0.35)] ring-1 ring-cyan-400/30 font-semibold'
+              : 'bg-white/5 text-white/65 hover:text-white hover:bg-white/10'
+          }`}
+        >
+          <CloudRain size={14} className={showMeteo ? 'text-cyan-300 animate-pulse' : ''} />
+          <span className="hidden sm:inline">Météo</span>
         </button>
 
         <div className="mx-0.5 h-4 sm:h-5 w-px bg-white/15" />
