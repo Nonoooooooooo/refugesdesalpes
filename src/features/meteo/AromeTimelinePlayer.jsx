@@ -1,18 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
-import {
-  Play,
-  Pause,
-  SkipBack,
-  SkipForward,
-  Radio,
-  SlidersHorizontal,
-  X,
-  ChevronDown,
-  ChevronUp,
-  Layers,
-  Sparkles,
-} from 'lucide-react'
-import { AROME_LAYERS, formatAromeTime, preloadAromeImage } from './aromeService'
+import { Play, Pause, SkipBack, SkipForward, Radio, X } from 'lucide-react'
+import { AROME_LAYERS, formatAromeTime } from './aromeService'
+
+// Palette "instrument clair" : fond menthe grisé, encre quasi noire, accent orange
+const BG = '#eaf4f4'
+const INK = '#0d1b17'
+const INK_SOFT = '#3f5a53'
+const RULE = 'rgba(13, 27, 23, 0.22)'
+const ACCENT = '#ffaa00'
 
 /**
  * Légendes d'intensité adaptées à chaque couche AROME
@@ -40,10 +35,10 @@ const LEGENDS = {
   REFLECTIVITY_MAX_DBZ__GROUND_OR_WATER_SURFACE: {
     title: 'Réflectivité Radar (dBZ)',
     items: [
-      { label: '20 dBZ (Bruine)', color: '#38bdf8' },
-      { label: '35 dBZ (Pluie)', color: '#22c55e' },
-      { label: '45 dBZ (Averses)', color: '#eab308' },
-      { label: '> 50 dBZ (Orage/Grêle)', color: '#ef4444' },
+      { label: '20 · bruine', color: '#38bdf8' },
+      { label: '35 · pluie', color: '#22c55e' },
+      { label: '45 · averses', color: '#eab308' },
+      { label: '> 50 · orage / grêle', color: '#ef4444' },
     ],
   },
   WIND_SPEED_GUST_15MIN__SPECIFIC_HEIGHT_LEVEL_ABOVE_GROUND: {
@@ -57,6 +52,29 @@ const LEGENDS = {
   },
 }
 
+function Label({ children, className = '' }) {
+  return (
+    <div className={`text-[10px] font-semibold uppercase tracking-[0.16em] ${className}`} style={{ color: INK_SOFT }}>
+      {children}
+    </div>
+  )
+}
+
+/** Bouton carré de la barre de transport */
+function SquareButton({ children, title, onClick, solid = false }) {
+  return (
+    <button
+      onClick={onClick}
+      title={title}
+      aria-label={title}
+      className="flex h-9 w-9 items-center justify-center rounded-sm border transition-colors active:opacity-70"
+      style={solid ? { background: INK, borderColor: INK, color: BG } : { borderColor: 'rgba(13, 27, 23, 0.4)', color: INK }}
+    >
+      {children}
+    </button>
+  )
+}
+
 export default function AromeTimelinePlayer({
   times = [],
   selectedTime = '',
@@ -67,20 +85,23 @@ export default function AromeTimelinePlayer({
   onOpacityChange,
   onClose,
   isLoading = false,
+  hasSelected = false, // une fiche (refuge / transport) occupe déjà la colonne de gauche
 }) {
   const [isPlaying, setIsPlaying] = useState(false)
-  const [speed, setSpeed] = useState(900) // ms par frame
-  const [showOpacity, setShowOpacity] = useState(false)
-  const [showLayerMenu, setShowLayerMenu] = useState(false)
-  const [isMinimized, setIsMinimized] = useState(false)
+  const [speed] = useState(900) // ms par frame
   const playTimerRef = useRef(null)
 
-  const activeLayerObj =
-    AROME_LAYERS.find((l) => l.id === selectedLayer) || AROME_LAYERS[0]
+  const activeLayerObj = AROME_LAYERS.find((l) => l.id === selectedLayer) || AROME_LAYERS[0]
   const currentLegend = LEGENDS[selectedLayer] || LEGENDS.TOTAL_PRECIPITATION_RATE__GROUND_OR_WATER_SURFACE
 
   const currentIndex = Math.max(0, times.indexOf(selectedTime))
-  const formattedCurrent = formatAromeTime(selectedTime)
+  const formattedCurrent = formatAromeTime(selectedTime) || {}
+  const timeStr = formattedCurrent.timeStr || '--:--'
+  const offsetText = formattedCurrent.isLive
+    ? 'Temps réel'
+    : formattedCurrent.label
+      ? formattedCurrent.label.replace(formattedCurrent.timeStr, '').replace(/[()]/g, '').trim()
+      : ''
 
   // Boucle de lecture automatique
   useEffect(() => {
@@ -132,253 +153,180 @@ export default function AromeTimelinePlayer({
   }
 
   return (
-    <aside aria-label="Contrôle radar AROME" className="pointer-events-auto absolute bottom-4 left-1/2 -translate-x-1/2 z-[1050] w-[95vw] max-w-xl transition-all duration-300">
-      <div className="glass glass-panel rounded-3xl p-3 sm:p-4 shadow-2xl border border-sky-400/30 backdrop-blur-2xl">
-        {/* ─── En-tête : Titre, Couche active & Boutons ─── */}
-        <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-2.5">
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-sky-500/25 border border-sky-400/40 text-sm shadow-inner shrink-0">
-              {activeLayerObj.icon}
-            </span>
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-xs font-bold text-white tracking-wide truncate">
-                  Radar Météo-France
-                </span>
-                <span className="rounded-full bg-sky-500/20 border border-sky-400/40 px-1.5 py-0.5 text-[9px] font-semibold text-sky-200">
-                  AROME-PI 0.01°
-                </span>
-                {isLoading && (
-                  <span className="flex h-2 w-2 rounded-full bg-sky-400 animate-ping" title="Chargement du calque…" />
-                )}
-              </div>
-              <p className="text-[11px] text-white/60 truncate">
-                {activeLayerObj.label} · Alpes
-              </p>
-            </div>
+    <aside
+      aria-label="Radar météo"
+      className={`sidebar-enter pointer-events-auto fixed inset-x-2 bottom-2 z-[1120] flex max-h-[72vh] flex-col overflow-y-auto rounded-md border shadow-[0_18px_50px_-12px_rgba(0,0,0,0.65)] [scrollbar-color:rgba(13,27,23,0.4)_transparent] [scrollbar-width:thin] sm:absolute sm:inset-x-auto sm:bottom-auto sm:w-[420px] ${
+        // Sans fiche ouverte : colonne de gauche, sous la recherche.
+        // Avec une fiche : à sa droite, sous les deux lignes de boutons de la carte.
+        hasSelected ? 'sm:left-[444px] sm:top-[7rem] sm:max-h-[calc(100%-11.75rem)]' : 'sm:left-4 sm:top-[4.75rem] sm:max-h-[calc(100%-9.5rem)]'
+      }`}
+      style={{ background: BG, color: INK, borderColor: 'rgba(13, 27, 23, 0.35)' }}
+    >
+      {/* ─── En-tête ─── */}
+      <header className="flex items-start justify-between gap-3 px-4 pt-3 pb-3">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em]">
+            <span className="h-3 w-[3px]" style={{ background: ACCENT }} />
+            Radar météo
+            {isLoading && <span className="h-1.5 w-1.5 animate-pulse" style={{ background: INK }} title="Chargement du calque…" />}
           </div>
+          <p className="font-din mt-1.5 text-[12px] uppercase tracking-[0.12em]" style={{ color: INK_SOFT }}>
+            Météo-France · AROME-PI · Alpes
+          </p>
+        </div>
 
-          <div className="flex items-center gap-1 shrink-0">
-            {/* Bouton sélecteur de couches */}
-            <div className="relative">
-              <button
-                onClick={() => setShowLayerMenu((v) => !v)}
-                title="Changer de calque météo"
-                className="glass-btn flex items-center gap-1 rounded-xl bg-white/10 px-2 py-1 text-xs text-white/85 hover:text-white"
-              >
-                <Layers size={13} className="text-sky-300" />
-                <span className="hidden sm:inline">{activeLayerObj.shortLabel}</span>
-                <ChevronDown size={12} />
-              </button>
+        <button
+          onClick={onClose}
+          title="Fermer le radar météo"
+          aria-label="Fermer le radar météo"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border transition-colors hover:bg-[rgba(13,27,23,0.1)] active:opacity-70"
+          style={{ borderColor: 'rgba(13, 27, 23, 0.4)' }}
+        >
+          <X size={16} />
+        </button>
+      </header>
 
-              {showLayerMenu && (
-                <div className="absolute right-0 bottom-full mb-2 w-56 rounded-2xl border border-white/15 bg-slate-900/95 p-1.5 shadow-2xl backdrop-blur-xl z-50 animate-in fade-in zoom-in-95">
-                  <div className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-sky-300/80">
-                    Météo-France · AROME-PI
-                  </div>
-                  {AROME_LAYERS.map((l) => (
-                    <button
-                      key={l.id}
-                      onClick={() => {
-                        onLayerChange(l.id)
-                        setShowLayerMenu(false)
-                      }}
-                      className={`flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs text-left transition-colors ${
-                        selectedLayer === l.id
-                          ? 'bg-sky-500/25 text-sky-200 font-semibold'
-                          : 'text-white/75 hover:bg-white/10 hover:text-white'
-                      }`}
-                    >
-                      <span className="text-sm">{l.icon}</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="truncate">{l.label}</div>
-                        <div className="text-[10px] text-white/50">{l.unit}</div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Bouton Opacité */}
-            <div className="relative">
-              <button
-                onClick={() => setShowOpacity((v) => !v)}
-                title="Régler l'opacité"
-                className={`glass-btn rounded-xl p-1.5 text-xs transition-colors ${
-                  showOpacity ? 'bg-white/20 text-white' : 'bg-white/5 text-white/60 hover:text-white'
-                }`}
-              >
-                <SlidersHorizontal size={14} />
-              </button>
-
-              {showOpacity && (
-                <div className="absolute right-0 bottom-full mb-2 w-48 rounded-2xl border border-white/15 bg-slate-900/95 p-3 shadow-2xl backdrop-blur-xl z-50">
-                  <div className="flex items-center justify-between text-xs text-white/70 mb-2">
-                    <span>Opacité calque</span>
-                    <span className="font-bold text-sky-300">{Math.round(opacity * 100)}%</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="0.2"
-                    max="1"
-                    step="0.05"
-                    value={opacity}
-                    onChange={(e) => onOpacityChange(parseFloat(e.target.value))}
-                    className="w-full accent-sky-400 cursor-pointer"
-                  />
-                  <div className="flex justify-between text-[10px] text-white/40 mt-1">
-                    <span>Translucide</span>
-                    <span>Opaque</span>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Réduire / Fermer */}
+      {/* ─── Choix de la couche ─── */}
+      <div role="tablist" aria-label="Couche affichée" className="grid grid-cols-2 gap-px border-y" style={{ background: RULE, borderColor: RULE }}>
+        {AROME_LAYERS.map((l) => {
+          const active = l.id === selectedLayer
+          return (
             <button
-              onClick={() => setIsMinimized((v) => !v)}
-              title={isMinimized ? 'Agrandir le lecteur' : 'Minimiser'}
-              className="glass-btn rounded-xl p-1.5 text-white/60 hover:text-white"
+              key={l.id}
+              role="tab"
+              aria-selected={active}
+              onClick={() => onLayerChange(l.id)}
+              className="px-3 py-2 text-left transition-colors"
+              style={active ? { background: INK, color: BG } : { background: BG, color: INK }}
             >
-              {isMinimized ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+              <div className="font-din text-[17px] leading-tight font-semibold uppercase tracking-[0.08em]">{l.shortLabel}</div>
+              <div className="text-[10px] uppercase tracking-wider" style={{ color: active ? 'rgba(234, 244, 244, 0.7)' : INK_SOFT }}>
+                {l.unit}
+              </div>
             </button>
+          )
+        })}
+      </div>
+      <p className="px-4 py-2 text-[11px] leading-snug" style={{ color: INK_SOFT }}>
+        {activeLayerObj.description}
+      </p>
 
-            <button
-              onClick={onClose}
-              title="Fermer le calque météo"
-              className="glass-btn rounded-xl p-1.5 text-white/60 hover:text-red-300 hover:bg-red-500/20"
-            >
-              <X size={14} />
-            </button>
+      {/* ─── Échéance ─── */}
+      <div className="flex items-end justify-between gap-3 border-t px-4 py-3" style={{ borderColor: RULE }}>
+        <div>
+          <Label>Échéance</Label>
+          <div className="font-din mt-1 text-[54px] leading-[0.9] font-semibold">{timeStr.replace(':', 'H')}</div>
+          <div className="font-din mt-1.5 text-[13px] uppercase tracking-wider" style={{ color: INK_SOFT }}>
+            {offsetText}
           </div>
         </div>
 
-        {/* ─── Corps : Commandes temporelles & Timeline ─── */}
-        {!isMinimized && (
-          <div className="pt-2.5 flex flex-col gap-2">
-            {/* Ligne Échéance & Badge Direct */}
-            <div className="flex items-center justify-between gap-2 flex-wrap">
-              <div className="flex items-center gap-1.5">
-                {formattedCurrent.isLive ? (
-                  <span className="flex items-center gap-1 rounded-full bg-emerald-500/20 border border-emerald-400/40 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
-                    EN DIRECT
-                  </span>
-                ) : formattedCurrent.isForecast ? (
-                  <span className="flex items-center gap-1 rounded-full bg-sky-500/20 border border-sky-400/40 px-2 py-0.5 text-[10px] font-bold text-sky-300">
-                    <Sparkles size={11} />
-                    PRÉVISION
-                  </span>
-                ) : (
-                  <span className="rounded-full bg-slate-500/20 border border-slate-400/40 px-2 py-0.5 text-[10px] font-medium text-slate-300">
-                    PASSÉ
-                  </span>
-                )}
-                <span className="text-sm font-semibold text-white tracking-wide">
-                  {formattedCurrent.label}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={jumpToLive}
-                  title="Revenir au direct"
-                  className="glass-btn flex items-center gap-1 rounded-xl bg-white/10 px-2 py-0.5 text-[11px] font-medium text-white/80 hover:text-white"
-                >
-                  <Radio size={12} className="text-emerald-400" />
-                  <span>Direct</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Slider temporel */}
-            <div className="relative pt-1">
-              <input
-                type="range"
-                min="0"
-                max={Math.max(0, times.length - 1)}
-                value={currentIndex}
-                onChange={(e) => {
-                  setIsPlaying(false)
-                  const idx = parseInt(e.target.value, 10)
-                  if (times[idx]) onTimeChange(times[idx])
-                }}
-                className="w-full accent-sky-400 cursor-pointer h-2 bg-white/10 rounded-lg appearance-none"
-              />
-              <div className="flex justify-between text-[10px] text-white/50 px-0.5 mt-0.5">
-                <span>{times[0] ? formatAromeTime(times[0]).timeStr : ''}</span>
-                <span className="text-sky-300 font-semibold">{formattedCurrent.timeStr}</span>
-                <span>{times.length > 0 ? formatAromeTime(times[times.length - 1]).timeStr : ''}</span>
-              </div>
-            </div>
-
-            {/* Barre de transport Play/Pause & Pas à pas */}
-            <div className="flex items-center justify-between pt-1">
-              <div className="flex items-center gap-1 sm:gap-2">
-                <button
-                  onClick={stepBack}
-                  title="15 min en arrière"
-                  className="glass-btn rounded-xl p-1.5 text-white/70 hover:text-white"
-                >
-                  <SkipBack size={15} />
-                </button>
-
-                <button
-                  onClick={() => setIsPlaying((p) => !p)}
-                  title={isPlaying ? 'Pause' : 'Lecture animation radar'}
-                  className="flex h-8 w-8 items-center justify-center rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold shadow-lg shadow-sky-500/30 transition-transform active:scale-95"
-                >
-                  {isPlaying ? <Pause size={16} /> : <Play size={16} className="ml-0.5" />}
-                </button>
-
-                <button
-                  onClick={stepForward}
-                  title="15 min en avant"
-                  className="glass-btn rounded-xl p-1.5 text-white/70 hover:text-white"
-                >
-                  <SkipForward size={15} />
-                </button>
-
-                <span className="hidden sm:inline text-[10px] text-white/40 ml-1">
-                  Pas de 15 min
-                </span>
-              </div>
-
-              {/* Échelle / Légende dynamique */}
-              {currentLegend && (
-                <div className="flex items-center gap-1 sm:gap-1.5 bg-black/30 rounded-xl px-2 py-1 border border-white/5">
-                  <span className="hidden md:inline text-[10px] text-white/50">
-                    {currentLegend.title} :
-                  </span>
-                  <div className="flex items-center gap-0.5">
-                    {currentLegend.items.map((it, idx) => (
-                      <div key={idx} className="flex items-center gap-1 px-1">
-                        <span
-                          className="h-2 w-3 rounded-xs shadow-xs"
-                          style={{ background: it.color }}
-                        />
-                        <span className="text-[9px] text-white/70 font-mono hidden sm:inline">
-                          {it.label}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Mention officielle Météo-France sur le radar */}
-            <div className="flex items-center justify-between text-[10px] text-white/50 pt-1.5 border-t border-white/10">
-              <div className="flex items-center gap-1.5 text-sky-200/90 font-medium">
-                <span className="h-1.5 w-1.5 rounded-full bg-sky-400 shrink-0" />
-                <span>Source officielle : <strong>Météo-France</strong> (Modèle AROME-PI)</span>
-              </div>
-              <span className="text-white/40 hidden sm:inline">Résolution 1 km · Pas 15 min</span>
-            </div>
-          </div>
+        {formattedCurrent.isLive ? (
+          <span className="flex items-center gap-1.5 rounded-sm px-2 py-1 text-[10px] font-bold uppercase tracking-wider" style={{ background: ACCENT, color: INK }}>
+            <span className="h-1.5 w-1.5" style={{ background: INK }} />
+            En direct
+          </span>
+        ) : formattedCurrent.isForecast ? (
+          <span className="rounded-sm border px-2 py-1 text-[10px] font-bold uppercase tracking-wider" style={{ borderColor: INK }}>
+            Prévision
+          </span>
+        ) : (
+          <span className="rounded-sm border px-2 py-1 text-[10px] font-semibold uppercase tracking-wider" style={{ borderColor: RULE, color: INK_SOFT }}>
+            Passé
+          </span>
         )}
       </div>
+
+      {/* ─── Timeline ─── */}
+      <div className="px-4 pb-1">
+        <input
+          type="range"
+          aria-label="Échéance du radar"
+          className="radar-range"
+          min="0"
+          max={Math.max(0, times.length - 1)}
+          value={currentIndex}
+          onChange={(e) => {
+            setIsPlaying(false)
+            const idx = parseInt(e.target.value, 10)
+            if (times[idx]) onTimeChange(times[idx])
+          }}
+        />
+        <div className="font-din flex justify-between text-[12px] tracking-wider" style={{ color: INK_SOFT }}>
+          <span>{times[0] ? formatAromeTime(times[0]).timeStr : ''}</span>
+          <span className="font-semibold" style={{ color: INK }}>
+            {timeStr}
+          </span>
+          <span>{times.length > 0 ? formatAromeTime(times[times.length - 1]).timeStr : ''}</span>
+        </div>
+      </div>
+
+      {/* ─── Barre de transport ─── */}
+      <div className="flex items-center justify-between gap-2 px-4 py-3">
+        <div className="flex items-center gap-1.5">
+          <SquareButton title="15 min en arrière" onClick={stepBack}>
+            <SkipBack size={15} />
+          </SquareButton>
+          <SquareButton title={isPlaying ? 'Pause' : 'Lecture de l’animation'} onClick={() => setIsPlaying((p) => !p)} solid>
+            {isPlaying ? <Pause size={16} /> : <Play size={16} className="ml-0.5" />}
+          </SquareButton>
+          <SquareButton title="15 min en avant" onClick={stepForward}>
+            <SkipForward size={15} />
+          </SquareButton>
+          <span className="font-din ml-1 text-[12px] uppercase tracking-wider" style={{ color: INK_SOFT }}>
+            Pas de 15 min
+          </span>
+        </div>
+
+        <button
+          onClick={jumpToLive}
+          title="Revenir au direct"
+          className="font-din flex h-9 items-center gap-1.5 rounded-sm border px-2.5 text-[13px] font-semibold uppercase tracking-wider transition-colors hover:bg-[rgba(13,27,23,0.08)] active:opacity-70"
+          style={{ borderColor: 'rgba(13, 27, 23, 0.4)' }}
+        >
+          <Radio size={13} />
+          Direct
+        </button>
+      </div>
+
+      {/* ─── Opacité du calque ─── */}
+      <div className="border-t px-4 py-3" style={{ borderColor: RULE }}>
+        <div className="flex items-center justify-between">
+          <Label>Opacité du calque</Label>
+          <span className="font-din text-[15px] font-semibold">{Math.round(opacity * 100)}%</span>
+        </div>
+        <input
+          type="range"
+          aria-label="Opacité du calque"
+          className="radar-range mt-1"
+          min="0.2"
+          max="1"
+          step="0.05"
+          value={opacity}
+          onChange={(e) => onOpacityChange(parseFloat(e.target.value))}
+        />
+      </div>
+
+      {/* ─── Légende ─── */}
+      {currentLegend && (
+        <div className="border-t px-4 py-3" style={{ borderColor: RULE }}>
+          <Label>{currentLegend.title}</Label>
+          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1.5">
+            {currentLegend.items.map((it) => (
+              <div key={it.label} className="flex items-center gap-1.5">
+                <span className="h-2.5 w-4 border" style={{ background: it.color, borderColor: 'rgba(13, 27, 23, 0.3)' }} />
+                <span className="font-din text-[13px] font-medium tracking-wide">{it.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ─── Pied de page ─── */}
+      <footer className="mt-auto flex items-center justify-between gap-2 border-t px-4 py-2.5 text-[10px] uppercase tracking-wider" style={{ borderColor: RULE, color: INK_SOFT }}>
+        <span>Source : Météo-France</span>
+        <span>1 km · pas de 15 min</span>
+      </footer>
     </aside>
   )
 }
