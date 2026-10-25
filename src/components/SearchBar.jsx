@@ -15,6 +15,7 @@ import {
 import { typeInfo } from '../lib/types.jsx'
 import { trackEvent } from '../lib/analytics'
 import { useFavorites } from '../context/FavoritesContext.jsx'
+import { TRANSPORT_SEARCH_INDEX_URL } from '../features/transport/transportSource.js'
 
 const norm = (str = '') =>
   str
@@ -83,7 +84,7 @@ export default function SearchBar({
     if (cachedTransports) {
       setTransportsData(cachedTransports)
     } else {
-      fetch('/transports_search_index.json')
+      fetch(TRANSPORT_SEARCH_INDEX_URL)
         .then((r) => (r.ok ? r.json() : []))
         .then((items) => {
           cachedTransports = items

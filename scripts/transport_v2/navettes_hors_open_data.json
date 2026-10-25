@@ -1,0 +1,3065 @@
+{
+  "description": "Navettes absentes de l'open data, relevées à la main sur leurs documents officiels. Format décrit dans docs/transport/navettes_hors_open_data.md.",
+  "navettes": [
+    {
+      "id": "hmv-ligne-2",
+      "ref": "2",
+      "nom": "Ligne 2 : Bramans ↔ Termignon ↔ Bellecombe ↔ Entre-Deux-Eaux",
+      "reseau": "Navettes Haute Maurienne Vanoise",
+      "exploitant": "Communauté de communes Haute Maurienne Vanoise",
+      "mode": "navette",
+      "couleur": "#0E7490",
+      "statut": "verifie",
+      "source": {
+        "titre": "Guide mobilité Haute Maurienne Vanoise, été 2026 (version 4 du 28/08/2026)",
+        "editeur": "Office de tourisme Haute Maurienne Vanoise",
+        "url": "https://hmvt.download/SitesWeb/hmv-guide-mobilite-ete.pdf",
+        "consulteLe": "2026-10-25"
+      },
+      "saison": {
+        "debut": "2026-06-28",
+        "fin": "2026-09-04",
+        "jours": "Tous les jours, horaires selon trois périodes"
+      },
+      "tarif": "Termignon – Bellecombe gratuit ; jusqu’au Plan du Lac 4 € l’aller simple adulte (7 € l’aller-retour) ; jusqu’à Plume Fine ou Entre-Deux-Eaux 6 € (10 €)",
+      "note": "Parkings du Coëtet et de Bellecombe payants du 1er juillet au 31 août (6 h – 18 h). Pas de vélos, chiens non acceptés (sauf chiens d’assistance).",
+      "sens": [
+        {
+          "nom": "Vers Entre-Deux-Eaux",
+          "arrets": [
+            {
+              "nom": "Bramans – Les Glières",
+              "lat": 45.22752,
+              "lng": 6.77526,
+              "position": "Arrêt officiel Cars Région Savoie"
+            },
+            {
+              "nom": "Bramans – Le Petit Paris",
+              "lat": 45.23157,
+              "lng": 6.78361,
+              "position": "Arrêt officiel Cars Région Savoie"
+            },
+            {
+              "nom": "Bramans – Lenfrey",
+              "lat": 45.23446,
+              "lng": 6.78757,
+              "position": "Arrêt officiel Cars Région Savoie"
+            },
+            {
+              "nom": "Sollières – Les Favières",
+              "lat": 45.26306,
+              "lng": 6.81043,
+              "position": "Arrêt officiel Cars Région Savoie"
+            },
+            {
+              "nom": "Termignon",
+              "lat": 45.27675,
+              "lng": 6.81703,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Le Coëtet",
+              "lat": 45.31508,
+              "lng": 6.8292,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Bellecombe",
+              "lat": 45.32948,
+              "lng": 6.82895,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Plan du Lac",
+              "lat": 45.34574,
+              "lng": 6.83632,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Plume Fine",
+              "lat": 45.35947,
+              "lng": 6.85744,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Entre-Deux-Eaux",
+              "lat": 45.3611,
+              "lng": 6.84142,
+              "position": "OpenStreetMap"
+            }
+          ],
+          "grilles": [
+            {
+              "label": "Période A : 28 juin – 4 juillet, 11 juillet, 22 août – 4 septembre",
+              "lignes": [
+                {
+                  "arret": "Bramans – Les Glières",
+                  "heures": [
+                    "07:40",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ]
+                },
+                {
+                  "arret": "Bramans – Le Petit Paris",
+                  "heures": [
+                    "07:41",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ]
+                },
+                {
+                  "arret": "Bramans – Lenfrey",
+                  "heures": [
+                    "07:42",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ]
+                },
+                {
+                  "arret": "Sollières – Les Favières",
+                  "heures": [
+                    "07:45",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ]
+                },
+                {
+                  "arret": "Termignon",
+                  "heures": [
+                    "07:50",
+                    "10:00",
+                    "",
+                    "13:30",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ]
+                },
+                {
+                  "arret": "Le Coëtet",
+                  "heures": [
+                    "08:10",
+                    "10:20",
+                    "",
+                    "13:50",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ]
+                },
+                {
+                  "arret": "Bellecombe (arrivée)",
+                  "heures": [
+                    "08:20",
+                    "10:30",
+                    "",
+                    "14:00",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ]
+                },
+                {
+                  "arret": "Bellecombe (départ)",
+                  "heures": [
+                    "08:30",
+                    "10:35",
+                    "11:15",
+                    "14:00",
+                    "14:40",
+                    "16:15",
+                    "17:10",
+                    "17:50"
+                  ]
+                },
+                {
+                  "arret": "Plan du Lac",
+                  "heures": [
+                    "08:35",
+                    "10:40",
+                    "11:20",
+                    "14:05",
+                    "14:45",
+                    "16:20",
+                    "17:15",
+                    "17:55"
+                  ]
+                },
+                {
+                  "arret": "Plume Fine",
+                  "heures": [
+                    "08:40",
+                    "10:45",
+                    "11:25",
+                    "14:10",
+                    "14:50",
+                    "16:25",
+                    "17:20",
+                    "18:00"
+                  ]
+                },
+                {
+                  "arret": "Entre-Deux-Eaux",
+                  "heures": [
+                    "08:50",
+                    "10:55",
+                    "11:35",
+                    "14:20",
+                    "15:00",
+                    "16:35",
+                    "17:30",
+                    "18:10"
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "Période B : 5 – 10 juillet et samedis 18, 25 juillet, 1er, 8, 15 août",
+              "lignes": [
+                {
+                  "arret": "Bramans – Les Glières",
+                  "heures": [
+                    "07:35",
+                    "08:15",
+                    "",
+                    "",
+                    "11:25",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ]
+                },
+                {
+                  "arret": "Bramans – Le Petit Paris",
+                  "heures": [
+                    "07:36",
+                    "08:16",
+                    "",
+                    "",
+                    "11:26",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ]
+                },
+                {
+                  "arret": "Bramans – Lenfrey",
+                  "heures": [
+                    "07:37",
+                    "08:17",
+                    "",
+                    "",
+                    "11:27",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ]
+                },
+                {
+                  "arret": "Sollières – Les Favières",
+                  "heures": [
+                    "07:40",
+                    "08:20",
+                    "",
+                    "",
+                    "11:30",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ]
+                },
+                {
+                  "arret": "Termignon",
+                  "heures": [
+                    "07:45",
+                    "08:25",
+                    "",
+                    "10:00",
+                    "11:35",
+                    "",
+                    "13:30",
+                    "",
+                    "",
+                    "",
+                    "16:15"
+                  ]
+                },
+                {
+                  "arret": "Le Coëtet",
+                  "heures": [
+                    "08:05",
+                    "08:45",
+                    "",
+                    "10:20",
+                    "11:55",
+                    "",
+                    "13:50",
+                    "",
+                    "",
+                    "",
+                    "16:35"
+                  ]
+                },
+                {
+                  "arret": "Bellecombe (arrivée)",
+                  "heures": [
+                    "08:15",
+                    "09:00",
+                    "",
+                    "10:35",
+                    "12:10",
+                    "",
+                    "14:05",
+                    "",
+                    "",
+                    "",
+                    "16:50"
+                  ]
+                },
+                {
+                  "arret": "Bellecombe (départ)",
+                  "heures": [
+                    "08:20",
+                    "09:05",
+                    "09:45",
+                    "10:35",
+                    "12:10",
+                    "13:15",
+                    "14:05",
+                    "14:50",
+                    "15:40",
+                    "16:30",
+                    "17:30"
+                  ]
+                },
+                {
+                  "arret": "Plan du Lac",
+                  "heures": [
+                    "08:25",
+                    "09:10",
+                    "09:50",
+                    "10:40",
+                    "12:15",
+                    "13:20",
+                    "14:10",
+                    "14:55",
+                    "15:45",
+                    "16:35",
+                    "17:35"
+                  ]
+                },
+                {
+                  "arret": "Plume Fine",
+                  "heures": [
+                    "08:30",
+                    "09:15",
+                    "09:55",
+                    "10:45",
+                    "12:20",
+                    "13:25",
+                    "14:15",
+                    "15:00",
+                    "15:50",
+                    "16:40",
+                    "17:40"
+                  ]
+                },
+                {
+                  "arret": "Entre-Deux-Eaux",
+                  "heures": [
+                    "08:40",
+                    "09:25",
+                    "10:05",
+                    "10:55",
+                    "12:30",
+                    "13:35",
+                    "14:25",
+                    "15:10",
+                    "16:00",
+                    "16:50",
+                    "17:50"
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "Période C : 12 juillet – 21 août, sauf samedis",
+              "note": "Le 16 août 2026, pas de service entre Bramans et Bellecombe de 10:00 à 12:30 (course cycliste).",
+              "lignes": [
+                {
+                  "arret": "Bramans – Les Glières",
+                  "heures": [
+                    "07:35",
+                    "08:10",
+                    "",
+                    "",
+                    "",
+                    "11:25",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ]
+                },
+                {
+                  "arret": "Bramans – Le Petit Paris",
+                  "heures": [
+                    "07:36",
+                    "08:11",
+                    "",
+                    "",
+                    "",
+                    "11:26",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ]
+                },
+                {
+                  "arret": "Bramans – Lenfrey",
+                  "heures": [
+                    "07:37",
+                    "08:12",
+                    "",
+                    "",
+                    "",
+                    "11:27",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ]
+                },
+                {
+                  "arret": "Sollières – Les Favières",
+                  "heures": [
+                    "07:40",
+                    "08:15",
+                    "",
+                    "",
+                    "",
+                    "11:30",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ]
+                },
+                {
+                  "arret": "Termignon",
+                  "heures": [
+                    "07:45",
+                    "08:20",
+                    "09:30",
+                    "",
+                    "10:40",
+                    "11:35",
+                    "",
+                    "13:30",
+                    "",
+                    "14:40",
+                    "",
+                    "",
+                    "16:25"
+                  ]
+                },
+                {
+                  "arret": "Le Coëtet",
+                  "heures": [
+                    "08:05",
+                    "08:40",
+                    "09:50",
+                    "",
+                    "11:00",
+                    "11:55",
+                    "",
+                    "13:50",
+                    "",
+                    "15:00",
+                    "",
+                    "",
+                    "16:45"
+                  ]
+                },
+                {
+                  "arret": "Bellecombe (arrivée)",
+                  "heures": [
+                    "08:15",
+                    "08:55",
+                    "10:05",
+                    "",
+                    "11:15",
+                    "12:10",
+                    "",
+                    "14:05",
+                    "",
+                    "15:15",
+                    "",
+                    "",
+                    "17:00"
+                  ]
+                },
+                {
+                  "arret": "Bellecombe (départ)",
+                  "heures": [
+                    "08:20",
+                    "09:05",
+                    "10:05",
+                    "10:40",
+                    "",
+                    "12:10",
+                    "13:15",
+                    "14:05",
+                    "14:50",
+                    "",
+                    "15:40",
+                    "16:30",
+                    "17:30"
+                  ]
+                },
+                {
+                  "arret": "Plan du Lac",
+                  "heures": [
+                    "08:25",
+                    "09:05",
+                    "10:10",
+                    "10:45",
+                    "",
+                    "12:15",
+                    "13:20",
+                    "14:10",
+                    "14:55",
+                    "",
+                    "15:45",
+                    "16:35",
+                    "17:35"
+                  ]
+                },
+                {
+                  "arret": "Plume Fine",
+                  "heures": [
+                    "08:30",
+                    "09:10",
+                    "10:15",
+                    "10:50",
+                    "",
+                    "12:20",
+                    "13:25",
+                    "14:15",
+                    "15:00",
+                    "",
+                    "15:50",
+                    "16:40",
+                    "17:40"
+                  ]
+                },
+                {
+                  "arret": "Entre-Deux-Eaux",
+                  "heures": [
+                    "08:40",
+                    "09:20",
+                    "10:25",
+                    "11:00",
+                    "",
+                    "12:30",
+                    "13:35",
+                    "14:25",
+                    "15:10",
+                    "",
+                    "16:00",
+                    "16:50",
+                    "17:50"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "nom": "Vers Bramans",
+          "arrets": [
+            {
+              "nom": "Entre-Deux-Eaux",
+              "lat": 45.3611,
+              "lng": 6.84142,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Plume Fine",
+              "lat": 45.35947,
+              "lng": 6.85744,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Plan du Lac",
+              "lat": 45.34574,
+              "lng": 6.83632,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Bellecombe",
+              "lat": 45.32948,
+              "lng": 6.82895,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Le Coëtet",
+              "lat": 45.31508,
+              "lng": 6.8292,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Termignon",
+              "lat": 45.27675,
+              "lng": 6.81703,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Sollières – Les Favières",
+              "lat": 45.26306,
+              "lng": 6.81043,
+              "position": "Arrêt officiel Cars Région Savoie"
+            },
+            {
+              "nom": "Bramans – Lenfrey",
+              "lat": 45.23446,
+              "lng": 6.78757,
+              "position": "Arrêt officiel Cars Région Savoie"
+            },
+            {
+              "nom": "Bramans – Le Petit Paris",
+              "lat": 45.23157,
+              "lng": 6.78361,
+              "position": "Arrêt officiel Cars Région Savoie"
+            },
+            {
+              "nom": "Bramans – Les Glières",
+              "lat": 45.22752,
+              "lng": 6.77526,
+              "position": "Arrêt officiel Cars Région Savoie"
+            }
+          ],
+          "grilles": [
+            {
+              "label": "Période A : 28 juin – 4 juillet, 11 juillet, 22 août – 4 septembre",
+              "lignes": [
+                {
+                  "arret": "Entre-Deux-Eaux",
+                  "heures": [
+                    "08:50",
+                    "10:55",
+                    "11:35",
+                    "14:20",
+                    "15:55",
+                    "16:35",
+                    "17:30",
+                    "18:10"
+                  ]
+                },
+                {
+                  "arret": "Plume Fine",
+                  "heures": [
+                    "09:00",
+                    "11:05",
+                    "11:45",
+                    "14:30",
+                    "16:05",
+                    "16:45",
+                    "17:40",
+                    "18:20"
+                  ]
+                },
+                {
+                  "arret": "Plan du Lac",
+                  "heures": [
+                    "09:20",
+                    "11:10",
+                    "11:50",
+                    "14:35",
+                    "16:10",
+                    "16:50",
+                    "17:45",
+                    "18:25"
+                  ]
+                },
+                {
+                  "arret": "Bellecombe (arrivée)",
+                  "heures": [
+                    "09:25",
+                    "11:15",
+                    "11:55",
+                    "14:40",
+                    "16:15",
+                    "16:55",
+                    "17:50",
+                    "18:30"
+                  ]
+                },
+                {
+                  "arret": "Bellecombe (départ)",
+                  "heures": [
+                    "09:25",
+                    "",
+                    "12:00",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "18:30"
+                  ]
+                },
+                {
+                  "arret": "Le Coëtet",
+                  "heures": [
+                    "09:35",
+                    "",
+                    "12:10",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "18:40"
+                  ]
+                },
+                {
+                  "arret": "Termignon",
+                  "heures": [
+                    "09:55",
+                    "",
+                    "12:30",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "19:00"
+                  ]
+                },
+                {
+                  "arret": "Sollières – Les Favières",
+                  "heures": [
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "19:05"
+                  ]
+                },
+                {
+                  "arret": "Bramans – Lenfrey",
+                  "heures": [
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "19:08"
+                  ]
+                },
+                {
+                  "arret": "Bramans – Le Petit Paris",
+                  "heures": [
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "19:09"
+                  ]
+                },
+                {
+                  "arret": "Bramans – Les Glières",
+                  "heures": [
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "19:10"
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "Période B : 5 – 10 juillet et samedis 18, 25 juillet, 1er, 8, 15 août",
+              "lignes": [
+                {
+                  "arret": "Entre-Deux-Eaux",
+                  "heures": [
+                    "08:40",
+                    "09:25",
+                    "10:05",
+                    "11:00",
+                    "12:30",
+                    "13:40",
+                    "14:25",
+                    "15:15",
+                    "16:05",
+                    "16:55",
+                    "17:50"
+                  ]
+                },
+                {
+                  "arret": "Plume Fine",
+                  "heures": [
+                    "08:50",
+                    "09:35",
+                    "10:15",
+                    "11:10",
+                    "12:40",
+                    "13:50",
+                    "14:35",
+                    "15:25",
+                    "16:15",
+                    "17:05",
+                    "18:00"
+                  ]
+                },
+                {
+                  "arret": "Plan du Lac",
+                  "heures": [
+                    "08:55",
+                    "09:40",
+                    "10:20",
+                    "11:15",
+                    "12:45",
+                    "13:55",
+                    "14:40",
+                    "15:30",
+                    "16:20",
+                    "17:10",
+                    "18:05"
+                  ]
+                },
+                {
+                  "arret": "Bellecombe (arrivée)",
+                  "heures": [
+                    "09:00",
+                    "09:45",
+                    "10:25",
+                    "11:20",
+                    "12:50",
+                    "14:00",
+                    "14:45",
+                    "15:35",
+                    "16:25",
+                    "17:15",
+                    "18:10"
+                  ]
+                },
+                {
+                  "arret": "Bellecombe (départ)",
+                  "heures": [
+                    "09:10",
+                    "",
+                    "",
+                    "11:40",
+                    "",
+                    "",
+                    "",
+                    "15:40",
+                    "16:30",
+                    "17:20",
+                    "18:15"
+                  ]
+                },
+                {
+                  "arret": "Le Coëtet",
+                  "heures": [
+                    "09:20",
+                    "",
+                    "",
+                    "11:50",
+                    "",
+                    "",
+                    "",
+                    "15:50",
+                    "16:40",
+                    "17:30",
+                    "18:25"
+                  ]
+                },
+                {
+                  "arret": "Termignon",
+                  "heures": [
+                    "09:45",
+                    "",
+                    "",
+                    "12:15",
+                    "",
+                    "",
+                    "",
+                    "16:15",
+                    "17:05",
+                    "17:55",
+                    "18:50"
+                  ]
+                },
+                {
+                  "arret": "Sollières – Les Favières",
+                  "heures": [
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "17:10",
+                    "18:00",
+                    "18:55"
+                  ]
+                },
+                {
+                  "arret": "Bramans – Lenfrey",
+                  "heures": [
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "17:11",
+                    "18:01",
+                    "18:56"
+                  ]
+                },
+                {
+                  "arret": "Bramans – Le Petit Paris",
+                  "heures": [
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "17:12",
+                    "18:02",
+                    "18:57"
+                  ]
+                },
+                {
+                  "arret": "Bramans – Les Glières",
+                  "heures": [
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "17:15",
+                    "18:05",
+                    "19:00"
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "Période C : 12 juillet – 21 août, sauf samedis",
+              "note": "Le 16 août 2026, pas de service entre Bramans et Bellecombe de 10:00 à 12:30 (course cycliste).",
+              "lignes": [
+                {
+                  "arret": "Entre-Deux-Eaux",
+                  "heures": [
+                    "",
+                    "08:40",
+                    "09:25",
+                    "10:25",
+                    "11:10",
+                    "",
+                    "12:30",
+                    "13:40",
+                    "14:25",
+                    "15:10",
+                    "16:00",
+                    "16:50",
+                    "17:50"
+                  ]
+                },
+                {
+                  "arret": "Plume Fine",
+                  "heures": [
+                    "",
+                    "08:50",
+                    "09:35",
+                    "10:35",
+                    "11:20",
+                    "",
+                    "12:40",
+                    "13:50",
+                    "14:35",
+                    "15:20",
+                    "16:10",
+                    "17:00",
+                    "18:00"
+                  ]
+                },
+                {
+                  "arret": "Plan du Lac",
+                  "heures": [
+                    "",
+                    "08:55",
+                    "09:40",
+                    "10:40",
+                    "11:25",
+                    "",
+                    "12:45",
+                    "13:55",
+                    "14:40",
+                    "15:25",
+                    "16:15",
+                    "17:05",
+                    "18:05"
+                  ]
+                },
+                {
+                  "arret": "Bellecombe (arrivée)",
+                  "heures": [
+                    "",
+                    "09:00",
+                    "09:45",
+                    "10:45",
+                    "11:30",
+                    "",
+                    "12:50",
+                    "14:00",
+                    "14:45",
+                    "15:30",
+                    "16:20",
+                    "17:10",
+                    "18:10"
+                  ]
+                },
+                {
+                  "arret": "Bellecombe (départ)",
+                  "heures": [
+                    "08:55",
+                    "",
+                    "10:05",
+                    "",
+                    "",
+                    "12:00",
+                    "",
+                    "14:05",
+                    "",
+                    "15:50",
+                    "16:25",
+                    "17:20",
+                    "18:20"
+                  ]
+                },
+                {
+                  "arret": "Le Coëtet",
+                  "heures": [
+                    "09:05",
+                    "",
+                    "10:15",
+                    "",
+                    "",
+                    "12:10",
+                    "",
+                    "14:15",
+                    "",
+                    "16:00",
+                    "16:35",
+                    "17:30",
+                    "18:30"
+                  ]
+                },
+                {
+                  "arret": "Termignon",
+                  "heures": [
+                    "09:30",
+                    "",
+                    "10:40",
+                    "",
+                    "",
+                    "12:35",
+                    "",
+                    "14:40",
+                    "",
+                    "16:25",
+                    "17:00",
+                    "17:55",
+                    "18:55"
+                  ]
+                },
+                {
+                  "arret": "Sollières – Les Favières",
+                  "heures": [
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "17:05",
+                    "18:00",
+                    "19:00"
+                  ]
+                },
+                {
+                  "arret": "Bramans – Lenfrey",
+                  "heures": [
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "17:08",
+                    "18:03",
+                    "19:03"
+                  ]
+                },
+                {
+                  "arret": "Bramans – Le Petit Paris",
+                  "heures": [
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "17:09",
+                    "18:04",
+                    "19:04"
+                  ]
+                },
+                {
+                  "arret": "Bramans – Les Glières",
+                  "heures": [
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "17:10",
+                    "18:05",
+                    "19:05"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hmv-ligne-3",
+      "ref": "3",
+      "nom": "Ligne 3 : Pont de l'Oulietta ↔ Bonneval-sur-Arc ↔ Bessans ↔ Avérole",
+      "reseau": "Navettes Haute Maurienne Vanoise",
+      "exploitant": "Communauté de communes Haute Maurienne Vanoise",
+      "mode": "navette",
+      "couleur": "#0E7490",
+      "statut": "verifie",
+      "source": {
+        "titre": "Guide mobilité Haute Maurienne Vanoise, été 2026 (version 4 du 28/08/2026)",
+        "editeur": "Office de tourisme Haute Maurienne Vanoise",
+        "url": "https://hmvt.download/SitesWeb/hmv-guide-mobilite-ete.pdf",
+        "consulteLe": "2026-10-25"
+      },
+      "saison": {
+        "debut": "2026-07-01",
+        "fin": "2026-08-31",
+        "jours": "Tous les jours sauf le samedi"
+      },
+      "note": "Ligne réservée aux trajets qui partent ou arrivent à Avérole, au parking des Vincendières, à La Goulaz ou au parking du pont de l'Oulietta. Correspondances avec la ligne S52-S53 à Bessans et Bonneval. Chiens interdits dans le Parc national de la Vanoise.",
+      "sens": [
+        {
+          "nom": "Vers Avérole",
+          "arrets": [
+            {
+              "nom": "Bonneval-sur-Arc – Patinoire",
+              "lat": 45.37329,
+              "lng": 7.05252,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Bonneval-sur-Arc – Village",
+              "lat": 45.37197,
+              "lng": 7.048,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Bessans – Le Villaron",
+              "lat": 45.33161,
+              "lng": 7.01627,
+              "position": "Arrêt officiel Cars Région Savoie"
+            },
+            {
+              "nom": "Bessans – Placette",
+              "lat": 45.31937,
+              "lng": 6.99068,
+              "position": "Arrêt officiel Cars Région Savoie"
+            },
+            {
+              "nom": "Bessans – Mairie",
+              "lat": 45.3202,
+              "lng": 6.99388,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Bessans – Hameau de la Neige",
+              "lat": 45.32348,
+              "lng": 7.00048,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Bessans – La Bessanaise",
+              "lat": 45.32918,
+              "lng": 7.01108,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "La Goulaz",
+              "lat": 45.32313,
+              "lng": 7.02132,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Parking des Vincendières",
+              "lat": 45.30859,
+              "lng": 7.03651,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Avérole",
+              "lat": 45.30374,
+              "lng": 7.06468,
+              "position": "OpenStreetMap"
+            }
+          ],
+          "grilles": [
+            {
+              "label": "Tous les jours sauf le samedi",
+              "lignes": [
+                {
+                  "arret": "Bonneval-sur-Arc – Patinoire",
+                  "heures": [
+                    "",
+                    "08:00",
+                    "",
+                    "09:50",
+                    "10:30",
+                    "12:30",
+                    "14:00",
+                    "15:50"
+                  ]
+                },
+                {
+                  "arret": "Bonneval-sur-Arc – Village",
+                  "heures": [
+                    "",
+                    "08:02",
+                    "",
+                    "09:52",
+                    "10:32",
+                    "12:32",
+                    "14:02",
+                    "15:52"
+                  ]
+                },
+                {
+                  "arret": "Bessans – Le Villaron",
+                  "heures": [
+                    "",
+                    "08:06",
+                    "",
+                    "09:56",
+                    "10:36",
+                    "12:36",
+                    "14:06",
+                    "15:56"
+                  ]
+                },
+                {
+                  "arret": "Bessans – Placette",
+                  "heures": [
+                    "07:00",
+                    "08:10",
+                    "09:20",
+                    "10:00",
+                    "10:40",
+                    "12:40",
+                    "14:10",
+                    "16:00"
+                  ]
+                },
+                {
+                  "arret": "Bessans – Mairie",
+                  "heures": [
+                    "07:01",
+                    "08:11",
+                    "09:21",
+                    "10:01",
+                    "10:41",
+                    "12:41",
+                    "14:11",
+                    "16:01"
+                  ]
+                },
+                {
+                  "arret": "Bessans – Hameau de la Neige",
+                  "heures": [
+                    "07:02",
+                    "08:12",
+                    "09:22",
+                    "10:02",
+                    "10:42",
+                    "12:42",
+                    "14:12",
+                    "16:02"
+                  ]
+                },
+                {
+                  "arret": "Bessans – La Bessanaise",
+                  "heures": [
+                    "07:04",
+                    "08:14",
+                    "09:24",
+                    "10:04",
+                    "10:44",
+                    "12:44",
+                    "14:14",
+                    "16:04"
+                  ]
+                },
+                {
+                  "arret": "La Goulaz",
+                  "heures": [
+                    "07:09",
+                    "08:19",
+                    "09:29",
+                    "10:09",
+                    "10:49",
+                    "12:49",
+                    "14:19",
+                    "16:09"
+                  ]
+                },
+                {
+                  "arret": "Parking des Vincendières",
+                  "heures": [
+                    "07:20",
+                    "08:30",
+                    "09:40",
+                    "10:20",
+                    "11:00",
+                    "13:00",
+                    "14:30",
+                    "16:20"
+                  ]
+                },
+                {
+                  "arret": "Avérole",
+                  "heures": [
+                    "07:30",
+                    "08:40",
+                    "09:50",
+                    "10:30",
+                    "11:10",
+                    "13:10",
+                    "14:40",
+                    "16:30"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "nom": "Vers Bonneval-sur-Arc",
+          "arrets": [
+            {
+              "nom": "Avérole",
+              "lat": 45.30374,
+              "lng": 7.06468,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Parking des Vincendières",
+              "lat": 45.30859,
+              "lng": 7.03651,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "La Goulaz",
+              "lat": 45.32313,
+              "lng": 7.02132,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Bessans – La Bessanaise",
+              "lat": 45.32918,
+              "lng": 7.01108,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Bessans – Hameau de la Neige",
+              "lat": 45.32348,
+              "lng": 7.00048,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Bessans – Mairie",
+              "lat": 45.3202,
+              "lng": 6.99388,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Bessans – Placette",
+              "lat": 45.31937,
+              "lng": 6.99068,
+              "position": "Arrêt officiel Cars Région Savoie"
+            },
+            {
+              "nom": "Bessans – Le Villaron",
+              "lat": 45.33161,
+              "lng": 7.01627,
+              "position": "Arrêt officiel Cars Région Savoie"
+            },
+            {
+              "nom": "Bonneval-sur-Arc – Patinoire",
+              "lat": 45.37329,
+              "lng": 7.05252,
+              "position": "OpenStreetMap"
+            }
+          ],
+          "grilles": [
+            {
+              "label": "Tous les jours sauf le samedi",
+              "note": "Le dimanche 2 août 2026, dernier départ d'Avérole retardé de 35 minutes (18:15) pour le concert des Rencontres musicales de L'Ouille Allègre.",
+              "lignes": [
+                {
+                  "arret": "Avérole",
+                  "heures": [
+                    "07:30",
+                    "08:50",
+                    "10:00",
+                    "11:10",
+                    "13:10",
+                    "15:00",
+                    "16:30",
+                    "17:40"
+                  ]
+                },
+                {
+                  "arret": "Parking des Vincendières",
+                  "heures": [
+                    "07:40",
+                    "09:00",
+                    "10:10",
+                    "11:20",
+                    "13:20",
+                    "15:10",
+                    "16:40",
+                    "17:50"
+                  ]
+                },
+                {
+                  "arret": "La Goulaz",
+                  "heures": [
+                    "07:50",
+                    "09:10",
+                    "10:20",
+                    "11:30",
+                    "13:30",
+                    "15:20",
+                    "16:50",
+                    "18:00"
+                  ]
+                },
+                {
+                  "arret": "Bessans – La Bessanaise",
+                  "heures": [
+                    "07:54",
+                    "09:14",
+                    "10:24",
+                    "11:34",
+                    "13:34",
+                    "15:24",
+                    "16:54",
+                    "18:04"
+                  ]
+                },
+                {
+                  "arret": "Bessans – Hameau de la Neige",
+                  "heures": [
+                    "",
+                    "09:17",
+                    "",
+                    "11:37",
+                    "13:37",
+                    "15:27",
+                    "16:57",
+                    "18:07"
+                  ]
+                },
+                {
+                  "arret": "Bessans – Mairie",
+                  "heures": [
+                    "",
+                    "09:19",
+                    "",
+                    "11:39",
+                    "13:39",
+                    "15:29",
+                    "16:59",
+                    "18:09"
+                  ]
+                },
+                {
+                  "arret": "Bessans – Placette",
+                  "heures": [
+                    "",
+                    "09:20",
+                    "",
+                    "11:40",
+                    "13:40",
+                    "15:30",
+                    "17:00",
+                    "18:10"
+                  ]
+                },
+                {
+                  "arret": "Bessans – Le Villaron",
+                  "heures": [
+                    "07:55",
+                    "",
+                    "10:25",
+                    "11:45",
+                    "13:45",
+                    "15:35",
+                    "17:05",
+                    "18:15"
+                  ]
+                },
+                {
+                  "arret": "Bonneval-sur-Arc – Patinoire",
+                  "heures": [
+                    "08:00",
+                    "",
+                    "10:30",
+                    "11:50",
+                    "13:50",
+                    "15:40",
+                    "17:10",
+                    "18:20"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "nom": "Vers le pont de l'Oulietta",
+          "arrets": [
+            {
+              "nom": "Bessans – Placette",
+              "lat": 45.31937,
+              "lng": 6.99068,
+              "position": "Arrêt officiel Cars Région Savoie"
+            },
+            {
+              "nom": "Bessans – Mairie",
+              "lat": 45.3202,
+              "lng": 6.99388,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Bessans – Hameau de la Neige",
+              "lat": 45.32348,
+              "lng": 7.00048,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Bessans – La Bessanaise",
+              "lat": 45.32918,
+              "lng": 7.01108,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Bessans – Le Villaron",
+              "lat": 45.33161,
+              "lng": 7.01627,
+              "position": "Arrêt officiel Cars Région Savoie"
+            },
+            {
+              "nom": "Bonneval-sur-Arc – Patinoire",
+              "lat": 45.37329,
+              "lng": 7.05252,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Parking du pont de l'Oulietta",
+              "lat": 45.39865,
+              "lng": 7.04353,
+              "position": "OpenStreetMap"
+            }
+          ],
+          "grilles": [
+            {
+              "label": "Tous les jours sauf le samedi",
+              "note": "Trajet vers le parking du pont de l'Oulietta réservable en ligne (lien dans le guide).",
+              "lignes": [
+                {
+                  "arret": "Bessans – Placette",
+                  "heures": [
+                    "07:20",
+                    "08:20",
+                    ""
+                  ]
+                },
+                {
+                  "arret": "Bessans – Mairie",
+                  "heures": [
+                    "07:21",
+                    "08:21",
+                    ""
+                  ]
+                },
+                {
+                  "arret": "Bessans – Hameau de la Neige",
+                  "heures": [
+                    "07:22",
+                    "08:22",
+                    ""
+                  ]
+                },
+                {
+                  "arret": "Bessans – La Bessanaise",
+                  "heures": [
+                    "07:24",
+                    "08:24",
+                    ""
+                  ]
+                },
+                {
+                  "arret": "Bessans – Le Villaron",
+                  "heures": [
+                    "07:25",
+                    "08:25",
+                    ""
+                  ]
+                },
+                {
+                  "arret": "Bonneval-sur-Arc – Patinoire",
+                  "heures": [
+                    "07:30",
+                    "08:30",
+                    "09:10"
+                  ]
+                },
+                {
+                  "arret": "Parking du pont de l'Oulietta",
+                  "heures": [
+                    "07:50",
+                    "08:50",
+                    "09:30"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hmv-ligne-4",
+      "ref": "4",
+      "nom": "Ligne 4 : Bonneval-sur-Arc ↔ L'Écot",
+      "reseau": "Navettes Haute Maurienne Vanoise",
+      "exploitant": "Communauté de communes Haute Maurienne Vanoise",
+      "mode": "navette",
+      "couleur": "#0E7490",
+      "statut": "verifie",
+      "source": {
+        "titre": "Guide mobilité Haute Maurienne Vanoise, été 2026 (version 4 du 28/08/2026)",
+        "editeur": "Office de tourisme Haute Maurienne Vanoise",
+        "url": "https://hmvt.download/SitesWeb/hmv-guide-mobilite-ete.pdf",
+        "consulteLe": "2026-10-25"
+      },
+      "saison": {
+        "debut": "2026-07-05",
+        "fin": "2026-08-28",
+        "jours": "Tous les jours sauf le samedi"
+      },
+      "note": "Places limitées, pas de vélos ni de chiens. Le parking de L'Écot est payant du 15 juin au 30 septembre ; se garer au parking (gratuit) de la Pierre Fendue quand il est complet. Certains départs sont en correspondance avec la ligne S52-S53.",
+      "sens": [
+        {
+          "nom": "Vers L'Écot",
+          "arrets": [
+            {
+              "nom": "Bonneval-sur-Arc – Patinoire",
+              "lat": 45.37329,
+              "lng": 7.05252,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Parking Pierre Fendue",
+              "lat": 45.37359,
+              "lng": 7.05575,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "L'Écot",
+              "lat": 45.38046,
+              "lng": 7.09018,
+              "position": "OpenStreetMap"
+            }
+          ],
+          "grilles": [
+            {
+              "label": "Tous les jours sauf le samedi",
+              "lignes": [
+                {
+                  "arret": "Bonneval-sur-Arc – Patinoire",
+                  "heures": [
+                    "08:00",
+                    "09:10",
+                    "10:15",
+                    "11:15",
+                    "13:30",
+                    "14:00",
+                    "15:00",
+                    "16:00",
+                    "17:00"
+                  ]
+                },
+                {
+                  "arret": "Parking Pierre Fendue",
+                  "heures": [
+                    "08:01",
+                    "09:11",
+                    "10:16",
+                    "11:16",
+                    "13:31",
+                    "14:01",
+                    "15:01",
+                    "16:01",
+                    "17:01"
+                  ]
+                },
+                {
+                  "arret": "L'Écot",
+                  "heures": [
+                    "08:15",
+                    "09:25",
+                    "10:30",
+                    "11:30",
+                    "13:45",
+                    "14:15",
+                    "15:15",
+                    "16:15",
+                    "17:15"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "nom": "Vers Bonneval-sur-Arc",
+          "arrets": [
+            {
+              "nom": "L'Écot",
+              "lat": 45.38046,
+              "lng": 7.09018,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Parking Pierre Fendue",
+              "lat": 45.37359,
+              "lng": 7.05575,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Bonneval-sur-Arc – Patinoire",
+              "lat": 45.37329,
+              "lng": 7.05252,
+              "position": "OpenStreetMap"
+            }
+          ],
+          "grilles": [
+            {
+              "label": "Tous les jours sauf le samedi",
+              "lignes": [
+                {
+                  "arret": "L'Écot",
+                  "heures": [
+                    "08:15",
+                    "09:25",
+                    "10:30",
+                    "11:30",
+                    "13:45",
+                    "14:15",
+                    "15:15",
+                    "16:15",
+                    "17:15"
+                  ]
+                },
+                {
+                  "arret": "Parking Pierre Fendue",
+                  "heures": [
+                    "08:29",
+                    "09:39",
+                    "10:44",
+                    "11:44",
+                    "13:59",
+                    "14:29",
+                    "15:29",
+                    "16:29",
+                    "17:29"
+                  ]
+                },
+                {
+                  "arret": "Bonneval-sur-Arc – Patinoire",
+                  "heures": [
+                    "08:30",
+                    "09:40",
+                    "10:45",
+                    "11:45",
+                    "14:00",
+                    "14:30",
+                    "15:30",
+                    "16:30",
+                    "17:30"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "peisey-circuit-b-rosuel",
+      "ref": "B",
+      "nom": "Circuit B : Peisey Village ↔ Rosuel",
+      "reseau": "Navettes de Peisey-Vallandry",
+      "exploitant": "Office de tourisme de Peisey-Vallandry",
+      "mode": "navette",
+      "couleur": "#7C3AED",
+      "statut": "verifie",
+      "source": {
+        "titre": "Horaires des navettes gratuites, été 2026 (du 4 juillet au 5 septembre)",
+        "editeur": "Office de tourisme de Peisey-Vallandry",
+        "url": "https://www.mairie-landry.com/wp-content/uploads/2026/05/BAT6-DEP-A4-3V-Peisey-05-2026.pdf",
+        "consulteLe": "2026-10-25"
+      },
+      "saison": {
+        "debut": "2026-07-04",
+        "fin": "2026-09-05",
+        "jours": "Tous les jours"
+      },
+      "tarif": "Gratuit",
+      "note": "Vélos acceptés selon la place disponible. Chiens acceptés en laisse à bord (interdits dans le cœur du Parc national de la Vanoise). Arrêts intermédiaires desservis sans horaire indiqué.",
+      "sens": [
+        {
+          "nom": "Vers Rosuel",
+          "arrets": [
+            {
+              "nom": "Peisey Village – Place Roscanvel",
+              "lat": 45.54316,
+              "lng": 6.75723,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Pont Baudin",
+              "lat": 45.52913,
+              "lng": 6.78256,
+              "position": "OpenStreetMap (pont, arrêt non cartographié)"
+            },
+            {
+              "nom": "Rosuel – Porte du Parc national de la Vanoise",
+              "lat": 45.51913,
+              "lng": 6.79903,
+              "position": "OpenStreetMap"
+            }
+          ],
+          "grilles": [
+            {
+              "label": "Tous les jours",
+              "lignes": [
+                {
+                  "arret": "Peisey Village – Place Roscanvel",
+                  "heures": [
+                    "07:30",
+                    "09:30",
+                    "10:00",
+                    "10:30",
+                    "11:00",
+                    "11:30",
+                    "12:00",
+                    "13:50",
+                    "14:20",
+                    "14:50",
+                    "15:20",
+                    "16:50",
+                    "17:20",
+                    "17:50"
+                  ]
+                },
+                {
+                  "arret": "Pont Baudin",
+                  "heures": [
+                    "07:35",
+                    "09:35",
+                    "10:05",
+                    "10:35",
+                    "11:05",
+                    "11:35",
+                    "12:05",
+                    "13:55",
+                    "14:25",
+                    "14:55",
+                    "15:25",
+                    "16:55",
+                    "17:25",
+                    "17:55"
+                  ]
+                },
+                {
+                  "arret": "Rosuel – Porte du Parc national de la Vanoise",
+                  "heures": [
+                    "07:40",
+                    "09:40",
+                    "10:10",
+                    "10:40",
+                    "11:10",
+                    "11:40",
+                    "12:10",
+                    "14:00",
+                    "14:30",
+                    "15:00",
+                    "15:30",
+                    "17:00",
+                    "17:30",
+                    "18:00"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "nom": "Vers Peisey Village",
+          "arrets": [
+            {
+              "nom": "Rosuel – Porte du Parc national de la Vanoise",
+              "lat": 45.51913,
+              "lng": 6.79903,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Pont Baudin",
+              "lat": 45.52913,
+              "lng": 6.78256,
+              "position": "OpenStreetMap (pont, arrêt non cartographié)"
+            },
+            {
+              "nom": "Peisey Village – Place Roscanvel",
+              "lat": 45.54316,
+              "lng": 6.75723,
+              "position": "OpenStreetMap"
+            }
+          ],
+          "grilles": [
+            {
+              "label": "Tous les jours",
+              "lignes": [
+                {
+                  "arret": "Rosuel – Porte du Parc national de la Vanoise",
+                  "heures": [
+                    "08:15",
+                    "09:40",
+                    "10:10",
+                    "10:40",
+                    "11:10",
+                    "11:40",
+                    "13:30",
+                    "14:00",
+                    "14:30",
+                    "15:00",
+                    "15:30",
+                    "17:00",
+                    "17:30",
+                    "18:15"
+                  ]
+                },
+                {
+                  "arret": "Pont Baudin",
+                  "heures": [
+                    "08:20",
+                    "09:45",
+                    "10:15",
+                    "10:45",
+                    "11:15",
+                    "11:45",
+                    "13:35",
+                    "14:05",
+                    "14:35",
+                    "15:05",
+                    "15:35",
+                    "17:05",
+                    "17:35",
+                    "18:20"
+                  ]
+                },
+                {
+                  "arret": "Peisey Village – Place Roscanvel",
+                  "heures": [
+                    "08:25",
+                    "09:50",
+                    "10:20",
+                    "10:50",
+                    "11:20",
+                    "11:50",
+                    "13:40",
+                    "14:10",
+                    "14:40",
+                    "15:10",
+                    "15:40",
+                    "17:10",
+                    "17:40",
+                    "18:25"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "peisey-circuit-c-rosuel-express",
+      "ref": "C",
+      "nom": "Circuit C : Arc 1800 ↔ Vallandry ↔ Rosuel (Rosuel Express)",
+      "reseau": "Navettes de Peisey-Vallandry",
+      "exploitant": "Office de tourisme de Peisey-Vallandry",
+      "mode": "navette",
+      "couleur": "#7C3AED",
+      "statut": "verifie",
+      "source": {
+        "titre": "Horaires des navettes gratuites, été 2026 (du 4 juillet au 5 septembre)",
+        "editeur": "Office de tourisme de Peisey-Vallandry",
+        "url": "https://www.mairie-landry.com/wp-content/uploads/2026/05/BAT6-DEP-A4-3V-Peisey-05-2026.pdf",
+        "consulteLe": "2026-10-25"
+      },
+      "saison": {
+        "debut": "2026-07-04",
+        "fin": "2026-09-05",
+        "jours": "Tous les jours"
+      },
+      "tarif": "Gratuit",
+      "note": "Vélos acceptés selon la place disponible. Arrêts intermédiaires desservis sans horaire indiqué.",
+      "sens": [
+        {
+          "nom": "Vers Rosuel",
+          "arrets": [
+            {
+              "nom": "Arc 1800 – Gare routière des Villards",
+              "lat": 45.57183,
+              "lng": 6.77836,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Vallandry – Office de tourisme",
+              "lat": 45.55382,
+              "lng": 6.76197,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Pont Baudin",
+              "lat": 45.52913,
+              "lng": 6.78256,
+              "position": "OpenStreetMap (pont, arrêt non cartographié)"
+            },
+            {
+              "nom": "Rosuel – Porte du Parc national de la Vanoise",
+              "lat": 45.51913,
+              "lng": 6.79903,
+              "position": "OpenStreetMap"
+            }
+          ],
+          "grilles": [
+            {
+              "label": "Tous les jours",
+              "lignes": [
+                {
+                  "arret": "Arc 1800 – Gare routière des Villards",
+                  "heures": [
+                    "09:15",
+                    "12:05",
+                    "13:35",
+                    "17:15",
+                    "18:40"
+                  ]
+                },
+                {
+                  "arret": "Vallandry – Office de tourisme",
+                  "heures": [
+                    "09:30",
+                    "12:20",
+                    "13:50",
+                    "17:30",
+                    "18:55"
+                  ]
+                },
+                {
+                  "arret": "Pont Baudin",
+                  "heures": [
+                    "09:50",
+                    "12:40",
+                    "14:10",
+                    "17:50",
+                    "19:15"
+                  ]
+                },
+                {
+                  "arret": "Rosuel – Porte du Parc national de la Vanoise",
+                  "heures": [
+                    "09:55",
+                    "12:45",
+                    "14:15",
+                    "17:55",
+                    "19:20"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "nom": "Vers Arc 1800",
+          "arrets": [
+            {
+              "nom": "Rosuel – Porte du Parc national de la Vanoise",
+              "lat": 45.51913,
+              "lng": 6.79903,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Pont Baudin",
+              "lat": 45.52913,
+              "lng": 6.78256,
+              "position": "OpenStreetMap (pont, arrêt non cartographié)"
+            },
+            {
+              "nom": "Vallandry – Office de tourisme",
+              "lat": 45.55382,
+              "lng": 6.76197,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Arc 1800 – Gare routière des Villards",
+              "lat": 45.57183,
+              "lng": 6.77836,
+              "position": "OpenStreetMap"
+            }
+          ],
+          "grilles": [
+            {
+              "label": "Tous les jours",
+              "lignes": [
+                {
+                  "arret": "Rosuel – Porte du Parc national de la Vanoise",
+                  "heures": [
+                    "08:15",
+                    "11:20",
+                    "12:50",
+                    "15:45",
+                    "17:55"
+                  ]
+                },
+                {
+                  "arret": "Pont Baudin",
+                  "heures": [
+                    "08:20",
+                    "11:25",
+                    "12:55",
+                    "15:50",
+                    "18:00"
+                  ]
+                },
+                {
+                  "arret": "Vallandry – Office de tourisme",
+                  "heures": [
+                    "08:40",
+                    "11:45",
+                    "13:15",
+                    "16:10",
+                    "18:20"
+                  ]
+                },
+                {
+                  "arret": "Arc 1800 – Gare routière des Villards",
+                  "heures": [
+                    "08:55",
+                    "12:00",
+                    "13:30",
+                    "16:25",
+                    "18:35"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "valgaudemar-saint-firmin-gioberney",
+      "ref": "Navette",
+      "nom": "Navette du Valgaudemar : Saint-Firmin ↔ La Chapelle ↔ Le Gioberney",
+      "reseau": "Navette du Valgaudemar",
+      "exploitant": "Communauté de communes du Champsaur-Valgaudemar",
+      "mode": "navette",
+      "couleur": "#15803D",
+      "statut": "verifie",
+      "source": {
+        "titre": "Navette du Valgaudemar, été 2026 (fiche horaire)",
+        "editeur": "Communauté de communes du Champsaur-Valgaudemar",
+        "url": "https://static.apidae-tourisme.com/filestore/objets-touristiques/documents/239/253/39648751/Navette+Valgaudemar+2026+V01.pdf",
+        "consulteLe": "2026-10-25"
+      },
+      "saison": {
+        "debut": "2026-07-06",
+        "fin": "2026-08-23",
+        "jours": "Tous les jours, fériés compris"
+      },
+      "tarif": "2,50 € par tronçon (Saint-Firmin – La Chapelle, La Chapelle – Le Gioberney), gratuit pour les moins de 12 ans, 1 € de plus à bord",
+      "reservation": "En ligne, fortement conseillée : https://www.champsaur-valgaudemar.com/offres/navette-du-valgaudemar-saint-firmin-fr-2301984/",
+      "note": "Correspondances à Saint-Firmin (Pont des Richards, RN85) avec les cars Région AURA vers Gap et Grenoble. Chiens interdits dans le Parc national des Écrins au départ du Gioberney.",
+      "sens": [
+        {
+          "nom": "Vers Le Gioberney",
+          "arrets": [
+            {
+              "nom": "Saint-Firmin – Pont des Richards (RD985A)",
+              "lat": 44.77491,
+              "lng": 6.01813,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Saint-Firmin – Place du village (fontaine)",
+              "lat": 44.78112,
+              "lng": 6.02802,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "La Chaup – Place du village",
+              "lat": 44.79302,
+              "lng": 6.08521,
+              "position": "OpenStreetMap (hameau)"
+            },
+            {
+              "nom": "Les Barrengeards",
+              "lat": 44.8025,
+              "lng": 6.0995,
+              "position": "Position estimée entre La Chaup et Le Roux"
+            },
+            {
+              "nom": "Le Pont du Roux",
+              "lat": 44.8105,
+              "lng": 6.1112,
+              "position": "Position estimée (rive gauche de la Séveraisse)"
+            },
+            {
+              "nom": "Le Roux",
+              "lat": 44.81191,
+              "lng": 6.11254,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Villar-Loubière",
+              "lat": 44.82102,
+              "lng": 6.12931,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "La Chapelle-en-Valgaudemar",
+              "lat": 44.81717,
+              "lng": 6.19405,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Le Rif du Sap",
+              "lat": 44.82661,
+              "lng": 6.26066,
+              "position": "OpenStreetMap (hameau)"
+            },
+            {
+              "nom": "Le Gioberney",
+              "lat": 44.84091,
+              "lng": 6.28145,
+              "position": "OpenStreetMap (chalet-hôtel du Gioberney)"
+            }
+          ],
+          "grilles": [
+            {
+              "label": "Tous les jours",
+              "lignes": [
+                {
+                  "arret": "Saint-Firmin – Pont des Richards (RD985A)",
+                  "heures": [
+                    "08:00",
+                    "10:10",
+                    "14:45",
+                    "16:38",
+                    "18:30"
+                  ]
+                },
+                {
+                  "arret": "Saint-Firmin – Place du village (fontaine)",
+                  "heures": [
+                    "08:02",
+                    "10:12",
+                    "14:47",
+                    "16:40",
+                    "18:32"
+                  ]
+                },
+                {
+                  "arret": "La Chaup – Place du village",
+                  "heures": [
+                    "08:08",
+                    "10:18",
+                    "14:53",
+                    "16:46",
+                    "18:38"
+                  ]
+                },
+                {
+                  "arret": "Les Barrengeards",
+                  "heures": [
+                    "08:10",
+                    "10:20",
+                    "14:55",
+                    "16:48",
+                    "18:40"
+                  ]
+                },
+                {
+                  "arret": "Le Pont du Roux",
+                  "heures": [
+                    "08:11",
+                    "10:21",
+                    "14:56",
+                    "16:49",
+                    "18:41"
+                  ]
+                },
+                {
+                  "arret": "Le Roux",
+                  "heures": [
+                    "08:12",
+                    "10:22",
+                    "14:57",
+                    "16:50",
+                    "18:42"
+                  ]
+                },
+                {
+                  "arret": "Villar-Loubière",
+                  "heures": [
+                    "08:17",
+                    "10:27",
+                    "15:02",
+                    "16:55",
+                    "18:47"
+                  ]
+                },
+                {
+                  "arret": "La Chapelle-en-Valgaudemar",
+                  "heures": [
+                    "08:23",
+                    "10:33",
+                    "15:08",
+                    "17:01",
+                    "18:52"
+                  ]
+                },
+                {
+                  "arret": "Le Rif du Sap",
+                  "heures": [
+                    "08:36",
+                    "10:43",
+                    "15:15",
+                    "17:09",
+                    ""
+                  ]
+                },
+                {
+                  "arret": "Le Gioberney",
+                  "heures": [
+                    "08:43",
+                    "10:50",
+                    "15:25",
+                    "17:15",
+                    ""
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "nom": "Vers Saint-Firmin",
+          "arrets": [
+            {
+              "nom": "Le Gioberney",
+              "lat": 44.84091,
+              "lng": 6.28145,
+              "position": "OpenStreetMap (chalet-hôtel du Gioberney)"
+            },
+            {
+              "nom": "Le Rif du Sap",
+              "lat": 44.82661,
+              "lng": 6.26066,
+              "position": "OpenStreetMap (hameau)"
+            },
+            {
+              "nom": "La Chapelle-en-Valgaudemar",
+              "lat": 44.81717,
+              "lng": 6.19405,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Villar-Loubière",
+              "lat": 44.82102,
+              "lng": 6.12931,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Le Roux",
+              "lat": 44.81191,
+              "lng": 6.11254,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Le Pont du Roux",
+              "lat": 44.8105,
+              "lng": 6.1112,
+              "position": "Position estimée (rive gauche de la Séveraisse)"
+            },
+            {
+              "nom": "Les Barrengeards",
+              "lat": 44.8025,
+              "lng": 6.0995,
+              "position": "Position estimée entre La Chaup et Le Roux"
+            },
+            {
+              "nom": "La Chaup – Place du village",
+              "lat": 44.79302,
+              "lng": 6.08521,
+              "position": "OpenStreetMap (hameau)"
+            },
+            {
+              "nom": "Saint-Firmin – Place du village (fontaine)",
+              "lat": 44.78112,
+              "lng": 6.02802,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Saint-Firmin – Pont des Richards (RD985A)",
+              "lat": 44.77491,
+              "lng": 6.01813,
+              "position": "OpenStreetMap"
+            }
+          ],
+          "grilles": [
+            {
+              "label": "Tous les jours",
+              "lignes": [
+                {
+                  "arret": "Le Gioberney",
+                  "heures": [
+                    "08:55",
+                    "11:00",
+                    "15:30",
+                    "17:18",
+                    ""
+                  ]
+                },
+                {
+                  "arret": "Le Rif du Sap",
+                  "heures": [
+                    "09:02",
+                    "11:07",
+                    "15:37",
+                    "17:25",
+                    ""
+                  ]
+                },
+                {
+                  "arret": "La Chapelle-en-Valgaudemar",
+                  "heures": [
+                    "09:16",
+                    "11:17",
+                    "15:51",
+                    "17:36",
+                    "19:00"
+                  ]
+                },
+                {
+                  "arret": "Villar-Loubière",
+                  "heures": [
+                    "09:22",
+                    "11:23",
+                    "15:58",
+                    "17:42",
+                    "19:05"
+                  ]
+                },
+                {
+                  "arret": "Le Roux",
+                  "heures": [
+                    "09:27",
+                    "11:28",
+                    "16:03",
+                    "17:47",
+                    "19:11"
+                  ]
+                },
+                {
+                  "arret": "Le Pont du Roux",
+                  "heures": [
+                    "09:28",
+                    "11:29",
+                    "16:04",
+                    "17:48",
+                    "19:12"
+                  ]
+                },
+                {
+                  "arret": "Les Barrengeards",
+                  "heures": [
+                    "09:29",
+                    "11:30",
+                    "16:05",
+                    "17:49",
+                    "19:13"
+                  ]
+                },
+                {
+                  "arret": "La Chaup – Place du village",
+                  "heures": [
+                    "09:31",
+                    "11:32",
+                    "16:07",
+                    "17:51",
+                    "19:15"
+                  ]
+                },
+                {
+                  "arret": "Saint-Firmin – Place du village (fontaine)",
+                  "heures": [
+                    "09:37",
+                    "11:38",
+                    "16:13",
+                    "17:57",
+                    "19:21"
+                  ]
+                },
+                {
+                  "arret": "Saint-Firmin – Pont des Richards (RD985A)",
+                  "heures": [
+                    "09:39",
+                    "11:40",
+                    "16:15",
+                    "17:59",
+                    ""
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "morzine-ligne-e-mines-d-or",
+      "ref": "E",
+      "nom": "Ligne E : Le Pleney ↔ Lac des Mines d'Or",
+      "reseau": "Navettes de Morzine",
+      "exploitant": "Commune de Morzine-Avoriaz",
+      "mode": "navette",
+      "couleur": "#DB2777",
+      "statut": "verifie",
+      "source": {
+        "titre": "Navettes Morzine, horaires valables du 25 juin au 30 août 2026 (affiche)",
+        "editeur": "Commune de Morzine-Avoriaz",
+        "url": "https://www.morzine-avoriaz.com/app/uploads/2026/06/affiche-90x65-ete-navette.pdf",
+        "consulteLe": "2026-10-25"
+      },
+      "saison": {
+        "debut": "2026-06-25",
+        "fin": "2026-08-30",
+        "jours": "Jours de circulation non précisés par l’affiche"
+      },
+      "note": "L'affiche indique un départ toutes les 30 minutes de 09:00 à 12:30 et de 14:00 à 18:00 : les horaires intermédiaires sont déduits de cette mention. Le car dessert aussi La Mernaz, Le Crêt, Les Allamands, Le Chargeau et Le Charny.",
+      "sens": [
+        {
+          "nom": "Vers le lac des Mines d'Or",
+          "arrets": [
+            {
+              "nom": "Le Pleney",
+              "lat": 46.18011,
+              "lng": 6.7029,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Office de tourisme",
+              "lat": 46.18144,
+              "lng": 6.70404,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Téléphérique de Nyon",
+              "lat": 46.16798,
+              "lng": 6.71497,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "L'Érigné",
+              "lat": 46.1496,
+              "lng": 6.75242,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Lac des Mines d'Or",
+              "lat": 46.14936,
+              "lng": 6.76522,
+              "position": "OpenStreetMap"
+            }
+          ],
+          "grilles": [
+            {
+              "label": "Été",
+              "lignes": [
+                {
+                  "arret": "Le Pleney",
+                  "heures": [
+                    "09:00",
+                    "09:30",
+                    "10:00",
+                    "10:30",
+                    "11:00",
+                    "11:30",
+                    "12:00",
+                    "12:30",
+                    "14:00",
+                    "14:30",
+                    "15:00",
+                    "15:30",
+                    "16:00",
+                    "16:30",
+                    "17:00",
+                    "17:30",
+                    "18:00"
+                  ]
+                },
+                {
+                  "arret": "Office de tourisme",
+                  "heures": [
+                    "09:03",
+                    "09:33",
+                    "10:03",
+                    "10:33",
+                    "11:03",
+                    "11:33",
+                    "12:03",
+                    "12:33",
+                    "14:03",
+                    "14:33",
+                    "15:03",
+                    "15:33",
+                    "16:03",
+                    "16:33",
+                    "17:03",
+                    "17:33",
+                    "18:03"
+                  ]
+                },
+                {
+                  "arret": "Téléphérique de Nyon",
+                  "heures": [
+                    "09:07",
+                    "09:37",
+                    "10:07",
+                    "10:37",
+                    "11:07",
+                    "11:37",
+                    "12:07",
+                    "12:37",
+                    "14:07",
+                    "14:37",
+                    "15:07",
+                    "15:37",
+                    "16:07",
+                    "16:37",
+                    "17:07",
+                    "17:37",
+                    "18:07"
+                  ]
+                },
+                {
+                  "arret": "L'Érigné",
+                  "heures": [
+                    "09:16",
+                    "09:46",
+                    "10:16",
+                    "10:46",
+                    "11:16",
+                    "11:46",
+                    "12:16",
+                    "12:46",
+                    "14:16",
+                    "14:46",
+                    "15:16",
+                    "15:46",
+                    "16:16",
+                    "16:46",
+                    "17:16",
+                    "17:46",
+                    "18:16"
+                  ]
+                },
+                {
+                  "arret": "Lac des Mines d'Or",
+                  "heures": [
+                    "09:25",
+                    "09:55",
+                    "10:25",
+                    "10:55",
+                    "11:25",
+                    "11:55",
+                    "12:25",
+                    "12:55",
+                    "14:25",
+                    "14:55",
+                    "15:25",
+                    "15:55",
+                    "16:25",
+                    "16:55",
+                    "17:25",
+                    "17:55",
+                    "18:25"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "nom": "Vers Le Pleney",
+          "arrets": [
+            {
+              "nom": "Lac des Mines d'Or",
+              "lat": 46.14936,
+              "lng": 6.76522,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "L'Érigné",
+              "lat": 46.1496,
+              "lng": 6.75242,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Téléphérique de Nyon",
+              "lat": 46.16798,
+              "lng": 6.71497,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Rond-point de la Mouille au Clerc",
+              "lat": 46.17598,
+              "lng": 6.71018,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Le Pleney",
+              "lat": 46.18011,
+              "lng": 6.7029,
+              "position": "OpenStreetMap"
+            }
+          ],
+          "grilles": [
+            {
+              "label": "Été",
+              "lignes": [
+                {
+                  "arret": "Lac des Mines d'Or",
+                  "heures": [
+                    "09:25",
+                    "09:55",
+                    "10:25",
+                    "10:55",
+                    "11:25",
+                    "11:55",
+                    "12:25",
+                    "12:55",
+                    "14:25",
+                    "14:55",
+                    "15:25",
+                    "15:55",
+                    "16:25",
+                    "16:55",
+                    "17:25",
+                    "17:55",
+                    "18:25"
+                  ]
+                },
+                {
+                  "arret": "L'Érigné",
+                  "heures": [
+                    "09:30",
+                    "10:00",
+                    "10:30",
+                    "11:00",
+                    "11:30",
+                    "12:00",
+                    "12:30",
+                    "13:00",
+                    "14:30",
+                    "15:00",
+                    "15:30",
+                    "16:00",
+                    "16:30",
+                    "17:00",
+                    "17:30",
+                    "18:00",
+                    "18:30"
+                  ]
+                },
+                {
+                  "arret": "Téléphérique de Nyon",
+                  "heures": [
+                    "09:42",
+                    "10:12",
+                    "10:42",
+                    "11:12",
+                    "11:42",
+                    "12:12",
+                    "12:42",
+                    "13:12",
+                    "14:42",
+                    "15:12",
+                    "15:42",
+                    "16:12",
+                    "16:42",
+                    "17:12",
+                    "17:42",
+                    "18:12",
+                    "18:42"
+                  ]
+                },
+                {
+                  "arret": "Rond-point de la Mouille au Clerc",
+                  "heures": [
+                    "09:46",
+                    "10:16",
+                    "10:46",
+                    "11:16",
+                    "11:46",
+                    "12:16",
+                    "12:46",
+                    "13:16",
+                    "14:46",
+                    "15:16",
+                    "15:46",
+                    "16:16",
+                    "16:46",
+                    "17:16",
+                    "17:46",
+                    "18:16",
+                    "18:46"
+                  ]
+                },
+                {
+                  "arret": "Le Pleney",
+                  "heures": [
+                    "09:48",
+                    "10:18",
+                    "10:48",
+                    "11:18",
+                    "11:48",
+                    "12:18",
+                    "12:48",
+                    "13:18",
+                    "14:48",
+                    "15:18",
+                    "15:48",
+                    "16:18",
+                    "16:48",
+                    "17:18",
+                    "17:48",
+                    "18:18",
+                    "18:48"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "queyras-andiamo-col-agnel",
+      "ref": "Andiamo !",
+      "nom": "Navette « Andiamo ! » : Ville-Vieille ↔ Molines ↔ Col Agnel",
+      "reseau": "Navettes du Guillestrois et du Queyras",
+      "exploitant": "Communauté de communes du Guillestrois et du Queyras",
+      "mode": "navette",
+      "couleur": "#D97706",
+      "statut": "partiel",
+      "source": {
+        "titre": "Des navettes transfrontalières pour relier le Queyras et le Piémont (article du 13 juillet 2026)",
+        "editeur": "Presse Agence",
+        "url": "https://presseagence.fr/guillestrel-mobilite-des-navettes-transfrontalieres-pour-relier-le-queyras-et-le-piemont/",
+        "consulteLe": "2026-10-25"
+      },
+      "saison": {
+        "debut": "2026-07-05",
+        "fin": "2026-08-30",
+        "jours": "5 jours par semaine"
+      },
+      "frequence": "1 à 2 allers-retours par jour, 5 jours par semaine (horaires non publiés dans la source)",
+      "reservation": "Informations auprès de la Communauté de communes du Guillestrois-Queyras (rubrique déplacements)",
+      "note": "Navette mise en place en 2026 avec l'Union de montagne Valle Varaita (programme européen ALCOTRA) ; elle peut se prolonger côté italien. Arrêts intermédiaires et horaires à confirmer.",
+      "sens": [
+        {
+          "nom": "Vers le col Agnel",
+          "arrets": [
+            {
+              "nom": "Ville-Vieille – Gare routière",
+              "lat": 44.76159,
+              "lng": 6.82085,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Molines-en-Queyras",
+              "lat": 44.73053,
+              "lng": 6.84387,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Col Agnel",
+              "lat": 44.68389,
+              "lng": 6.97959,
+              "position": "OpenStreetMap"
+            }
+          ]
+        },
+        {
+          "nom": "Vers Ville-Vieille",
+          "arrets": [
+            {
+              "nom": "Col Agnel",
+              "lat": 44.68389,
+              "lng": 6.97959,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Molines-en-Queyras",
+              "lat": 44.73053,
+              "lng": 6.84387,
+              "position": "OpenStreetMap"
+            },
+            {
+              "nom": "Ville-Vieille – Gare routière",
+              "lat": 44.76159,
+              "lng": 6.82085,
+              "position": "OpenStreetMap"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

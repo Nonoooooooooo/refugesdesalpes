@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useMap } from 'react-leaflet';
 import L from 'leaflet';
-import { checkAndSyncMonthlyTransports } from './transportAutoSyncService.js';
+import { TRANSPORT_DATA_URL } from './transportSource.js';
 
 // S'assurer que L est attaché à window avant d'importer le plugin de décalage parallèle
 if (typeof window !== 'undefined') {
@@ -57,6 +57,20 @@ const ZOOM_STOPS_THRESHOLD = 11; // Affichage progressif des pastilles d'arrêts
 const UNIFORM_STOP_RADIUS = 4.5;
 const HOVER_STOP_RADIUS = 6.5;
 let cachedTransportData = null;
+
+// Fiches des lignes du réseau v2 (sens, arrêts, horaires), chargées une seule fois à la demande
+const lineDetailCache = new Map();
+function loadLineDetail(url) {
+  if (!lineDetailCache.has(url)) {
+    const promise = fetch(url).then((res) => {
+      if (!res.ok) throw new Error(`Fiche introuvable : ${url}`);
+      return res.json();
+    });
+    promise.catch(() => lineDetailCache.delete(url));
+    lineDetailCache.set(url, promise);
+  }
+  return lineDetailCache.get(url);
+}
 
 // Hubs métropolitains extérieurs pour les lignes à grande vitesse
 const HIGH_SPEED_EXTERNAL_HUBS = {
@@ -262,80 +276,33 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
   const stopMarkersRef = useRef([]);
   const activeDirectionOverlayRef = useRef(null);
 
-  // 1. Chargement et contrôle mensuel automatique du jeu de données haute fidélité
+  // 1. Chargement du réseau (une seule fois par session). Le fichier est revalidé auprès du serveur
+  // (cache: 'no-cache') : une nouvelle construction du réseau est prise en compte sans gestion de version.
   useEffect(() => {
     if (!active) return;
-
     let isMounted = true;
 
-    // Vérifie le manifeste de synchronisation mensuelle
-    fetch('/transports_metadata.json', { cache: 'no-cache' })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((meta) => {
-        const remoteVersion = meta?.version;
-        const storedVersion = typeof localStorage !== 'undefined' ? localStorage.getItem('rda_transports_version') : null;
-
-        // Si déjà en mémoire et à jour avec la version mensuelle
-        if (cachedTransportData && (!remoteVersion || storedVersion === remoteVersion)) {
-          if (!data && isMounted) setData(cachedTransportData);
-          return;
-        }
-
-        // Sinon charger la version actualisée (avec cache-busting basé sur la version)
-        const fetchUrl = remoteVersion ? `/transports_alpes.json?v=${remoteVersion}` : '/transports_alpes.json';
-        return fetch(fetchUrl)
-          .then((res) => {
-            if (!res.ok) throw new Error('Impossible de charger les transports');
-            return res.json();
-          })
-          .then((json) => {
-            cachedTransportData = json;
-            if (remoteVersion && typeof localStorage !== 'undefined') {
-              localStorage.setItem('rda_transports_version', remoteVersion);
-              localStorage.setItem('rda_transports_last_check', new Date().toISOString());
-            }
-            if (isMounted) setData(json);
-          });
-      })
-      .catch((err) => {
-        if (!data) {
-          fetch('/transports_alpes.json')
-            .then((res) => res.json())
-            .then((json) => {
-              cachedTransportData = json;
-              if (isMounted) setData(json);
-            })
-            .catch((e) => console.error('Erreur chargement transports:', e));
-        }
-      });
+    if (cachedTransportData) {
+      if (!data) setData(cachedTransportData);
+    } else {
+      fetch(TRANSPORT_DATA_URL, { cache: 'no-cache' })
+        .then((res) => {
+          if (!res.ok) throw new Error('Impossible de charger les transports');
+          return res.json();
+        })
+        .then((json) => {
+          cachedTransportData = json;
+          if (isMounted) setData(json);
+        })
+        .catch((e) => console.error('Erreur chargement transports:', e));
+    }
 
     return () => {
       isMounted = false;
     };
   }, [active, data]);
 
-  // 1bis. Vérification et synchronisation mensuelle autonome avec l'API transport.data.gouv.fr (100% dans le site)
-  useEffect(() => {
-    if (!active || !data) return;
-    let isMounted = true;
-
-    checkAndSyncMonthlyTransports(data)
-      .then((syncRes) => {
-        if (!isMounted) return;
-        if (syncRes && syncRes.status === 'VERIFIED' && syncRes.updatedGeoJson) {
-          setData(syncRes.updatedGeoJson);
-        }
-      })
-      .catch((err) => {
-        console.warn('[TransportLayer] Contrôle mensuel API:', err);
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [active, data]);
-
-  // 2. Rendu vectoriel sur la carte avec arrêts positionnés au centimètre près sur la carte ESRI
+  // 2. Rendu vectoriel des lignes et de leurs arrêts sur la carte
   useEffect(() => {
     const currentLayersMap = layersMapRef.current;
     if (!active || !data) {
@@ -897,6 +864,34 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
       stopMarkersRef.current = [];
     };
   }, [active, data, map, onSelectTransport]);
+
+  // 5bis. Une ligne sélectionnée sans ses sens (choisie dans la recherche, ou réseau v2 dont la
+  // carte est allégée) est complétée avec sa fiche : propriétés de la carte, puis sens et horaires
+  // chargés à la demande depuis props.detail
+  useEffect(() => {
+    if (!data || !selectedTransport?.id || selectedTransport.directions || !onSelectTransport) return;
+    const props = data.features?.find((f) => f.properties?.id === selectedTransport.id)?.properties;
+    if (!props) return;
+    const base = { activeDirectionIndex: 0, ...selectedTransport, ...props, isTransport: true, skipFlyTo: true };
+    if (props.directions) {
+      onSelectTransport(base);
+      return;
+    }
+    if (!props.detail) return;
+    let cancelled = false;
+    loadLineDetail(props.detail)
+      .then((detail) => {
+        if (!cancelled) onSelectTransport({ ...base, directions: detail.directions });
+      })
+      .catch((e) => {
+        console.error('Erreur chargement fiche transport:', e);
+        // Fiche indisponible (hors ligne, erreur réseau) : le panneau l'indique au lieu de rester en chargement
+        if (!cancelled) onSelectTransport({ ...base, directions: [], detailError: true });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [data, selectedTransport, onSelectTransport]);
 
   // 6. Mise à jour instantanée du style lors de la sélection / désélection d'une ligne
   // et affichage des deux directions / branches avec badges DÉPART & TERMINUS précis

@@ -1,0 +1,1365 @@
+{
+  "title": "Réseau de transport alpin (sources officielles)",
+  "generatedAt": "2026-10-25T17:06:20.863Z",
+  "rayonKm": 5,
+  "lignes": 666,
+  "lignesHorsSaison": 134,
+  "lignesSansTraceOfficiel": 135,
+  "navettesHorsOpenData": 8,
+  "sources": [
+    {
+      "id": "5bb1caa6634f4136693d9053",
+      "reseau": "Cars Région Isère",
+      "jeu": "Réseau interurbain - Isère (38)",
+      "page": "https://transport.data.gouv.fr/datasets/reseau-interurbain-cars-region-isere-38-1",
+      "lignes": 56,
+      "ressources": [
+        {
+          "id": 40287,
+          "debut": "2026-10-08",
+          "fin": "2027-08-31",
+          "miseAJour": "2026-10-16",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "607862da7487e5d490677f14",
+      "reseau": "Cars Région Savoie",
+      "jeu": "Réseau interurbain - Savoie (73)",
+      "page": "https://transport.data.gouv.fr/datasets/reseau-interurbain-cars-region-savoie-73",
+      "lignes": 28,
+      "ressources": [
+        {
+          "id": 81244,
+          "debut": "2026-09-10",
+          "fin": "2027-08-31",
+          "miseAJour": "2026-10-23",
+          "archive": null,
+          "erreur": null
+        },
+        {
+          "id": 84247,
+          "debut": "2026-05-04",
+          "fin": "2027-10-25",
+          "miseAJour": "2026-10-07",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "607861844a84ad655a94f8c5",
+      "reseau": "Cars Région Haute-Savoie",
+      "jeu": "Réseau interurbain - Haute-Savoie (74)",
+      "page": "https://transport.data.gouv.fr/datasets/reseau-interurbain-cars-region-haute-savoie-74",
+      "lignes": 21,
+      "ressources": [
+        {
+          "id": 80964,
+          "debut": "2026-10-08",
+          "fin": "2027-08-31",
+          "miseAJour": "2026-10-15",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "60784f6022a1bbe2484cf248",
+      "reseau": "Cars Région Ain",
+      "jeu": "Réseau interurbain - Ain (01)",
+      "page": "https://transport.data.gouv.fr/datasets/reseau-interurbain-cars-region-ain-01",
+      "lignes": 6,
+      "ressources": [
+        {
+          "id": 83113,
+          "debut": "2026-09-10",
+          "fin": "2027-08-31",
+          "miseAJour": "2026-10-24",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "607860847e79b65f245982db",
+      "reseau": "Cars Région Drôme",
+      "jeu": "Réseau interurbain et scolaire - Drôme (26)",
+      "page": "https://transport.data.gouv.fr/datasets/reseau-interurbain-et-scolaire-cars-region-drome-26",
+      "lignes": 3,
+      "ressources": [
+        {
+          "id": 80960,
+          "debut": "2026-09-10",
+          "fin": "2027-08-31",
+          "miseAJour": "2026-10-07",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "61b36a0610344080a78cf407",
+      "reseau": "Cars Région Express",
+      "jeu": "Réseau interurbain Cars Région Express",
+      "page": "https://transport.data.gouv.fr/datasets/reseau-interurbain-cars-region-express",
+      "lignes": 4,
+      "ressources": [
+        {
+          "id": 83112,
+          "debut": "2026-10-19",
+          "fin": "2027-01-17",
+          "miseAJour": "2026-10-12",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "678d0721a9efa066b6eed606",
+      "reseau": "Transaltitude (stations de l’Isère)",
+      "jeu": "Navettes saisonnières Transaltitude - Isère",
+      "page": "https://transport.data.gouv.fr/datasets/desserte-des-stations-de-ski-iseroises-transaltitude-38",
+      "lignes": 10,
+      "ressources": [
+        {
+          "id": 82729,
+          "debut": "2026-11-28",
+          "fin": "2027-04-25",
+          "miseAJour": "2026-10-16",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "668d0a18a847603d391cbeec",
+      "reseau": "ZOU ! Proximité",
+      "jeu": "Réseau interurbain bus Proximité ZOU !",
+      "page": "https://transport.data.gouv.fr/datasets/lignes-des-reseaux-transport-zou-provence-alpes-cote-d-azur-proximite-3-3",
+      "lignes": 40,
+      "ressources": [
+        {
+          "id": 82137,
+          "debut": "2026-10-21",
+          "fin": "2027-04-21",
+          "miseAJour": "2026-10-24",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "668d0a08a847603d391cbed7",
+      "reseau": "ZOU ! Express",
+      "jeu": "Réseau interurbain Express ZOU !",
+      "page": "https://transport.data.gouv.fr/datasets/lignes-des-reseaux-transport-zou-provence-alpes-cote-d-azur-express-3-3",
+      "lignes": 19,
+      "ressources": [
+        {
+          "id": 82285,
+          "debut": "2026-10-21",
+          "fin": "2027-04-22",
+          "miseAJour": "2026-10-24",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "69e2cd307123972d45a21d49",
+      "reseau": "TER ZOU !",
+      "jeu": "Trains régionaux ZOU !",
+      "page": "https://transport.data.gouv.fr/datasets/trains-zou-en-provence-alpes-cote-dazur",
+      "lignes": 4,
+      "ressources": [
+        {
+          "id": 83990,
+          "debut": "2026-10-23",
+          "fin": "2027-04-23",
+          "miseAJour": "2026-04-17",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "685baf2be31192d0ec7bcdc9",
+      "reseau": "TER ZOU ! (Transdev Rail)",
+      "jeu": "Trains régionaux ZOU ! - Transdev Rail Sud Intermétropole",
+      "page": "https://transport.data.gouv.fr/datasets/zou",
+      "lignes": 0,
+      "ressources": [
+        {
+          "id": 83448,
+          "debut": "2026-10-25",
+          "fin": "2027-05-12",
+          "miseAJour": "2026-10-05",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "6853c089b3ed5781f6adfdf7",
+      "reseau": "SNCF",
+      "jeu": "Réseau SNCF TGV, Intercités et TER",
+      "page": "https://transport.data.gouv.fr/datasets/horaires-sncf",
+      "lignes": 34,
+      "ressources": [
+        {
+          "id": 83582,
+          "debut": "2026-10-24",
+          "fin": "2027-03-31",
+          "miseAJour": "2026-10-24",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "5eb3510a4efd8f649ffe1b9f",
+      "reseau": "Tougo (Grésivaudan)",
+      "jeu": "Réseau urbain Tougo",
+      "page": "https://transport.data.gouv.fr/datasets/horaires-theoriques-du-reseau-tougo",
+      "lignes": 42,
+      "ressources": [
+        {
+          "id": 81794,
+          "debut": "2026-08-20",
+          "fin": "2027-08-31",
+          "miseAJour": "2026-10-16",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "5af03701b595081c1880a8a4",
+      "reseau": "TAG (Grenoble)",
+      "jeu": "Réseau urbain TAG",
+      "page": "https://transport.data.gouv.fr/datasets/horaires-theoriques-du-reseau-tag",
+      "lignes": 35,
+      "ressources": [
+        {
+          "id": 83459,
+          "debut": "2026-10-15",
+          "fin": "2026-12-31",
+          "miseAJour": "2026-10-22",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "5f581b61a3c659162a8f0772",
+      "reseau": "Pays Voironnais",
+      "jeu": "Réseau urbain Transports du Pays Voironnais",
+      "page": "https://transport.data.gouv.fr/datasets/horaires-theoriques-du-reseau-transport-du-pays-voironnais",
+      "lignes": 19,
+      "ressources": [
+        {
+          "id": 83462,
+          "debut": "2025-09-01",
+          "fin": "2027-08-31",
+          "miseAJour": "2026-09-22",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "6153ad370c072cfd9db0681a",
+      "reseau": "Téléphérique de la Bastille",
+      "jeu": "Téléphérique de la Bastille - Bulles de Grenoble",
+      "page": "https://transport.data.gouv.fr/datasets/horaires-theoriques-du-telepherique-de-la-bastille",
+      "lignes": 1,
+      "ressources": [
+        {
+          "id": 81618,
+          "debut": "2025-12-01",
+          "fin": "2027-01-03",
+          "miseAJour": "2026-01-15",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "5bae8c2806e3e75b699dc606",
+      "reseau": "Synchro Bus (Chambéry)",
+      "jeu": "Réseau urbain Synchro Bus",
+      "page": "https://transport.data.gouv.fr/datasets/arrets-et-horaires-theoriques-bus-temps-reel",
+      "lignes": 11,
+      "ressources": [
+        {
+          "id": 82272,
+          "debut": "2026-10-21",
+          "fin": "2026-12-20",
+          "miseAJour": "2026-10-19",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "6026675fc02b24d37069f81a",
+      "reseau": "Ondéa (Aix-les-Bains)",
+      "jeu": "Réseau urbain Ondéa",
+      "page": "https://transport.data.gouv.fr/datasets/ctlb-donnees-theoriques-et-rt-aix-les-bains-lac-du-bourget",
+      "lignes": 5,
+      "ressources": [
+        {
+          "id": 71223,
+          "debut": "2026-10-17",
+          "fin": "2027-03-31",
+          "miseAJour": "2026-09-08",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "6a60de39435de98c1708fe89",
+      "reseau": "TRA Mobilité (Albertville)",
+      "jeu": "Réseau urbain TRA Mobilité",
+      "page": "https://transport.data.gouv.fr/datasets/tra-mobilite-horaires-du-reseau-dalbertville",
+      "lignes": 11,
+      "ressources": [
+        {
+          "id": 84135,
+          "debut": "2026-01-02",
+          "fin": "2026-12-31",
+          "miseAJour": "2026-01-22",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "671f73739ffc1d041004ddf5",
+      "reseau": "Arvan Bus (3CMA)",
+      "jeu": "Réseau urbain 3CMA",
+      "page": "https://transport.data.gouv.fr/datasets/transport-urbain-3cma-bus",
+      "lignes": 5,
+      "ressources": [
+        {
+          "id": 83258,
+          "debut": "2026-07-01",
+          "fin": "2026-12-31",
+          "miseAJour": "2026-06-30",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "5bd9843e634f413220f7f04a",
+      "reseau": "Sibra (Annecy)",
+      "jeu": "Réseau urbain Sibra",
+      "page": "https://transport.data.gouv.fr/datasets/offre-de-transports-sibra-a-annecy-gtfs",
+      "lignes": 11,
+      "ressources": [
+        {
+          "id": 80100,
+          "debut": "2026-10-01",
+          "fin": "2026-12-20",
+          "miseAJour": "2026-10-01",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "616853a698450ae104dcab37",
+      "reseau": "Jybus (Rumilly)",
+      "jeu": "Réseau urbain Jybus",
+      "page": "https://transport.data.gouv.fr/datasets/offre-de-transports-jybus-a-rumilly",
+      "lignes": 0,
+      "ressources": [
+        {
+          "id": 80092,
+          "debut": "2026-08-06",
+          "fin": "2027-07-03",
+          "miseAJour": "2026-08-07",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "6569e1dd21f63c926518143b",
+      "reseau": "Chamonix Bus",
+      "jeu": "Réseau urbain Chamonix",
+      "page": "https://transport.data.gouv.fr/datasets/gtfs-reseau-chamonix-mobilite",
+      "lignes": 18,
+      "ressources": [
+        {
+          "id": 82663,
+          "debut": "2026-08-07",
+          "fin": "2026-12-18",
+          "miseAJour": "2026-09-24",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "68b48c2486fd35d69fb0272e",
+      "reseau": "ARVI (Cluses)",
+      "jeu": "Réseau urbain ARVI",
+      "page": "https://transport.data.gouv.fr/datasets/gtfs-rentree",
+      "lignes": 5,
+      "ressources": [
+        {
+          "id": 83578,
+          "debut": "2026-09-01",
+          "fin": "2027-08-31",
+          "miseAJour": "2026-10-12",
+          "archive": null,
+          "erreur": null
+        },
+        {
+          "id": 84192,
+          "debut": "2026-09-07",
+          "fin": "2026-10-16",
+          "miseAJour": "2026-09-09",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "69398942abbf3c01c143b6eb",
+      "reseau": "Aravis Bus",
+      "jeu": "Réseau urbain ARAVIS Bus",
+      "page": "https://transport.data.gouv.fr/datasets/aravis-bus-hiver-2025-2026",
+      "lignes": 39,
+      "ressources": [
+        {
+          "id": 84055,
+          "debut": "2026-06-20",
+          "fin": "2026-09-05",
+          "miseAJour": "2026-06-05",
+          "archive": null,
+          "erreur": null
+        },
+        {
+          "id": 83755,
+          "debut": "2025-12-02",
+          "fin": "2026-04-26",
+          "miseAJour": "2025-12-10",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "63b690e7498125c6c79a0b18",
+      "reseau": "EVA'D (Évian, vallée d'Abondance)",
+      "jeu": "Réseau urbain EVA'D",
+      "page": "https://transport.data.gouv.fr/datasets/donnees-du-reseau-evad-1",
+      "lignes": 6,
+      "ressources": [
+        {
+          "id": 83746,
+          "debut": "2025-02-12",
+          "fin": "2026-07-04",
+          "miseAJour": "2026-01-14",
+          "archive": null,
+          "erreur": null
+        },
+        {
+          "id": 80973,
+          "debut": "2026-09-04",
+          "fin": "2026-12-20",
+          "miseAJour": "2026-09-08",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "6a32489a813e6bb04d3f5c27",
+      "reseau": "STAR'T (Thonon)",
+      "jeu": "Réseaux urbains STAR'T",
+      "page": "https://transport.data.gouv.fr/datasets/start-horaires-du-reseau-de-lagglomeration-de-thonon",
+      "lignes": 1,
+      "ressources": [
+        {
+          "id": 84108,
+          "debut": "2026-09-01",
+          "fin": "2026-12-20",
+          "miseAJour": "2026-08-31",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "5ca4bcec634f4125a78fad26",
+      "reseau": "TAC (Annemasse)",
+      "jeu": "Réseau urbain TAC Mobilité",
+      "page": "https://transport.data.gouv.fr/datasets/offre-de-transports-reseau-tac-annemasse-agglo",
+      "lignes": 1,
+      "ressources": [
+        {
+          "id": 76779,
+          "debut": "2026-08-31",
+          "fin": "2027-08-31",
+          "miseAJour": "2026-08-30",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "65a901970267d05025a905ec",
+      "reseau": "Pays de Gex",
+      "jeu": "Réseau urbain du Pays de Gex",
+      "page": "https://transport.data.gouv.fr/datasets/transports-publics-urbains-sur-le-territoire-de-la-ca-du-pays-de-gex-1",
+      "lignes": 4,
+      "ressources": [
+        {
+          "id": 81585,
+          "debut": "2025-12-14",
+          "fin": "2026-12-12",
+          "miseAJour": "2026-02-27",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "691711a8d9de4a5fcf95f6f1",
+      "reseau": "Mobi'Vals (Valserhône)",
+      "jeu": "Réseau urbain Mobi'Vals",
+      "page": "https://transport.data.gouv.fr/datasets/mobivals-horaires-theoriques-du-reseau-de-transport-urbain-de-valserhone",
+      "lignes": 6,
+      "ressources": [
+        {
+          "id": 83633,
+          "debut": "2026-08-17",
+          "fin": "2027-08-14",
+          "miseAJour": "2026-09-18",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "6a22836013f1fd880c041222",
+      "reseau": "Duobus (Oyonnax)",
+      "jeu": "Réseau urbain Duobus",
+      "page": "https://transport.data.gouv.fr/datasets/duobus-horaires-du-reseau-doyonnax-01",
+      "lignes": 8,
+      "ressources": [
+        {
+          "id": 84112,
+          "debut": "2026-01-26",
+          "fin": "2027-12-31",
+          "miseAJour": "2026-01-26",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "63c562c646696c9cd83544b7",
+      "reseau": "Altigo (Briançonnais)",
+      "jeu": "Réseau urbain et interurbain Altigo",
+      "page": "https://transport.data.gouv.fr/datasets/donnees-de-transport-en-commun-reseau-altigo-communaute-de-communes-du-brianconnais-format-gtfs",
+      "lignes": 16,
+      "ressources": [
+        {
+          "id": 81455,
+          "debut": "2026-09-14",
+          "fin": "2027-12-31",
+          "miseAJour": "2026-09-29",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "68e4f0acdd9bf1d1d9902276",
+      "reseau": "Pays des Écrins",
+      "jeu": "Réseau urbain Pays des Ecrins",
+      "page": "https://transport.data.gouv.fr/datasets/transports-en-commun-pays-des-ecrins",
+      "lignes": 5,
+      "ressources": [
+        {
+          "id": 83467,
+          "debut": "2024-10-16",
+          "fin": "2026-12-31",
+          "miseAJour": "2026-10-24",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "67612c70408ff2fc34f1916d",
+      "reseau": "Vaï (Embrun)",
+      "jeu": "Réseau urbain Vaï Embrun",
+      "page": "https://transport.data.gouv.fr/datasets/reseau-vai-embrun",
+      "lignes": 2,
+      "ressources": [
+        {
+          "id": 84175,
+          "debut": "2026-09-01",
+          "fin": "2027-08-31",
+          "miseAJour": "2026-08-18",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "65a7d7a7fbf0d8d41d572b1b",
+      "reseau": "L'Agglo en Bus (Gap)",
+      "jeu": "Réseau urbain L'Agglo en Bus",
+      "page": "https://transport.data.gouv.fr/datasets/horaires-theoriques-et-temps-reels-du-reseau-de-transports-lagglo-en-bus-communaute-dagglomeration-gap-tallard-durance",
+      "lignes": 14,
+      "ressources": [
+        {
+          "id": 81547,
+          "debut": "2025-12-17",
+          "fin": "2026-12-31",
+          "miseAJour": "2026-10-24",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "6357f252e8746ab0a790f68e",
+      "reseau": "TUD (Digne-les-Bains)",
+      "jeu": "Réseau urbain TUD",
+      "page": "https://transport.data.gouv.fr/datasets/reseau-de-transport-urbains-dignois",
+      "lignes": 4,
+      "ressources": [
+        {
+          "id": 81367,
+          "debut": null,
+          "fin": null,
+          "miseAJour": "2024-06-03",
+          "archive": null,
+          "erreur": null
+        },
+        {
+          "id": 83915,
+          "debut": "2026-01-02",
+          "fin": "2026-12-31",
+          "miseAJour": "2026-04-24",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "687aec884e4a0dd29c55372d",
+      "reseau": "Trans'Agglo (Manosque)",
+      "jeu": "Réseau urbain et interurbain Trans'Agglo",
+      "page": "https://transport.data.gouv.fr/datasets/reseau-de-transport-en-commun-trans-agglo-de-dlva",
+      "lignes": 23,
+      "ressources": [
+        {
+          "id": 83291,
+          "debut": "2026-02-03",
+          "fin": "2026-12-31",
+          "miseAJour": "2025-06-25",
+          "archive": null,
+          "erreur": null
+        },
+        {
+          "id": 83789,
+          "debut": "2024-05-01",
+          "fin": "2026-12-31",
+          "miseAJour": "2026-01-07",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "685181f3733800e180c475fa",
+      "reseau": "Lignes d'Azur",
+      "jeu": "Réseau urbain Lignes d'Azur",
+      "page": "https://transport.data.gouv.fr/datasets/donnees-statiques-et-dynamiques-du-reseau-de-transport-lignes-dazur",
+      "lignes": 42,
+      "ressources": [
+        {
+          "id": 83178,
+          "debut": "2026-10-23",
+          "fin": "2026-12-31",
+          "miseAJour": "2026-09-17",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "5bb49085634f4115ddc9293b",
+      "reseau": "Zest (Menton, Roya)",
+      "jeu": "Réseau urbain Zest",
+      "page": "https://transport.data.gouv.fr/datasets/horaires-reseau-zest",
+      "lignes": 1,
+      "ressources": [
+        {
+          "id": 79559,
+          "debut": "2026-09-17",
+          "fin": "2027-07-04",
+          "miseAJour": "2026-09-18",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "5bc59247634f417c808580b3",
+      "reseau": "Sillages (Pays de Grasse)",
+      "jeu": "Réseau urbain et scolaire Sillages",
+      "page": "https://transport.data.gouv.fr/datasets/lignes-regulieres-de-transports-sillages-en-pays-de-grasse-urbain-et-scolaire",
+      "lignes": 5,
+      "ressources": [
+        {
+          "id": 79822,
+          "debut": "2026-07-01",
+          "fin": "2027-08-31",
+          "miseAJour": "2026-09-07",
+          "archive": null,
+          "erreur": null
+        },
+        {
+          "id": 79821,
+          "debut": "2026-09-01",
+          "fin": "2027-07-02",
+          "miseAJour": "2026-09-07",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "5b3b3de988ee38708ada1789",
+      "reseau": "Métropole Aix-Marseille-Provence",
+      "jeu": "Réseaux urbains de la Métropole Aix-Marseille-Provence",
+      "page": "https://transport.data.gouv.fr/datasets/reseaux-de-transports-en-commun-de-la-metropole-daix-marseille-provence-et-des-bouches-du-rhone",
+      "lignes": 12,
+      "ressources": [
+        {
+          "id": 39593,
+          "debut": "2026-09-08",
+          "fin": "2027-07-02",
+          "miseAJour": "2026-05-21",
+          "archive": null,
+          "erreur": null
+        },
+        {
+          "id": 39598,
+          "debut": "2026-09-19",
+          "fin": "2026-12-31",
+          "miseAJour": "2026-10-21",
+          "archive": null,
+          "erreur": null
+        },
+        {
+          "id": 39601,
+          "debut": "2026-09-23",
+          "fin": "2027-01-03",
+          "miseAJour": "2026-09-26",
+          "archive": null,
+          "erreur": null
+        },
+        {
+          "id": 39597,
+          "debut": "2026-08-31",
+          "fin": "2026-11-01",
+          "miseAJour": "2026-10-22",
+          "archive": null,
+          "erreur": null
+        },
+        {
+          "id": 39599,
+          "debut": "2025-12-24",
+          "fin": "2026-12-31",
+          "miseAJour": "2026-01-15",
+          "archive": null,
+          "erreur": null
+        },
+        {
+          "id": 39596,
+          "debut": "2026-09-23",
+          "fin": "2026-12-31",
+          "miseAJour": "2026-10-13",
+          "archive": null,
+          "erreur": null
+        },
+        {
+          "id": 39595,
+          "debut": "2026-08-05",
+          "fin": "2026-12-31",
+          "miseAJour": "2026-09-13",
+          "archive": null,
+          "erreur": null
+        },
+        {
+          "id": 39591,
+          "debut": "2026-07-29",
+          "fin": "2027-12-31",
+          "miseAJour": "2026-09-20",
+          "archive": null,
+          "erreur": null
+        },
+        {
+          "id": 39589,
+          "debut": "2026-10-24",
+          "fin": "2026-12-23",
+          "miseAJour": "2026-10-24",
+          "archive": null,
+          "erreur": null
+        },
+        {
+          "id": 39602,
+          "debut": "2026-09-19",
+          "fin": "2027-07-03",
+          "miseAJour": "2026-10-25",
+          "archive": null,
+          "erreur": null
+        },
+        {
+          "id": 39592,
+          "debut": "2026-09-13",
+          "fin": "2026-11-01",
+          "miseAJour": "2026-10-18",
+          "archive": null,
+          "erreur": null
+        },
+        {
+          "id": 81969,
+          "debut": "2026-10-24",
+          "fin": "2027-05-13",
+          "miseAJour": "2026-10-24",
+          "archive": null,
+          "erreur": null
+        },
+        {
+          "id": 39594,
+          "debut": "2026-08-31",
+          "fin": "2027-06-30",
+          "miseAJour": "2026-09-05",
+          "archive": null,
+          "erreur": null
+        },
+        {
+          "id": 80736,
+          "debut": "2026-09-15",
+          "fin": "2026-12-31",
+          "miseAJour": "2026-09-01",
+          "archive": null,
+          "erreur": null
+        },
+        {
+          "id": 39603,
+          "debut": "2026-09-14",
+          "fin": "2027-06-06",
+          "miseAJour": "2026-09-21",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "66da461b80f91630d0227702",
+      "reseau": "Mouv'enbus (Provence Verte)",
+      "jeu": "Réseau urbain Mouv'enbus",
+      "page": "https://transport.data.gouv.fr/datasets/reseau-transport-mouv-enbus-agglomeration-provence-verte",
+      "lignes": 0,
+      "ressources": [
+        {
+          "id": 83429,
+          "debut": "2026-08-01",
+          "fin": "2027-08-31",
+          "miseAJour": "2026-08-26",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "5f2c9a79e4e713875a58be26",
+      "reseau": "Mobigo (Jura)",
+      "jeu": "Réseau interurbain Mobigo",
+      "page": "https://transport.data.gouv.fr/datasets/reseau-de-transport-interurbain-mobigo-en-bourgogne-franche-comte",
+      "lignes": 6,
+      "ressources": [
+        {
+          "id": 84076,
+          "debut": "2026-09-30",
+          "fin": "2027-12-31",
+          "miseAJour": "2026-09-11",
+          "archive": null,
+          "erreur": null
+        },
+        {
+          "id": 84077,
+          "debut": "2026-09-02",
+          "fin": "2027-08-31",
+          "miseAJour": "2026-09-02",
+          "archive": null,
+          "erreur": null
+        },
+        {
+          "id": 83931,
+          "debut": "2026-06-24",
+          "fin": "2026-12-31",
+          "miseAJour": "2026-06-24",
+          "archive": null,
+          "erreur": null
+        },
+        {
+          "id": 84073,
+          "debut": "2026-09-01",
+          "fin": "2027-08-31",
+          "miseAJour": "2026-08-31",
+          "archive": null,
+          "erreur": null
+        },
+        {
+          "id": 84074,
+          "debut": "2026-09-01",
+          "fin": "2027-08-31",
+          "miseAJour": "2026-08-31",
+          "archive": null,
+          "erreur": null
+        },
+        {
+          "id": 84078,
+          "debut": "2026-09-11",
+          "fin": "2027-08-31",
+          "miseAJour": "2026-09-11",
+          "archive": null,
+          "erreur": null
+        },
+        {
+          "id": 84075,
+          "debut": "2026-10-20",
+          "fin": "2027-08-31",
+          "miseAJour": "2026-09-01",
+          "archive": null,
+          "erreur": null
+        },
+        {
+          "id": 84072,
+          "debut": "2026-10-21",
+          "fin": "2027-08-31",
+          "miseAJour": "2026-09-21",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "674ec12d71d8fc02e805a58c",
+      "reseau": "Navettes du Guillestrois et du Queyras",
+      "jeu": "Navettes saisonnières de la CC du Guillestrois et du Queyras",
+      "page": "https://transport.data.gouv.fr/datasets/reseau-de-transports-collectifs-de-la-ccgq",
+      "lignes": 15,
+      "ressources": [
+        {
+          "id": 82604,
+          "debut": "2025-12-20",
+          "fin": "2026-09-06",
+          "miseAJour": "2026-08-17",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "5e3c29156f444172fa4ec754",
+      "reseau": "Valmobus (Valmorel)",
+      "jeu": "Navettes saisonnières Valmobus",
+      "page": "https://transport.data.gouv.fr/datasets/horaires-theoriques-et-temps-reel-de-la-station-de-ski-valmorel-gtfs-gtfs-rt",
+      "lignes": 6,
+      "ressources": [
+        {
+          "id": 12616,
+          "debut": null,
+          "fin": null,
+          "miseAJour": "2026-09-15",
+          "archive": {
+            "version": "2026-07-02",
+            "debut": "2026-07-01",
+            "fin": "2026-08-31"
+          },
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "692838b1fc4de6dd2c95f1f2",
+      "reseau": "Navettes hivernales Vaï",
+      "jeu": "Navettes hivernales réseau Vaï",
+      "page": "https://transport.data.gouv.fr/datasets/navettes-stations-hiver-2025-2026-reseau-vai",
+      "lignes": 8,
+      "ressources": [
+        {
+          "id": 83736,
+          "debut": "2025-12-06",
+          "fin": "2026-04-10",
+          "miseAJour": "2025-12-30",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "6a06cbcfc1d6f3e3b9441b69",
+      "reseau": "Navette Chorges – Chanteloube",
+      "jeu": "Navettes estivales Chorges - Chanteloube",
+      "page": "https://transport.data.gouv.fr/datasets/navette-chorges-chanteloube-ete-2026-reseau-vai",
+      "lignes": 1,
+      "ressources": [
+        {
+          "id": 84030,
+          "debut": "2026-07-04",
+          "fin": "2026-08-23",
+          "miseAJour": "2026-05-15",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "61fd29da29ea95c7bc0e1211",
+      "reseau": "Navettes de l'Alpe d'Huez",
+      "jeu": "Navettes hivernales de l'Alpe d'Huez",
+      "page": "https://transport.data.gouv.fr/datasets/horaires-theoriques-et-temps-reel-des-navettes-hivernales-de-lalpe-dhuez-gtfs-gtfs-rt",
+      "lignes": 4,
+      "ressources": [
+        {
+          "id": 78387,
+          "debut": null,
+          "fin": null,
+          "miseAJour": "2026-09-01",
+          "archive": {
+            "version": "2026-07-30",
+            "debut": "2026-07-24",
+            "fin": "2026-08-31"
+          },
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "69206120a3b522554e1a204a",
+      "reseau": "Navettes des 2 Alpes",
+      "jeu": "Navettes hivernales des 2 Alpes",
+      "page": "https://transport.data.gouv.fr/datasets/gtfs-les-2alpes-saison-hiver-2025-2026",
+      "lignes": 2,
+      "ressources": [
+        {
+          "id": 83989,
+          "debut": "2026-05-04",
+          "fin": "2026-07-04",
+          "miseAJour": "2026-04-27",
+          "archive": null,
+          "erreur": null
+        },
+        {
+          "id": 83813,
+          "debut": "2026-05-04",
+          "fin": "2026-07-04",
+          "miseAJour": "2026-05-20",
+          "archive": null,
+          "erreur": null
+        },
+        {
+          "id": 83810,
+          "debut": "2026-05-04",
+          "fin": "2026-07-04",
+          "miseAJour": "2026-06-02",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "6793a20138660ccb8785df10",
+      "reseau": "Skibus Courchevel",
+      "jeu": "Navettes hivernales Skibus Courchevel",
+      "page": "https://transport.data.gouv.fr/datasets/skibus-courchevel-hiver",
+      "lignes": 6,
+      "ressources": [
+        {
+          "id": 84102,
+          "debut": "2026-07-01",
+          "fin": "2026-08-23",
+          "miseAJour": "2026-07-03",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "6936e58a20bc7a63a54c2e0f",
+      "reseau": "Transport par câble de Courchevel",
+      "jeu": "Transport par câble hivernal Courchevel",
+      "page": "https://transport.data.gouv.fr/datasets/transport-urbain-par-cable-hiver-2025-26",
+      "lignes": 1,
+      "ressources": [
+        {
+          "id": 83744,
+          "debut": "2025-12-05",
+          "fin": "2026-04-19",
+          "miseAJour": "2025-12-11",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "6943c818433a7943c9834b7b",
+      "reseau": "Skibus Vallée des Belleville",
+      "jeu": "Navettes Skibus Vallée des Belleville",
+      "page": "https://transport.data.gouv.fr/datasets/skibus-vallee-des-belleville",
+      "lignes": 3,
+      "ressources": [
+        {
+          "id": 83787,
+          "debut": "2026-07-01",
+          "fin": "2026-08-31",
+          "miseAJour": "2026-07-01",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "676e6faa376ffb861e0197f5",
+      "reseau": "Méribus",
+      "jeu": "Navette saisonnière Méribus",
+      "page": "https://transport.data.gouv.fr/datasets/meribus-ete",
+      "lignes": 1,
+      "ressources": [
+        {
+          "id": 82682,
+          "debut": "2026-07-04",
+          "fin": "2026-08-30",
+          "miseAJour": "2026-06-19",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "6798942abc43332729738b53",
+      "reseau": "Navettes de Val d'Isère",
+      "jeu": "Navettes saisonnières Val d'Isère",
+      "page": "https://transport.data.gouv.fr/datasets/navettes-val-disere",
+      "lignes": 5,
+      "ressources": [
+        {
+          "id": 83629,
+          "debut": null,
+          "fin": null,
+          "miseAJour": "2026-09-01",
+          "archive": {
+            "version": "2026-07-04",
+            "debut": "2026-07-04",
+            "fin": "2026-08-30"
+          },
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "6798ab6ab1a98a9f0d4220c0",
+      "reseau": "Navettes de Tignes",
+      "jeu": "Navettes saisonnières Tignes",
+      "page": "https://transport.data.gouv.fr/datasets/navettes-tignes",
+      "lignes": 3,
+      "ressources": [
+        {
+          "id": 83627,
+          "debut": null,
+          "fin": null,
+          "miseAJour": "2026-09-07",
+          "archive": {
+            "version": "2026-07-04",
+            "debut": "2026-07-04",
+            "fin": "2026-08-30"
+          },
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "67978852ec1bc7b5e4b1f3bd",
+      "reseau": "Navettes de Bourg-Saint-Maurice",
+      "jeu": "Navettes saisonnières Bourg-Saint-Maurice",
+      "page": "https://transport.data.gouv.fr/datasets/navettes-bourg-saint-maurice",
+      "lignes": 2,
+      "ressources": [
+        {
+          "id": 83626,
+          "debut": "2026-08-21",
+          "fin": "2026-12-04",
+          "miseAJour": "2026-09-08",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "6a47606c05be1f62b3ec5a32",
+      "reseau": "Navettes de La Rosière",
+      "jeu": "Navettes estivales La Rosière",
+      "page": "https://transport.data.gouv.fr/datasets/navettes-la-rosiere",
+      "lignes": 2,
+      "ressources": [
+        {
+          "id": 84133,
+          "debut": "2026-06-27",
+          "fin": "2026-09-04",
+          "miseAJour": "2026-07-03",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "69c3c79f37c9725d7b98bb91",
+      "reseau": "Télécabine Eau d'Olle Express",
+      "jeu": "Télécabine Eau d'Olle Express (Allemond - Oz)",
+      "page": "https://transport.data.gouv.fr/datasets/telecabine-eau-dolle-express-allemond-oz",
+      "lignes": 1,
+      "ressources": [
+        {
+          "id": 83994,
+          "debut": "2025-12-06",
+          "fin": "2027-04-19",
+          "miseAJour": "2026-08-31",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "6a2852b7baa58d82b47766ea",
+      "reseau": "Col'ette (Hauteluce – Les Saisies)",
+      "jeu": "Navette saisonnière Col'ette",
+      "page": "https://transport.data.gouv.fr/datasets/navette-colette-savoie-les-saisies",
+      "lignes": 1,
+      "ressources": [
+        {
+          "id": 84203,
+          "debut": "2026-07-04",
+          "fin": "2026-08-28",
+          "miseAJour": "2026-06-09",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "699573585cec51215c157895",
+      "reseau": "Funiculaire des Arcs",
+      "jeu": "Funiculaire des Arcs",
+      "page": "https://transport.data.gouv.fr/datasets/funiculaire-des-arcs",
+      "lignes": 0,
+      "ressources": [
+        {
+          "id": 83848,
+          "debut": "2026-12-12",
+          "fin": "2027-04-25",
+          "miseAJour": "2026-10-13",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    },
+    {
+      "id": "6a2f9a84779d9f873659ae48",
+      "reseau": "Remontées mécaniques de Courchevel",
+      "jeu": "Remontées mécaniques - Courchevel",
+      "page": "https://transport.data.gouv.fr/datasets/remontees-mecaniques-courchevel",
+      "lignes": 14,
+      "ressources": [
+        {
+          "id": 84204,
+          "debut": "2026-07-04",
+          "fin": "2026-08-30",
+          "miseAJour": "2026-06-15",
+          "archive": null,
+          "erreur": null
+        }
+      ],
+      "erreur": null
+    }
+  ]
+}

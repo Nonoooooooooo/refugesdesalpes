@@ -167,7 +167,9 @@ self.addEventListener('fetch', (event) => {
   }
 
   // 3. DONNÉES / API (Network First avec fallback cache)
-  if (url.includes('/api/') || url.includes('/rimg/') || url.includes('refuges.info')) {
+  // Les données transport (réseau, fiches de lignes, index) suivent aussi cette règle : chaque
+  // reconstruction du réseau doit être vue tout de suite, le cache ne sert qu'hors ligne
+  if (url.includes('/api/') || url.includes('/rimg/') || url.includes('refuges.info') || url.includes('/transports')) {
     event.respondWith(
       (async () => {
         try {

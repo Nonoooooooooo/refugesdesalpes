@@ -114,6 +114,8 @@ export default function TransportSidebar({ transport, onClose, onSelectTransport
   );
   // État local de la branche active
   const [activeBranchId, setActiveBranchId] = useState(transport?.activeBranchId || null);
+  // Jour type affiché dans la grille horaire (semaine, samedi, dimanche…)
+  const [activeDayIdx, setActiveDayIdx] = useState(0);
 
   if (transport?.id !== prevTransportId) {
     setPrevTransportId(transport?.id);
@@ -121,6 +123,7 @@ export default function TransportSidebar({ transport, onClose, onSelectTransport
       typeof transport?.activeDirectionIndex === 'number' ? transport.activeDirectionIndex : 0
     );
     setActiveBranchId(transport?.activeBranchId || null);
+    setActiveDayIdx(0);
   }
 
   // Branches disponibles
@@ -142,6 +145,8 @@ export default function TransportSidebar({ transport, onClose, onSelectTransport
     if (Array.isArray(transport.directions) && transport.directions.length > 0) {
       return transport.directions;
     }
+    // Réseau v2 : la fiche (sens et horaires) est en cours de chargement
+    if (transport.detail) return null;
     const nameOrRoute = transport.route || transport.name || '';
     if (nameOrRoute.includes('↔')) {
       const parts = nameOrRoute
@@ -219,8 +224,17 @@ export default function TransportSidebar({ transport, onClose, onSelectTransport
     ? `${activeDirection.origin} → ${activeDirection.destination}`
     : transport.route;
 
+  // Grilles par jour type (réseau v2), sinon grille unique
+  const dayTables = useMemo(() => {
+    const src = activeBranch || activeDirection;
+    return Array.isArray(src?.timetables) && src.timetables.length > 0 ? src.timetables : null;
+  }, [activeBranch, activeDirection]);
+
   // Grille horaire
   const displayTimetable = useMemo(() => {
+    if (dayTables) {
+      return dayTables[Math.min(activeDayIdx, dayTables.length - 1)];
+    }
     if (activeBranch?.timetable) {
       return activeBranch.timetable;
     }
@@ -231,7 +245,7 @@ export default function TransportSidebar({ transport, onClose, onSelectTransport
       return transport.timetable;
     }
     return null;
-  }, [activeBranch, activeDirection, transport.timetable]);
+  }, [dayTables, activeDayIdx, activeBranch, activeDirection, transport.timetable]);
 
   const handleStopClick = (stop, idx) => {
     let sp = null;
@@ -345,6 +359,16 @@ export default function TransportSidebar({ transport, onClose, onSelectTransport
               {transport.network}
             </Chip>
           )}
+          {transport.horsSaison && (
+            <span className="rounded-md bg-amber-400/15 px-1.5 py-0.5 text-xs font-semibold text-amber-200">
+              Hors saison
+            </span>
+          )}
+          {transport.manuel && (
+            <span className="rounded-md bg-sky-400/15 px-1.5 py-0.5 text-xs font-semibold text-sky-200">
+              Hors open data
+            </span>
+          )}
           {transport.period && (
             <Chip icon={<Calendar size={13} className="text-blue-300" />}>
               {transport.period}
@@ -448,7 +472,7 @@ export default function TransportSidebar({ transport, onClose, onSelectTransport
                   >
                     <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider opacity-90">
                       <ArrowRight size={12} className={isActive ? 'text-white' : 'text-white/50'} />
-                      <span>{idx === 0 ? 'Aller' : 'Retour'}</span>
+                      <span>{idx === 0 ? 'Aller' : idx === 1 ? 'Retour' : `Sens ${idx + 1}`}</span>
                     </div>
                     <div className="text-xs font-semibold leading-tight line-clamp-2">
                       {dir.name || `Vers ${dir.destination || 'Terminus'}`}
@@ -582,6 +606,15 @@ export default function TransportSidebar({ transport, onClose, onSelectTransport
           </Section>
         )}
 
+        {transport.detail && !transport.directions && (
+          <p className="text-[13px] text-white/60">Chargement des horaires…</p>
+        )}
+        {transport.detailError && (
+          <p className="text-[13px] text-amber-200/80">
+            Horaires indisponibles pour le moment (connexion requise). Le lien ci-dessous mène aux horaires officiels.
+          </p>
+        )}
+
         {/* Section Grille Horaires Officiels */}
         {displayTimetable &&
           Array.isArray(displayTimetable.rows) &&
@@ -602,6 +635,34 @@ export default function TransportSidebar({ transport, onClose, onSelectTransport
 
             return (
               <Section title={displayTimetable.title || 'Horaires et passages'}>
+                {dayTables && dayTables.length > 1 && (
+                  <div
+                    className="mb-2 grid gap-1 rounded-[14px] bg-white/[0.05] p-1"
+                    style={{ gridTemplateColumns: `repeat(${dayTables.length}, minmax(0, 1fr))` }}
+                  >
+                    {dayTables.map((t, idx) => {
+                      const isActive = displayTimetable === t;
+                      return (
+                        <button
+                          key={t.label}
+                          type="button"
+                          aria-pressed={isActive}
+                          onClick={() => setActiveDayIdx(idx)}
+                          className={`rounded-[10px] px-2 py-1.5 text-[12px] font-medium leading-tight transition-colors ${
+                            isActive ? 'bg-white/[0.14] text-white' : 'text-white/60 hover:bg-white/[0.06] hover:text-white'
+                          }`}
+                        >
+                          {t.label}
+                          {typeof t.departs === 'number' && (
+                            <span className="block text-[10px] font-normal text-white/50">
+                              {t.departs} départ{t.departs > 1 ? 's' : ''}
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
                 <div className="rounded-2xl bg-white/[0.05] p-3 ring-1 ring-white/10">
                   <div className="overflow-x-auto scroll-thin">
                     <table className="w-full min-w-[340px] text-left text-xs">
@@ -683,6 +744,53 @@ export default function TransportSidebar({ transport, onClose, onSelectTransport
             mobilité douce. Vérifiez les conditions météo et correspondances en gare.
           </span>
         </div>
+
+        {/* Infos pratiques des navettes hors open data (tarif, réservation, restrictions) */}
+        {transport.manuel && transport.note && (
+          <div className="flex items-start gap-3 text-xs leading-relaxed text-white/70">
+            <Info size={15} strokeWidth={1.75} className="mt-0.5 shrink-0 text-white/45" />
+            <span>{transport.note}</span>
+          </div>
+        )}
+
+        {/* Provenance : navette relevée à la main sur son document officiel */}
+        {transport.source?.type === 'hors_open_data' && (
+          <p className="text-[11px] leading-relaxed text-white/50">
+            Navette absente de l’open data : horaires relevés à la main sur{' '}
+            <a
+              href={transport.source.page}
+              target="_blank"
+              rel="noreferrer"
+              className="underline decoration-white/30 hover:text-white/80"
+            >
+              {transport.source.jeu}
+            </a>
+            {transport.source.editeur && ` (${transport.source.editeur})`}
+            {transport.source.miseAJour && `, consulté le ${transport.source.miseAJour.split('-').reverse().join('/')}`}.
+            {transport.statut === 'partiel' && ' Horaires non publiés : seules les dates et la fréquence sont connues.'}
+            {transport.statut === 'a_verifier' && ' Information à vérifier avant de partir.'}
+            {transport.traceCalculee ? ' Tracé calculé sur le réseau routier.' : ' Tracé approximatif, d’arrêt en arrêt.'}
+          </p>
+        )}
+
+        {/* Provenance des données officielles (réseau v2) */}
+        {transport.source?.jeu && transport.source.type !== 'hors_open_data' && (
+          <p className="text-[11px] leading-relaxed text-white/50">
+            Données officielles :{' '}
+            <a
+              href={transport.source.page}
+              target="_blank"
+              rel="noreferrer"
+              className="underline decoration-white/30 hover:text-white/80"
+            >
+              {transport.source.jeu}
+            </a>
+            {transport.source.archive
+              ? `, version du ${transport.source.archive.date.split('-').reverse().join('/')} conservée : l’éditeur ne publie aucune ligne entre deux saisons`
+              : transport.source.miseAJour && `, mises à jour le ${transport.source.miseAJour.split('-').reverse().join('/')}`}
+            {transport.traceOfficiel === false && '. Tracé approximatif, d’arrêt en arrêt'}.
+          </p>
+        )}
 
         {/* Lien officiel */}
         {transport.url && (

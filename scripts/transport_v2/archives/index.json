@@ -1,0 +1,325 @@
+{
+  "12616": {
+    "datasetId": "5e3c29156f444172fa4ec754",
+    "titre": "Navettes saisonnières Valmobus",
+    "versions": [
+      {
+        "versionDate": "2026-07-02T12:25:14.898162Z",
+        "origine": "historique transport.data.gouv.fr",
+        "url": "https://transport-data-gouv-fr-resource-history-prod.cellar-c2.services.clever-cloud.com/12616/12616.20260702.122514.898162.zip",
+        "fichier": "gtfs/12616/2026-07-02-7a6106a39e.zip",
+        "sha1": "7a6106a39eea85e9c67bd6584500a3afb9e82981",
+        "taille": 128347,
+        "lignes": 6,
+        "courses": 107,
+        "joursService": 62,
+        "debut": "2026-07-01",
+        "fin": "2026-08-31"
+      }
+    ]
+  },
+  "78387": {
+    "datasetId": "61fd29da29ea95c7bc0e1211",
+    "titre": "Navettes hivernales de l'Alpe d'Huez",
+    "versions": [
+      {
+        "versionDate": "2026-07-30T12:15:57.300911Z",
+        "origine": "historique transport.data.gouv.fr",
+        "url": "https://transport-data-gouv-fr-resource-history-prod.cellar-c2.services.clever-cloud.com/78387/78387.20260730.121557.300911.zip",
+        "fichier": "gtfs/78387/2026-07-30-cf85b8e8a5.zip",
+        "sha1": "cf85b8e8a56ba6c76b5cf995e0ddbbe10e8d8508",
+        "taille": 104811,
+        "lignes": 4,
+        "courses": 301,
+        "joursService": 39,
+        "debut": "2026-07-24",
+        "fin": "2026-08-31"
+      }
+    ]
+  },
+  "82604": {
+    "datasetId": "674ec12d71d8fc02e805a58c",
+    "titre": "Navettes saisonnières de la CC du Guillestrois et du Queyras",
+    "versions": [
+      {
+        "versionDate": "2026-08-17T09:11:12.724863Z",
+        "origine": "historique transport.data.gouv.fr",
+        "url": "https://transport-data-gouv-fr-resource-history-prod.cellar-c2.services.clever-cloud.com/82604/82604.20260817.091112.724863.zip",
+        "fichier": "gtfs/82604/2026-08-17-e6d3b45f6f.zip",
+        "sha1": "e6d3b45f6f1736ed5f49a1b506d232d335474516",
+        "taille": 536137,
+        "lignes": 15,
+        "courses": 254,
+        "joursService": 178,
+        "debut": "2025-12-20",
+        "fin": "2026-09-06"
+      }
+    ]
+  },
+  "82682": {
+    "datasetId": "676e6faa376ffb861e0197f5",
+    "titre": "Navette saisonnière Méribus",
+    "versions": [
+      {
+        "versionDate": "2026-06-19T10:19:59.756796Z",
+        "origine": "historique transport.data.gouv.fr",
+        "url": "https://transport-data-gouv-fr-resource-history-prod.cellar-c2.services.clever-cloud.com/82682/82682.20260619.101959.756796.zip",
+        "fichier": "gtfs/82682/2026-06-19-9296fce7ca.zip",
+        "sha1": "9296fce7cafd95aaf9d2d863cc69513cba78052e",
+        "taille": 68959,
+        "lignes": 3,
+        "courses": 493,
+        "joursService": 58,
+        "debut": "2026-07-04",
+        "fin": "2026-08-30"
+      }
+    ]
+  },
+  "83626": {
+    "datasetId": "67978852ec1bc7b5e4b1f3bd",
+    "titre": "Navettes saisonnières Bourg-Saint-Maurice",
+    "versions": [
+      {
+        "versionDate": "2026-06-09T13:12:42.449271Z",
+        "origine": "historique transport.data.gouv.fr",
+        "url": "https://transport-data-gouv-fr-resource-history-prod.cellar-c2.services.clever-cloud.com/83626/83626.20260609.131242.449271.zip",
+        "fichier": "gtfs/83626/2026-06-09-92811abd46.zip",
+        "sha1": "92811abd461b80325eec174641f6be75e300ca95",
+        "taille": 55172,
+        "lignes": 5,
+        "courses": 492,
+        "joursService": 168,
+        "debut": "2026-06-08",
+        "fin": "2026-12-04"
+      }
+    ]
+  },
+  "83627": {
+    "datasetId": "6798ab6ab1a98a9f0d4220c0",
+    "titre": "Navettes saisonnières Tignes",
+    "versions": [
+      {
+        "versionDate": "2026-07-04T06:16:18.071861Z",
+        "origine": "historique transport.data.gouv.fr",
+        "url": "https://transport-data-gouv-fr-resource-history-prod.cellar-c2.services.clever-cloud.com/83627/83627.20260704.061618.071861.zip",
+        "fichier": "gtfs/83627/2026-07-04-842ec4003a.zip",
+        "sha1": "842ec4003aa808d091832f89f821db68d03e2546",
+        "taille": 29447,
+        "lignes": 3,
+        "courses": 176,
+        "joursService": 58,
+        "debut": "2026-07-04",
+        "fin": "2026-08-30"
+      }
+    ]
+  },
+  "83629": {
+    "datasetId": "6798942abc43332729738b53",
+    "titre": "Navettes saisonnières Val d'Isère",
+    "versions": [
+      {
+        "versionDate": "2026-07-04T06:18:49.840847Z",
+        "origine": "historique transport.data.gouv.fr",
+        "url": "https://transport-data-gouv-fr-resource-history-prod.cellar-c2.services.clever-cloud.com/83629/83629.20260704.061849.840847.zip",
+        "fichier": "gtfs/83629/2026-07-04-ea5bd1d943.zip",
+        "sha1": "ea5bd1d94328f360eff1b54c170264daa37f16e6",
+        "taille": 39809,
+        "lignes": 5,
+        "courses": 168,
+        "joursService": 58,
+        "debut": "2026-07-04",
+        "fin": "2026-08-30"
+      }
+    ]
+  },
+  "83736": {
+    "datasetId": "692838b1fc4de6dd2c95f1f2",
+    "titre": "Navettes hivernales réseau Vaï",
+    "versions": [
+      {
+        "versionDate": "2025-12-30T09:09:30.769405Z",
+        "origine": "historique transport.data.gouv.fr",
+        "url": "https://transport-data-gouv-fr-resource-history-prod.cellar-c2.services.clever-cloud.com/83736/83736.20251230.090930.769405.zip",
+        "fichier": "gtfs/83736/2025-12-30-da49324c89.zip",
+        "sha1": "da49324c8955cb38924e26345c638e18af75de6a",
+        "taille": 30198,
+        "lignes": 8,
+        "courses": 598,
+        "joursService": 126,
+        "debut": "2025-12-06",
+        "fin": "2026-04-10"
+      }
+    ]
+  },
+  "83787": {
+    "datasetId": "6943c818433a7943c9834b7b",
+    "titre": "Navettes Skibus Vallée des Belleville",
+    "versions": [
+      {
+        "versionDate": "2026-07-01T13:49:01.703308Z",
+        "origine": "historique transport.data.gouv.fr",
+        "url": "https://transport-data-gouv-fr-resource-history-prod.cellar-c2.services.clever-cloud.com/83787/83787.20260701.134901.703308.zip",
+        "fichier": "gtfs/83787/2026-07-01-f67a436b29.zip",
+        "sha1": "f67a436b292f9494a152d6eeda82341168c063ca",
+        "taille": 40588,
+        "lignes": 3,
+        "courses": 47,
+        "joursService": 61,
+        "debut": "2026-07-01",
+        "fin": "2026-08-31"
+      }
+    ]
+  },
+  "83810": {
+    "datasetId": "69206120a3b522554e1a204a",
+    "titre": "Navettes hivernales des 2 Alpes",
+    "versions": [
+      {
+        "versionDate": "2026-06-02T13:25:05.797421Z",
+        "origine": "historique transport.data.gouv.fr",
+        "url": "https://transport-data-gouv-fr-resource-history-prod.cellar-c2.services.clever-cloud.com/83810/83810.20260602.132505.797421.zip",
+        "fichier": "gtfs/83810/2026-06-02-586facc565.zip",
+        "sha1": "586facc565294308d481fb59309444c05df4dc88",
+        "taille": 13316,
+        "lignes": 1,
+        "courses": 12,
+        "joursService": 45,
+        "debut": "2026-05-04",
+        "fin": "2026-07-03"
+      }
+    ]
+  },
+  "83813": {
+    "datasetId": "69206120a3b522554e1a204a",
+    "titre": "Navettes hivernales des 2 Alpes",
+    "versions": [
+      {
+        "versionDate": "2026-05-20T06:44:28.850786Z",
+        "origine": "historique transport.data.gouv.fr",
+        "url": "https://transport-data-gouv-fr-resource-history-prod.cellar-c2.services.clever-cloud.com/83813/83813.20260520.064428.850786.zip",
+        "fichier": "gtfs/83813/2026-05-20-586facc565.zip",
+        "sha1": "586facc565294308d481fb59309444c05df4dc88",
+        "taille": 13316,
+        "lignes": 1,
+        "courses": 12,
+        "joursService": 45,
+        "debut": "2026-05-04",
+        "fin": "2026-07-03"
+      }
+    ]
+  },
+  "83989": {
+    "datasetId": "69206120a3b522554e1a204a",
+    "titre": "Navettes hivernales des 2 Alpes",
+    "versions": [
+      {
+        "versionDate": "2026-04-27T08:30:50.476111Z",
+        "origine": "historique transport.data.gouv.fr",
+        "url": "https://transport-data-gouv-fr-resource-history-prod.cellar-c2.services.clever-cloud.com/83989/83989.20260427.083050.476111.zip",
+        "fichier": "gtfs/83989/2026-04-27-ba144de4f8.zip",
+        "sha1": "ba144de4f88610b69dbc15943a5ea9d065168b06",
+        "taille": 13715,
+        "lignes": 1,
+        "courses": 12,
+        "joursService": 42,
+        "debut": "2026-05-04",
+        "fin": "2026-07-03"
+      }
+    ]
+  },
+  "84030": {
+    "datasetId": "6a06cbcfc1d6f3e3b9441b69",
+    "titre": "Navettes estivales Chorges - Chanteloube",
+    "versions": [
+      {
+        "versionDate": "2026-05-18T07:30:40.838846Z",
+        "origine": "historique transport.data.gouv.fr",
+        "url": "https://transport-data-gouv-fr-resource-history-prod.cellar-c2.services.clever-cloud.com/84030/84030.20260518.073040.838846.zip",
+        "fichier": "gtfs/84030/2026-05-18-df6dd16d14.zip",
+        "sha1": "df6dd16d145856c19586e413838cd488cf2e7f71",
+        "taille": 4373,
+        "lignes": 1,
+        "courses": 24,
+        "joursService": 51,
+        "debut": "2026-07-04",
+        "fin": "2026-08-23"
+      }
+    ]
+  },
+  "84055": {
+    "datasetId": "69398942abbf3c01c143b6eb",
+    "titre": "Réseau urbain ARAVIS Bus",
+    "versions": [
+      {
+        "versionDate": "2026-06-06T06:28:00.122379Z",
+        "origine": "historique transport.data.gouv.fr",
+        "url": "https://transport-data-gouv-fr-resource-history-prod.cellar-c2.services.clever-cloud.com/84055/84055.20260606.062800.122379.zip",
+        "fichier": "gtfs/84055/2026-06-06-b02a6cdf31.zip",
+        "sha1": "b02a6cdf31adaf021721a85b0ad1dcaacf40494d",
+        "taille": 381473,
+        "lignes": 13,
+        "courses": 2288,
+        "joursService": 78,
+        "debut": "2026-06-20",
+        "fin": "2026-09-05"
+      }
+    ]
+  },
+  "84102": {
+    "datasetId": "6793a20138660ccb8785df10",
+    "titre": "Navettes hivernales Skibus Courchevel",
+    "versions": [
+      {
+        "versionDate": "2026-07-03T15:45:11.745152Z",
+        "origine": "historique transport.data.gouv.fr",
+        "url": "https://transport-data-gouv-fr-resource-history-prod.cellar-c2.services.clever-cloud.com/84102/84102.20260703.154511.745152.zip",
+        "fichier": "gtfs/84102/2026-07-03-8139b4bc14.zip",
+        "sha1": "8139b4bc147636594138bf554d283693ab0336f6",
+        "taille": 162411,
+        "lignes": 6,
+        "courses": 328,
+        "joursService": 51,
+        "debut": "2026-07-01",
+        "fin": "2026-08-21"
+      }
+    ]
+  },
+  "84133": {
+    "datasetId": "6a47606c05be1f62b3ec5a32",
+    "titre": "Navettes estivales La Rosière",
+    "versions": [
+      {
+        "versionDate": "2026-07-28T08:56:37.265450Z",
+        "origine": "historique transport.data.gouv.fr",
+        "url": "https://transport-data-gouv-fr-resource-history-prod.cellar-c2.services.clever-cloud.com/84133/84133.20260728.085637.265450.zip",
+        "fichier": "gtfs/84133/2026-07-28-2c65dc5bbd.zip",
+        "sha1": "2c65dc5bbd85df8b49f803d6be12dd44718dfdc7",
+        "taille": 4646,
+        "lignes": 2,
+        "courses": 49,
+        "joursService": 70,
+        "debut": "2026-06-27",
+        "fin": "2026-09-04"
+      }
+    ]
+  },
+  "84203": {
+    "datasetId": "6a2852b7baa58d82b47766ea",
+    "titre": "Navette saisonnière Col'ette",
+    "versions": [
+      {
+        "versionDate": "2026-09-15T14:26:33.835610Z",
+        "origine": "historique transport.data.gouv.fr",
+        "url": "https://transport-data-gouv-fr-resource-history-prod.cellar-c2.services.clever-cloud.com/84203/84203.20260915.142633.835610.zip",
+        "fichier": "gtfs/84203/2026-09-15-4ea44cacdf.zip",
+        "sha1": "4ea44cacdf967f57f80798dca5ea9df9ba783ba7",
+        "taille": 4041,
+        "lignes": 1,
+        "courses": 2,
+        "joursService": 56,
+        "debut": "2026-07-04",
+        "fin": "2026-08-28"
+      }
+    ]
+  }
+}
