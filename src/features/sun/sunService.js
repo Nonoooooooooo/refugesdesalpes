@@ -11,6 +11,10 @@ export function formatTime(date) {
   })
 }
 
+function hasValidTime(date) {
+  return !!date && !isNaN(date.getTime())
+}
+
 /**
  * Formate des minutes en Xh Ym
  */
@@ -48,26 +52,37 @@ export function getSunEphemeris(date = new Date(), lat, lng, alt = 0) {
 
   // Temps restant avant le coucher (si aujourd'hui et avant le coucher)
   let remainingText = null
+  let remaining = null // { kind: 'sunrise' | 'sunset' | 'night', min }
   if (isToday && times.sunrise && times.sunset) {
     if (now < times.sunrise) {
       const diffMin = Math.round((times.sunrise.getTime() - now.getTime()) / 60000)
       remainingText = `Lever du soleil dans ${formatDuration(diffMin)}`
+      remaining = { kind: 'sunrise', min: diffMin }
     } else if (now < times.sunset) {
       const diffMin = Math.round((times.sunset.getTime() - now.getTime()) / 60000)
       remainingText = `${formatDuration(diffMin)} de jour restant`
+      remaining = { kind: 'sunset', min: diffMin }
     } else {
       remainingText = 'Nuit en cours'
+      // Après le coucher : décompte jusqu'au lever de demain
+      const tomorrow = new Date(date)
+      tomorrow.setDate(tomorrow.getDate() + 1)
+      const nextRise = getTimes(tomorrow, lat, lng, alt || 0).sunrise
+      remaining = hasValidTime(nextRise)
+        ? { kind: 'sunrise', min: Math.round((nextRise.getTime() - now.getTime()) / 60000), at: nextRise, tomorrow: true }
+        : { kind: 'night', min: 0 }
     }
   }
 
   // Dimensions du canvas SVG
   const width = 480
-  const height = 170
+  const height = 196
   const padX = 30
   const chartWidth = width - padX * 2
-  const horizonY = 96
+  const horizonY = 98
   const topY = 24
-  const bottomY = 152
+  const bottomY = 146
+  const axisY = 168
 
   // Calcul des altitudes sur 24h (toutes les 10 minutes = 145 points)
   const samples = []
@@ -75,7 +90,9 @@ export function getSunEphemeris(date = new Date(), lat, lng, alt = 0) {
   let minAlt = 0
 
   for (let m = 0; m <= 1440; m += 10) {
-    const t = new Date(startOfDay.getTime() + m * 60000)
+    // Heure d'horloge (et non temps écoulé) : l'axe X est gradué en heures locales,
+    // ce qui reste juste les jours de changement d'heure (23 h / 25 h)
+    const t = new Date(startOfDay.getFullYear(), startOfDay.getMonth(), startOfDay.getDate(), 0, m)
     const pos = getPosition(t, lat, lng)
     const altDeg = pos.altitude
     if (altDeg > maxAlt) maxAlt = altDeg
@@ -150,8 +167,9 @@ export function getSunEphemeris(date = new Date(), lat, lng, alt = 0) {
   const duskM = getDayMinutes(times.dusk)
 
   // Coordonnées clés pour les annotations
-  const sunrisePt = sunriseM != null ? { x: toSvgX(sunriseM), y: horizonY, m: sunriseM, time: formatTime(times.sunrise) } : null
-  const sunsetPt = sunsetM != null ? { x: toSvgX(sunsetM), y: horizonY, m: sunsetM, time: formatTime(times.sunset) } : null
+  // Lever/coucher calculés avec la dépression de l'horizon en altitude : le point est posé sur la courbe
+  const sunrisePt = sunriseM != null ? { x: toSvgX(sunriseM), y: toSvgY(getPosition(times.sunrise, lat, lng).altitude), m: sunriseM, time: formatTime(times.sunrise) } : null
+  const sunsetPt = sunsetM != null ? { x: toSvgX(sunsetM), y: toSvgY(getPosition(times.sunset, lat, lng).altitude), m: sunsetM, time: formatTime(times.sunset) } : null
   const noonPt = noonM != null ? { x: toSvgX(noonM), y: toSvgY(peakAlt), m: noonM, time: formatTime(times.solarNoon), maxAlt: Math.round(peakAlt) } : null
   const dawnPt = dawnM != null ? { x: toSvgX(dawnM), y: toSvgY(-6), m: dawnM, time: formatTime(times.dawn) } : null
   const duskPt = duskM != null ? { x: toSvgX(duskM), y: toSvgY(-6), m: duskM, time: formatTime(times.dusk) } : null
@@ -182,13 +200,36 @@ export function getSunEphemeris(date = new Date(), lat, lng, alt = 0) {
     }
   }
 
+  // Données complémentaires : azimuts du lever/coucher, élévation max, écart avec la veille
+  const azimuthAt = (d) => (hasValidTime(d) ? Math.round(getPosition(d, lat, lng).azimuth) : null)
+
+  const yesterday = new Date(date)
+  yesterday.setDate(yesterday.getDate() - 1)
+  const yTimes = getTimes(yesterday, lat, lng, alt || 0)
+  const yLenMs = hasValidTime(yTimes.sunrise) && hasValidTime(yTimes.sunset)
+    ? yTimes.sunset.getTime() - yTimes.sunrise.getTime()
+    : null
+  const dayDeltaSec = yLenMs != null && dayLengthMs > 0 ? Math.round((dayLengthMs - yLenMs) / 1000) : null
+
+  // Part de la journée solaire déjà écoulée (0 → 1), uniquement pour aujourd'hui
+  let dayProgress = null
+  if (isToday && dayLengthMs > 0) {
+    dayProgress = Math.min(1, Math.max(0, (now.getTime() - times.sunrise.getTime()) / dayLengthMs))
+  }
+
   return {
     times,
     isToday,
     now,
     dayLengthMin,
     dayLengthStr: formatDuration(dayLengthMin),
+    dayDeltaSec,
+    dayProgress,
+    maxAltDeg: Math.round(maxAlt * 10) / 10,
+    sunriseAzimuth: azimuthAt(times.sunrise),
+    sunsetAzimuth: azimuthAt(times.sunset),
     remainingText,
+    remaining,
     currentPos: {
       altitudeDeg: Math.round(currentAltDeg * 10) / 10,
       azimuthDeg: Math.round(currentAzimuthDeg),
@@ -199,7 +240,9 @@ export function getSunEphemeris(date = new Date(), lat, lng, alt = 0) {
       horizonY,
       topY,
       bottomY,
+      axisY,
       padX,
+      chartWidth,
       fullPathD,
       daySegments: daySegments.join(' '),
       twilightSegments: twilightSegments.join(' '),

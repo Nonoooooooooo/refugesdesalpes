@@ -1,14 +1,82 @@
 import React, { useState, useMemo, useEffect } from 'react'
-import {
-  X,
-  Sun,
-  Sunrise,
-  Sunset,
-  Sparkles,
-  Clock,
-  Compass,
-} from 'lucide-react'
+import { X } from 'lucide-react'
 import { getSunEphemeris, formatTime } from './sunService'
+
+// Palette "cadran" : noir pur, un seul accent chaud, un bleu pour le crépuscule
+const ORANGE = '#ff7a1a'
+const CYAN = '#2fb6ff'
+const SLATE = '#5b6b8c'
+const GRID = '#262626'
+const MUTED = '#8a8a8a'
+
+const CARDINALS = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSO', 'SO', 'OSO', 'O', 'ONO', 'NO', 'NNO']
+const cardinal = (az) => (az == null ? '' : CARDINALS[Math.round(az / 22.5) % 16])
+
+const f1 = (n) => n.toFixed(1).replace('.', ',').replace('-', '−')
+const splitDuration = (min) => {
+  const total = Math.max(0, Math.round(min))
+  return { h: Math.floor(total / 60), m: total % 60 }
+}
+const hasTime = (d) => d && !isNaN(d.getTime())
+
+/** Durée en gros chiffres condensés : 9 H 42 MIN */
+function Duration({ min, size = 'text-[52px]' }) {
+  if (min == null || isNaN(min)) return <span className={`font-din ${size} leading-none font-semibold`}>--</span>
+  const { h, m } = splitDuration(min)
+  return (
+    <span className="font-din inline-flex items-baseline">
+      <span className={`${size} leading-none font-semibold`}>{h}</span>
+      <span className="ml-0.5 mr-2 text-base font-medium text-[#8a8a8a]">H</span>
+      <span className={`${size} leading-none font-semibold`}>{String(m).padStart(2, '0')}</span>
+      <span className="ml-0.5 text-base font-medium text-[#8a8a8a]">MIN</span>
+    </span>
+  )
+}
+
+function Label({ children, className = '' }) {
+  return (
+    <div className={`text-[10px] font-semibold uppercase tracking-[0.16em] text-[#8a8a8a] ${className}`}>
+      {children}
+    </div>
+  )
+}
+
+/** Champ de données : libellé, grande valeur, sous-ligne */
+function Field({ label, value, sub, accent }) {
+  return (
+    <div className="bg-black px-3.5 py-3">
+      <Label>{label}</Label>
+      <div
+        className="font-din mt-1 text-[34px] leading-none font-semibold"
+        style={accent ? { color: accent } : undefined}
+      >
+        {value}
+      </div>
+      {sub && <div className="mt-1.5 text-[10px] uppercase tracking-wider text-[#6b6b6b]">{sub}</div>}
+    </div>
+  )
+}
+
+/** Jauge segmentée de la journée solaire écoulée */
+function DayGauge({ progress, riseTime, setTime }) {
+  const SEGMENTS = 40
+  const filled = progress == null ? 0 : Math.round(progress * SEGMENTS)
+  return (
+    <div className="flex items-center gap-3 px-4 pb-3.5">
+      <span className="font-din w-12 text-[15px] font-semibold">{riseTime}</span>
+      <div className="flex h-3 flex-1 gap-[2px]" aria-hidden="true">
+        {Array.from({ length: SEGMENTS }, (_, i) => (
+          <span
+            key={i}
+            className="flex-1"
+            style={{ background: i < filled ? ORANGE : GRID, opacity: i === filled - 1 ? 1 : i < filled ? 0.85 : 1 }}
+          />
+        ))}
+      </div>
+      <span className="font-din w-12 text-right text-[15px] font-semibold">{setTime}</span>
+    </div>
+  )
+}
 
 export default function SunModal({ point, onClose }) {
   const [selectedDayIdx, setSelectedDayIdx] = useState(0) // 0: Aujourd'hui, 1: Demain, 2: Après-demain
@@ -29,6 +97,17 @@ export default function SunModal({ point, onClose }) {
     return d
   }, [selectedDayIdx])
 
+  // Libellés des 3 onglets (jour relatif + date)
+  const days = useMemo(
+    () =>
+      ['AUJ.', 'DEM.', 'J+2'].map((label, i) => {
+        const d = new Date()
+        d.setDate(d.getDate() + i)
+        return { label, date: d.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }) }
+      }),
+    []
+  )
+
   const lat = point?.lat
   const lng = point?.lng
   const alt = point?.alt
@@ -38,411 +117,351 @@ export default function SunModal({ point, onClose }) {
     return getSunEphemeris(targetDate, lat, lng, alt)
   }, [targetDate, lat, lng, alt])
 
-  const daysLabels = ['Aujourd’hui', 'Demain', 'Après-demain']
-
   if (!ephemeris) return null
 
-  const { svg, times, isToday, dayLengthStr, remainingText, currentPos } = ephemeris
+  const {
+    svg,
+    times,
+    isToday,
+    dayLengthMin,
+    dayDeltaSec,
+    dayProgress,
+    maxAltDeg,
+    sunriseAzimuth,
+    sunsetAzimuth,
+    remaining,
+    currentPos,
+  } = ephemeris
+
+  // Lumière utile : de l'aube civile au crépuscule civil (déplacement sans frontale)
+  const usableMin =
+    hasTime(times.dawn) && hasTime(times.dusk) ? (times.dusk.getTime() - times.dawn.getTime()) / 60000 : null
+
+  const hourX = (h) => svg.padX + (h / 24) * svg.chartWidth
+  const nowColor = svg.nowPt ? (svg.nowPt.isDay ? ORANGE : svg.nowPt.isTwilight ? CYAN : SLATE) : ORANGE
+
+  // Écart de durée avec la veille
+  let deltaNode = null
+  if (dayDeltaSec != null) {
+    const abs = Math.abs(dayDeltaSec)
+    const dm = Math.floor(abs / 60)
+    const ds = abs % 60
+    const up = dayDeltaSec >= 0
+    deltaNode = (
+      <span className="font-din text-[13px] tracking-wide" style={{ color: up ? ORANGE : CYAN }}>
+        {up ? '▲' : '▼'} {dm} MIN {String(ds).padStart(2, '0')} S <span className="text-[#6b6b6b]">VS HIER</span>
+      </span>
+    )
+  }
+
+  // Cellule de droite du bandeau principal
+  let heroRight
+  if (isToday && remaining) {
+    if (remaining.kind === 'night') {
+      heroRight = { label: 'Nuit en cours', node: <span className="font-din text-[52px] leading-none font-semibold">--</span>, sub: 'Pas de lever calculable' }
+    } else {
+      heroRight = {
+        label: remaining.kind === 'sunset' ? 'Jour restant' : 'Lever dans',
+        node: <Duration min={remaining.min} />,
+        sub:
+          remaining.kind === 'sunset'
+            ? `Coucher à ${formatTime(times.sunset)}`
+            : `Lever ${remaining.tomorrow ? 'demain ' : ''}à ${formatTime(remaining.at ?? times.sunrise)}`,
+      }
+    }
+  } else {
+    heroRight = {
+      label: 'Élévation max',
+      node: (
+        <span className="font-din inline-flex items-baseline">
+          <span className="text-[52px] leading-none font-semibold">{f1(maxAltDeg)}</span>
+          <span className="ml-0.5 text-2xl font-medium text-[#8a8a8a]">°</span>
+        </span>
+      ),
+      sub: `Midi solaire à ${formatTime(times.solarNoon)}`,
+    }
+  }
 
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-[1300] flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-xl animate-fadeIn"
+      className="fixed inset-0 z-[1300] flex items-center justify-center bg-black/80 p-2 sm:p-6"
     >
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Éphéméride solaire"
         onClick={(e) => e.stopPropagation()}
-        className="relative flex w-full max-w-2xl flex-col overflow-hidden rounded-[2rem] border border-white/15 bg-gradient-to-b from-amber-500/10 via-slate-950/85 to-slate-950/95 text-white shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] backdrop-blur-3xl animate-in fade-in zoom-in-95 duration-200"
+        className="sun-panel-in relative flex max-h-[96dvh] w-full max-w-xl flex-col overflow-y-auto [color-scheme:dark] rounded-md border border-[#2b2b2b] bg-black text-white shadow-[0_30px_80px_-20px_rgba(0,0,0,1)]"
       >
-        {/* ─── En-tête épuré style Apple ─── */}
-        <header className="flex items-center justify-between px-6 pt-5 pb-3">
-          <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-400/15 border border-amber-300/30 text-amber-300 shadow-inner">
-              <Sun size={20} className="drop-shadow" />
-            </span>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-base font-semibold tracking-tight text-white">
-                  Éphéméride Solaire
-                </h2>
-                {isToday && (
-                  <span className="flex items-center gap-1 rounded-full bg-amber-400/20 px-2 py-0.5 text-[10px] font-medium text-amber-200 border border-amber-400/30">
-                    <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
-                    En direct
-                  </span>
-                )}
-              </div>
-              <p className="text-xs text-white/50">
-                {point?.nom || 'Refuge'} {alt != null ? `· ${alt} m d’altitude` : ''}
-              </p>
+        {/* ─── En-tête ─── */}
+        <header className="flex items-start justify-between gap-3 px-4 pt-3.5 pb-3">
+          <div className="min-w-0">
+            <div
+              className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em]"
+              style={{ color: ORANGE }}
+            >
+              <span className="h-3 w-[3px]" style={{ background: ORANGE }} />
+              Éphéméride solaire
+              {isToday && (
+                <span className="ml-1 flex items-center gap-1 text-[#8a8a8a]">
+                  <span className="h-1.5 w-1.5 rounded-full" style={{ background: ORANGE }} />
+                  Direct
+                </span>
+              )}
             </div>
+            <h2 className="font-din mt-1.5 truncate text-[28px] leading-none font-semibold uppercase tracking-wide">
+              {point?.nom || 'Refuge'}
+            </h2>
+            <p className="font-din mt-1.5 text-[12px] uppercase tracking-[0.12em] text-[#8a8a8a]">
+              {alt != null ? `${alt} M · ` : ''}
+              {Math.abs(lat).toFixed(4)}°{lat >= 0 ? 'N' : 'S'} {Math.abs(lng).toFixed(4)}°{lng >= 0 ? 'E' : 'O'}
+            </p>
           </div>
 
           <button
             onClick={onClose}
             aria-label="Fermer"
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white/60 hover:text-white transition-all active:scale-95 backdrop-blur-md"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border border-[#2b2b2b] text-[#8a8a8a] transition-colors hover:border-[#444] hover:text-white active:bg-[#1a1a1a]"
           >
             <X size={16} />
           </button>
         </header>
 
-        {/* ─── Sélecteur segmenté style Apple (Aujourd'hui / Demain / Après-demain) ─── */}
-        <div className="px-6 py-2">
-          <div className="flex rounded-full bg-white/5 p-1 border border-white/10">
-            {daysLabels.map((label, idx) => {
-              const isSelected = selectedDayIdx === idx
-              return (
-                <button
-                  key={idx}
-                  onClick={() => setSelectedDayIdx(idx)}
-                  className={`flex-1 rounded-full py-1 text-xs font-medium text-center transition-all ${
-                    isSelected
-                      ? 'bg-white/20 text-white shadow-sm font-semibold'
-                      : 'text-white/50 hover:text-white/80'
-                  }`}
+        {/* ─── Onglets de jour ─── */}
+        <div role="tablist" className="grid grid-cols-3 border-y" style={{ borderColor: GRID }}>
+          {days.map((d, idx) => {
+            const active = selectedDayIdx === idx
+            return (
+              <button
+                key={d.label}
+                role="tab"
+                aria-selected={active}
+                onClick={() => setSelectedDayIdx(idx)}
+                className="relative px-2 py-2 text-center transition-colors"
+                style={{ background: active ? '#0f0f0f' : 'transparent' }}
+              >
+                <div
+                  className="font-din text-[15px] font-semibold uppercase tracking-[0.12em]"
+                  style={{ color: active ? '#fff' : MUTED }}
                 >
-                  {label}
-                </button>
-              )
-            })}
+                  {d.label}
+                </div>
+                <div className="text-[10px] uppercase tracking-wider text-[#6b6b6b]">{d.date}</div>
+                {active && <span className="absolute inset-x-0 bottom-0 h-[2px]" style={{ background: ORANGE }} />}
+              </button>
+            )
+          })}
+        </div>
+
+        {/* ─── Bandeau principal : durée du jour / restant ─── */}
+        <div className="grid grid-cols-2 border-b" style={{ borderColor: GRID }}>
+          <div className="px-4 py-3.5">
+            <Label>Durée du jour</Label>
+            <div className="mt-1.5">
+              <Duration min={dayLengthMin} />
+            </div>
+            <div className="mt-2 min-h-[16px]">{deltaNode}</div>
+          </div>
+          <div className="border-l px-4 py-3.5" style={{ borderColor: GRID }}>
+            <Label>{heroRight.label}</Label>
+            <div className="mt-1.5">{heroRight.node}</div>
+            <div className="mt-2 min-h-[16px] text-[10px] uppercase tracking-wider text-[#6b6b6b]">{heroRight.sub}</div>
           </div>
         </div>
 
-        {/* ─── Hero Statistique : Durée du jour & Compte à rebours ─── */}
-        <div className="px-6 py-2 flex items-baseline justify-between flex-wrap gap-2">
-          <div>
-            <div className="text-[11px] uppercase tracking-wider text-white/40 font-medium">
-              Durée d'ensoleillement
-            </div>
-            <div className="text-3xl sm:text-4xl font-semibold tracking-tight text-white mt-0.5">
-              {dayLengthStr}
-            </div>
-          </div>
-          {remainingText && (
-            <div className="rounded-full bg-amber-400/10 border border-amber-300/25 px-3 py-1 text-xs text-amber-200 font-medium">
-              {remainingText}
-            </div>
-          )}
+        {/* ─── Jauge de la journée solaire ─── */}
+        <div className="pt-3.5">
+          <DayGauge progress={isToday ? dayProgress : null} riseTime={formatTime(times.sunrise)} setTime={formatTime(times.sunset)} />
         </div>
 
-        {/* ─── Graphique de l'arc solaire (Reproduction fidèle et épurée) ─── */}
-        <div className="mx-6 my-2 rounded-2xl bg-black/40 border border-white/10 p-3 sm:p-4 shadow-inner relative overflow-hidden backdrop-blur-md">
-          {/* Légende minimaliste en haut à gauche */}
-          <div className="flex items-center gap-4 text-[10px] font-medium tracking-wide mb-1 text-white/50">
-            <span className="flex items-center gap-1.5 text-blue-400">
-              <span className="inline-block w-2.5 h-0.5 bg-blue-500 rounded-full" /> Nuit
-            </span>
-            <span className="flex items-center gap-1.5 text-sky-400">
-              <span className="inline-block w-2.5 h-0.5 bg-sky-400 rounded-full" /> Crépuscule
-            </span>
-            <span className="flex items-center gap-1.5 text-amber-400">
-              <span className="inline-block w-2.5 h-0.5 bg-amber-400 rounded-full" /> Jour
-            </span>
-          </div>
-
+        {/* ─── Courbe d'élévation sur 24 h ─── */}
+        <div className="border-y bg-[#050505] px-2 pt-2.5" style={{ borderColor: GRID }}>
           <svg
             viewBox={`0 0 ${svg.width} ${svg.height}`}
-            className="w-full h-auto select-none"
-            style={{ maxHeight: '185px' }}
+            className="block h-auto w-full select-none"
+            role="img"
+            aria-label="Élévation du soleil au cours de la journée"
           >
-            <defs>
-              {/* Dégradé doux et soigné pour le jour */}
-              <linearGradient id="appleDayGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.32" />
-                <stop offset="100%" stopColor="#eab308" stopOpacity="0.02" />
-              </linearGradient>
-
-              {/* Hachures fines et discrètes */}
-              <pattern id="appleHatchDay" width="10" height="10" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
-                <line x1="0" y1="0" x2="0" y2="10" stroke="#f59e0b" strokeWidth="0.8" strokeOpacity="0.22" />
-              </pattern>
-
-              <pattern id="appleHatchNight" width="10" height="10" patternTransform="rotate(-45 0 0)" patternUnits="userSpaceOnUse">
-                <line x1="0" y1="0" x2="0" y2="10" stroke="#3b82f6" strokeWidth="0.8" strokeOpacity="0.10" />
-              </pattern>
-
-              <filter id="appleSunGlow" x="-50%" y="-50%" width="200%" height="200%">
-                <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
-                <feMerge>
-                  <feMergeNode in="blur" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
-            </defs>
-
-            {/* Zone nuit sous l'horizon */}
+            {/* Zone sous l'horizon */}
             <rect
               x={svg.padX}
               y={svg.horizonY}
-              width={svg.width - svg.padX * 2}
-              height={svg.bottomY - svg.horizonY + 10}
-              fill="url(#appleHatchNight)"
+              width={svg.chartWidth}
+              height={svg.axisY - svg.horizonY}
+              fill={SLATE}
+              fillOpacity="0.07"
             />
 
-            {/* Zone jour au-dessus de l'horizon */}
-            {svg.dayAreaPathD && (
-              <>
-                <path d={svg.dayAreaPathD} fill="url(#appleDayGrad)" />
-                <path d={svg.dayAreaPathD} fill="url(#appleHatchDay)" />
-              </>
-            )}
+            {/* Repères horaires */}
+            {[0, 6, 12, 18, 24].map((h) => (
+              <g key={h}>
+                <line x1={hourX(h)} y1={svg.topY - 8} x2={hourX(h)} y2={svg.axisY} stroke="#1c1c1c" strokeWidth="1" />
+                <text
+                  x={hourX(h)}
+                  y={svg.axisY + 15}
+                  fill={MUTED}
+                  fontSize="11"
+                  fontWeight="500"
+                  textAnchor="middle"
+                  className="font-din"
+                >
+                  {String(h).padStart(2, '0')}
+                </text>
+              </g>
+            ))}
+            {Array.from({ length: 25 }, (_, h) => (
+              <line key={h} x1={hourX(h)} y1={svg.axisY} x2={hourX(h)} y2={svg.axisY + 3} stroke="#444" strokeWidth="1" />
+            ))}
+            <line x1={svg.padX} y1={svg.axisY} x2={svg.width - svg.padX} y2={svg.axisY} stroke="#333" strokeWidth="1" />
 
-            {/* Ligne d'horizon */}
+            {/* Zone de jour */}
+            {svg.dayAreaPathD && <path d={svg.dayAreaPathD} fill={ORANGE} fillOpacity="0.14" />}
+
+            {/* Horizon */}
             <line
-              x1={svg.padX - 10}
+              x1={svg.padX}
               y1={svg.horizonY}
-              x2={svg.width - svg.padX + 10}
+              x2={svg.width - svg.padX}
               y2={svg.horizonY}
-              stroke="#64748b"
-              strokeWidth="1.2"
-              strokeOpacity="0.7"
+              stroke="#6b6b6b"
+              strokeWidth="1"
+              strokeDasharray="3 3"
             />
-            <text
-              x={svg.padX - 8}
-              y={svg.horizonY - 5}
-              fill="#94a3b8"
-              fontSize="9"
-              fontWeight="600"
-              letterSpacing="0.06em"
-            >
-              HORIZON
+            <text x={svg.width - svg.padX + 5} y={svg.horizonY + 4} fill={MUTED} fontSize="11" className="font-din">
+              0°
             </text>
 
-            {/* Courbes de nuit, crépuscule et jour */}
-            {svg.nightSegments && (
-              <path d={svg.nightSegments} fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" />
-            )}
-            {svg.twilightSegments && (
-              <path d={svg.twilightSegments} fill="none" stroke="#38bdf8" strokeWidth="2.5" strokeLinecap="round" />
-            )}
-            {svg.daySegments && (
-              <path d={svg.daySegments} fill="none" stroke="#f59e0b" strokeWidth="2.8" strokeLinecap="round" />
+            {/* Courbe : nuit, crépuscule, jour */}
+            {svg.nightSegments && <path d={svg.nightSegments} fill="none" stroke={SLATE} strokeWidth="1.5" strokeLinecap="round" />}
+            {svg.twilightSegments && <path d={svg.twilightSegments} fill="none" stroke={CYAN} strokeWidth="2" strokeLinecap="round" />}
+            {svg.daySegments && <path d={svg.daySegments} fill="none" stroke={ORANGE} strokeWidth="2.5" strokeLinecap="round" />}
+
+            {/* Aube / crépuscule civils */}
+            {[svg.dawnPt, svg.duskPt].map(
+              (p, i) =>
+                p && (
+                  <g key={i}>
+                    <rect x={p.x - 3} y={p.y - 3} width="6" height="6" fill="#000" stroke={CYAN} strokeWidth="1.5" transform={`rotate(45 ${p.x} ${p.y})`} />
+                    <text x={p.x} y={p.y + 17} fill={CYAN} fontSize="11" fontWeight="500" textAnchor="middle" className="font-din">
+                      {p.time}
+                    </text>
+                  </g>
+                )
             )}
 
-            {/* LEVER DU SOLEIL */}
+            {/* Lever */}
             {svg.sunrisePt && (
               <g>
-                {svg.dawnPt && (
-                  <path
-                    d={`M ${svg.dawnPt.x} ${svg.dawnPt.y} L ${svg.sunrisePt.x} ${svg.sunrisePt.y}`}
-                    stroke="#38bdf8"
-                    strokeWidth="1"
-                    strokeDasharray="2 2"
-                    strokeOpacity="0.7"
-                  />
-                )}
-                <circle
-                  cx={svg.sunrisePt.x}
-                  cy={svg.sunrisePt.y}
-                  r="6"
-                  fill="#facc15"
-                  stroke="#ffffff"
-                  strokeWidth="1.5"
-                  filter="url(#appleSunGlow)"
+                <line x1={svg.sunrisePt.x} y1={svg.horizonY} x2={svg.sunrisePt.x} y2={svg.axisY} stroke={ORANGE} strokeOpacity="0.4" strokeDasharray="2 3" />
+                <path
+                  d={`M ${svg.sunrisePt.x} ${svg.sunrisePt.y - 6} L ${svg.sunrisePt.x - 5} ${svg.sunrisePt.y + 3} L ${svg.sunrisePt.x + 5} ${svg.sunrisePt.y + 3} Z`}
+                  fill={ORANGE}
                 />
-                <circle cx={svg.sunrisePt.x} cy={svg.sunrisePt.y} r="2.5" fill="#78350f" />
-
-                <text
-                  x={svg.sunrisePt.x}
-                  y={svg.sunrisePt.y - 12}
-                  fill="#fef08a"
-                  fontSize="9"
-                  fontWeight="600"
-                  textAnchor="middle"
-                >
-                  LEVER · {svg.sunrisePt.time}
-                </text>
-
-                {svg.dawnPt && (
-                  <text
-                    x={svg.dawnPt.x}
-                    y={svg.dawnPt.y + 13}
-                    fill="#7dd3fc"
-                    fontSize="8"
-                    fontWeight="500"
-                    textAnchor="middle"
-                  >
-                    Aube {svg.dawnPt.time}
-                  </text>
-                )}
-              </g>
-            )}
-
-            {/* MIDI SOLAIRE */}
-            {svg.noonPt && (
-              <g>
-                <circle
-                  cx={svg.noonPt.x}
-                  cy={svg.noonPt.y}
-                  r="7"
-                  fill="#f59e0b"
-                  stroke="#fef08a"
-                  strokeWidth="2"
-                  filter="url(#appleSunGlow)"
-                />
-                <circle cx={svg.noonPt.x} cy={svg.noonPt.y} r="3" fill="#ffffff" />
-
-                <text
-                  x={svg.noonPt.x}
-                  y={svg.noonPt.y - 14}
-                  fill="#fde047"
-                  fontSize="9.5"
-                  fontWeight="600"
-                  textAnchor="middle"
-                >
-                  MIDI SOLAIRE · {svg.noonPt.time}
+                <text x={svg.sunrisePt.x} y={svg.horizonY - 12} fill="#fff" fontSize="13" fontWeight="600" textAnchor="middle" className="font-din">
+                  {svg.sunrisePt.time}
                 </text>
               </g>
             )}
 
-            {/* COUCHER DU SOLEIL */}
+            {/* Coucher */}
             {svg.sunsetPt && (
               <g>
-                {svg.duskPt && (
-                  <path
-                    d={`M ${svg.sunsetPt.x} ${svg.sunsetPt.y} L ${svg.duskPt.x} ${svg.duskPt.y}`}
-                    stroke="#38bdf8"
-                    strokeWidth="1"
-                    strokeDasharray="2 2"
-                    strokeOpacity="0.7"
-                  />
-                )}
-                <circle
-                  cx={svg.sunsetPt.x}
-                  cy={svg.sunsetPt.y}
-                  r="6"
-                  fill="#f97316"
-                  stroke="#ffffff"
-                  strokeWidth="1.5"
-                  filter="url(#appleSunGlow)"
+                <line x1={svg.sunsetPt.x} y1={svg.horizonY} x2={svg.sunsetPt.x} y2={svg.axisY} stroke={ORANGE} strokeOpacity="0.4" strokeDasharray="2 3" />
+                <path
+                  d={`M ${svg.sunsetPt.x} ${svg.sunsetPt.y + 6} L ${svg.sunsetPt.x - 5} ${svg.sunsetPt.y - 3} L ${svg.sunsetPt.x + 5} ${svg.sunsetPt.y - 3} Z`}
+                  fill={ORANGE}
                 />
-                <circle cx={svg.sunsetPt.x} cy={svg.sunsetPt.y} r="2.5" fill="#7c2d12" />
-
-                <text
-                  x={svg.sunsetPt.x}
-                  y={svg.sunsetPt.y - 12}
-                  fill="#fed7aa"
-                  fontSize="9"
-                  fontWeight="600"
-                  textAnchor="middle"
-                >
-                  COUCHER · {svg.sunsetPt.time}
+                <text x={svg.sunsetPt.x} y={svg.horizonY - 12} fill="#fff" fontSize="13" fontWeight="600" textAnchor="middle" className="font-din">
+                  {svg.sunsetPt.time}
                 </text>
-
-                {svg.duskPt && (
-                  <text
-                    x={svg.duskPt.x}
-                    y={svg.duskPt.y + 13}
-                    fill="#7dd3fc"
-                    fontSize="8"
-                    fontWeight="500"
-                    textAnchor="middle"
-                  >
-                    Nuit {svg.duskPt.time}
-                  </text>
-                )}
               </g>
             )}
 
-            {/* Curseur EN DIRECT (si aujourd'hui) */}
+            {/* Midi solaire */}
+            {svg.noonPt && (
+              <g>
+                <line x1={svg.noonPt.x} y1={svg.noonPt.y} x2={svg.noonPt.x} y2={svg.horizonY} stroke={ORANGE} strokeOpacity="0.4" strokeDasharray="2 3" />
+                <circle cx={svg.noonPt.x} cy={svg.noonPt.y} r="4.5" fill="#000" stroke={ORANGE} strokeWidth="2" />
+                <text x={svg.noonPt.x} y={svg.noonPt.y - 10} fill="#fff" fontSize="13" fontWeight="600" textAnchor="middle" className="font-din">
+                  {svg.noonPt.time}
+                  <tspan fill={MUTED} fontWeight="500">{`  ${f1(maxAltDeg)}°`}</tspan>
+                </text>
+              </g>
+            )}
+
+            {/* Curseur de l'heure actuelle */}
             {isToday && svg.nowPt && (
               <g>
-                <circle
-                  cx={svg.nowPt.x}
-                  cy={svg.nowPt.y}
-                  r="9"
-                  fill={svg.nowPt.isDay ? '#f59e0b' : '#38bdf8'}
-                  fillOpacity="0.45"
-                  className="animate-ping"
-                />
-                <circle
-                  cx={svg.nowPt.x}
-                  cy={svg.nowPt.y}
-                  r="5"
-                  fill="#ffffff"
-                  stroke={svg.nowPt.isDay ? '#f59e0b' : '#0284c7'}
-                  strokeWidth="2"
-                />
+                <line x1={svg.nowPt.x} y1={svg.topY - 8} x2={svg.nowPt.x} y2={svg.axisY} stroke="#fff" strokeOpacity="0.35" strokeWidth="1" />
+                <circle cx={svg.nowPt.x} cy={svg.nowPt.y} r="6" fill="#000" stroke={nowColor} strokeWidth="2.5" />
+                <circle cx={svg.nowPt.x} cy={svg.nowPt.y} r="2" fill={nowColor} />
               </g>
             )}
           </svg>
 
-          {isToday && svg.nowPt && (
-            <div className="flex items-center justify-between text-[11px] text-white/60 pt-2 border-t border-white/5 mt-1">
-              <span className="flex items-center gap-1.5 text-amber-200/90 font-medium">
-                <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
-                Maintenant ({svg.nowPt.time}) : {svg.nowPt.alt > 0 ? `+${svg.nowPt.alt.toFixed(1)}° d'élévation` : `${svg.nowPt.alt.toFixed(1)}° sous l'horizon`}
-              </span>
-              <span className="text-white/40 font-mono text-[10px]">
-                Azimut {currentPos.azimuthDeg}°
-              </span>
+          {/* Légende */}
+          <div className="flex items-center gap-4 px-2 pb-2.5 pt-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#8a8a8a]">
+            <span className="flex items-center gap-1.5">
+              <span className="h-[3px] w-3" style={{ background: ORANGE }} /> Jour
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-[3px] w-3" style={{ background: CYAN }} /> Crépuscule civil
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-[3px] w-3" style={{ background: SLATE }} /> Nuit
+            </span>
+          </div>
+        </div>
+
+        {/* ─── Position instantanée (aujourd'hui) ─── */}
+        {isToday && svg.nowPt && (
+          <div>
+            <div className="flex items-center gap-2 px-4 pt-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#8a8a8a]">
+              <span className="h-1.5 w-1.5 rounded-full" style={{ background: nowColor }} />
+              Position actuelle
             </div>
-          )}
+            <div className="grid grid-cols-3 gap-px border-y" style={{ background: GRID, borderColor: GRID }}>
+              <Field
+                label="Élévation"
+                value={`${svg.nowPt.alt > 0 ? '+' : ''}${f1(svg.nowPt.alt)}°`}
+                sub={svg.nowPt.alt >= 0 ? 'Au-dessus de l’horizon' : 'Sous l’horizon'}
+                accent={nowColor}
+              />
+              <Field label="Azimut" value={`${currentPos.azimuthDeg}°`} sub={cardinal(currentPos.azimuthDeg)} />
+              <Field label="Heure" value={svg.nowPt.time} sub="Heure locale" />
+            </div>
+          </div>
+        )}
+
+        {/* ─── Grille de données ─── */}
+        <div className={`grid grid-cols-2 gap-px border-b sm:grid-cols-3 ${isToday && svg.nowPt ? '' : 'border-t'}`} style={{ background: GRID, borderColor: GRID }}>
+          <Field label="Aube civile" value={formatTime(times.dawn)} sub="Début de lumière" />
+          <Field label="Lever" value={formatTime(times.sunrise)} sub={sunriseAzimuth != null ? `Az. ${sunriseAzimuth}° ${cardinal(sunriseAzimuth)}` : null} accent={ORANGE} />
+          <Field label="Midi solaire" value={formatTime(times.solarNoon)} sub={`Élév. ${f1(maxAltDeg)}°`} />
+          <Field label="Coucher" value={formatTime(times.sunset)} sub={sunsetAzimuth != null ? `Az. ${sunsetAzimuth}° ${cardinal(sunsetAzimuth)}` : null} accent={ORANGE} />
+          <Field label="Fin crépuscule" value={formatTime(times.dusk)} sub="Frontale requise" />
+          <Field
+            label="Lumière utile"
+            value={
+              usableMin != null ? (
+                <>
+                  {splitDuration(usableMin).h}
+                  <span className="text-lg font-medium text-[#8a8a8a]">H</span>
+                  {String(splitDuration(usableMin).m).padStart(2, '0')}
+                </>
+              ) : (
+                '--'
+              )
+            }
+            sub="Sans frontale"
+          />
         </div>
 
-        {/* ─── Cartes métriques récapitulatives style Apple ─── */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 px-6 py-2">
-          {/* Aube */}
-          <div className="rounded-2xl bg-white/5 border border-white/10 p-3 flex flex-col">
-            <span className="text-[10px] text-white/50 flex items-center gap-1.5 font-medium">
-              <Sparkles size={12} className="text-sky-300" /> Aube civile
-            </span>
-            <span className="text-xl font-semibold text-white mt-1">
-              {formatTime(times.dawn)}
-            </span>
-            <span className="text-[10px] text-white/40 mt-0.5">
-              Sans frontale
-            </span>
-          </div>
-
-          {/* Lever */}
-          <div className="rounded-2xl bg-white/5 border border-white/10 p-3 flex flex-col">
-            <span className="text-[10px] text-white/50 flex items-center gap-1.5 font-medium">
-              <Sunrise size={12} className="text-amber-300" /> Lever du soleil
-            </span>
-            <span className="text-xl font-semibold text-white mt-1">
-              {formatTime(times.sunrise)}
-            </span>
-            <span className="text-[10px] text-white/40 mt-0.5">
-              Disque à 0°
-            </span>
-          </div>
-
-          {/* Midi */}
-          <div className="rounded-2xl bg-white/5 border border-white/10 p-3 flex flex-col">
-            <span className="text-[10px] text-white/50 flex items-center gap-1.5 font-medium">
-              <Sun size={12} className="text-amber-400" /> Midi solaire
-            </span>
-            <span className="text-xl font-semibold text-white mt-1">
-              {formatTime(times.solarNoon)}
-            </span>
-            <span className="text-[10px] text-white/40 mt-0.5">
-              Zénith
-            </span>
-          </div>
-
-          {/* Coucher */}
-          <div className="rounded-2xl bg-white/5 border border-white/10 p-3 flex flex-col">
-            <span className="text-[10px] text-white/50 flex items-center gap-1.5 font-medium">
-              <Sunset size={12} className="text-rose-400" /> Coucher du soleil
-            </span>
-            <span className="text-xl font-semibold text-white mt-1">
-              {formatTime(times.sunset)}
-            </span>
-            <span className="text-[10px] text-white/40 mt-0.5">
-              Nuit dès {formatTime(times.dusk)}
-            </span>
-          </div>
-        </div>
-
-        {/* ─── Pied de page épuré avec note relief ─── */}
-        <footer className="px-6 py-3 border-t border-white/10 bg-black/20 flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[11px] text-white/40">
-          <span>
-            🏔️ Calcul astronomique (SunCalc) · Le relief environnant peut masquer le soleil plus tôt ou plus tard.
-          </span>
-          <span className="text-amber-300/80 font-medium shrink-0">
-            Précision à la minute
-          </span>
+        {/* ─── Pied de page ─── */}
+        <footer className="flex flex-col gap-1 px-4 py-3 text-[10px] uppercase tracking-wider text-[#6b6b6b] sm:flex-row sm:items-center sm:justify-between">
+          <span>SunCalc · horizon astronomique</span>
+          <span>Relief : lever/coucher réels ±30 à 60 min</span>
         </footer>
       </div>
     </div>
