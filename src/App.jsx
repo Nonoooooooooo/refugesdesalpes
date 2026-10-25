@@ -614,7 +614,7 @@ export default function App() {
       <div
         className={`pointer-events-none absolute left-1/2 z-[1000] -translate-x-1/2 transition-all duration-300 ${
           showMeteo
-            ? 'bottom-[calc(min(72vh,34rem)+1rem)] sm:bottom-6'
+            ? 'bottom-[calc(11.5rem+env(safe-area-inset-bottom,0px))] sm:bottom-6'
             : 'bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))] sm:bottom-6'
         }`}
       >
