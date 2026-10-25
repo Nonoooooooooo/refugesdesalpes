@@ -251,7 +251,7 @@ function TraceChart({ hours, channel, refugeAlt, hover, onHover }) {
         {channel === 'iso' && (
           <>
             <span className="flex items-center gap-1.5">
-              <span className="h-[3px] w-3" style={{ background: CYAN }} /> Iso 0°C · m
+              <span className="h-[3px] w-3" style={{ background: CYAN }} /> Iso 0°C estimée · m
             </span>
             {refugeAlt != null && (
               <span className="flex items-center gap-1.5">
@@ -353,7 +353,8 @@ export default function RefugeWeatherSection({ lat, lng, alt, nom, onOpenRadar }
   const flags = []
   if (gustMax >= 60) flags.push({ key: 'gust', text: `Rafales jusqu’à ${gustMax} km/h`, color: gustColor(gustMax) })
   if (day?.hasStorm) flags.push({ key: 'storm', text: 'Orage possible', color: AMBER })
-  if (alt != null && freezingRef != null && freezingRef < alt) flags.push({ key: 'ice', text: 'Iso 0°C sous le refuge', color: CYAN })
+  // Marge de 300 m : l'isotherme est estimée, à ±350 m près
+  if (alt != null && freezingRef != null && freezingRef < alt - 300) flags.push({ key: 'ice', text: 'Iso 0°C sous le refuge', color: CYAN })
   if ((day?.precipSum ?? 0) >= 5) flags.push({ key: 'precip', text: `Précip. ${fmt1(day.precipSum)} mm`, color: CYAN })
 
   const dayLabel = (i) => ['AUJ.', 'DEM.', 'J+2'][i] || ''
@@ -538,13 +539,13 @@ export default function RefugeWeatherSection({ lat, lng, alt, nom, onOpenRadar }
               sub={
                 weather.freezingLevel != null && alt
                   ? weather.freezingLevel > alt
-                    ? `+${fmtInt(weather.freezingLevel - alt)} m au-dessus du refuge`
-                    : `${fmtInt(alt - weather.freezingLevel)} m sous le refuge`
+                    ? `≈ ${fmtInt(Math.round((weather.freezingLevel - alt) / 100) * 100)} m au-dessus du refuge`
+                    : `≈ ${fmtInt(Math.round((alt - weather.freezingLevel) / 100) * 100)} m sous le refuge`
                   : 'Limite du gel'
               }
             />
             <Field label="Pression" value={weather.pressure != null ? fmtInt(weather.pressure) : '--'} unit="HPA" sub={trendText} />
-            <Field label="Précip. jour" value={fmt1(day.precipSum)} unit="MM" sub={`Probabilité max ${day.precipProb}%`} />
+            <Field label="Précip. jour" value={fmt1(day.precipSum)} unit="MM" sub={`${day.wetHours} h avec précipitations`} />
           </>
         ) : (
           <>
@@ -556,7 +557,7 @@ export default function RefugeWeatherSection({ lat, lng, alt, nom, onOpenRadar }
               accent={gustColor(day.windGustMax)}
             />
             <Field label="Précip." value={fmt1(day.precipSum)} unit="MM" sub="Cumul de la journée" />
-            <Field label="Probabilité" value={day.precipProb} unit="%" sub="Maximum horaire" />
+            <Field label="Durée précip." value={day.wetHours} unit="H" sub="Heures avec précipitations" />
             <Field
               label="Iso 0°C"
               value={day.freezingAvg != null ? fmtInt(day.freezingAvg) : '--'}
@@ -569,8 +570,8 @@ export default function RefugeWeatherSection({ lat, lng, alt, nom, onOpenRadar }
       </div>
 
       {/* ─── Pied de page ─── */}
-      <footer className="flex items-center justify-between gap-2 px-4 py-2.5 text-[10px] uppercase tracking-wider text-[#6b6b6b]">
-        <span>Open-Meteo · Météo-France</span>
+      <footer className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 px-4 py-2.5 text-[10px] uppercase tracking-wider text-[#6b6b6b]">
+        <span>Météo-France (AROME, ARPEGE) · iso 0°C estimée</span>
         {updated && <span>Maj {updated.replace(':', 'H')}</span>}
       </footer>
     </div>

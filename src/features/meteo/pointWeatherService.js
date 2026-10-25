@@ -1,8 +1,48 @@
-// Service météo locale haute précision par coordonnées et altitude (Open-Meteo Mountain Model)
-// Idéal pour afficher la météo ponctuelle au refuge en complément du radar cartographique AROME
+// Service météo ponctuelle au refuge : modèles Météo-France (AROME puis ARPEGE) servis par Open-Meteo.
+// Ce sont des modèles à maille (1 à 10 km), pas des prévisions propres au refuge : seule la température
+// est corrigée de l'altitude (paramètre `elevation`), le vent et les précipitations restent ceux de la maille.
+// Ces modèles ne fournissent ni probabilité de précipitation ni isotherme 0 °C : l'isotherme est calculée
+// ci-dessous à partir des niveaux de pression.
 
 const weatherCache = new Map()
 const CACHE_TTL_MS = 10 * 60 * 1000 // 10 minutes
+
+const WEATHER_MODEL = 'meteofrance_seamless' // AROME France HD → AROME France → ARPEGE Europe
+const PRESSURE_LEVELS = [925, 900, 850, 800, 700, 600, 500]
+const LAPSE_RATE = 0.0065 // °C par mètre, pour extrapoler hors du profil
+
+/**
+ * Altitude de l'isotherme 0 °C (m) par interpolation d'un profil [{ z: altitude, t: température }].
+ * Si le profil croise plusieurs fois 0 °C (inversion), garde le croisement le plus proche de `nearAlt`.
+ */
+export function estimateFreezingLevel(points, nearAlt = null) {
+  const pts = points
+    .filter((p) => p.z != null && p.t != null && !isNaN(p.z) && !isNaN(p.t))
+    .sort((a, b) => a.z - b.z)
+  if (pts.length < 2) return null
+
+  const crossings = []
+  for (let i = 0; i < pts.length - 1; i++) {
+    const a = pts[i]
+    const b = pts[i + 1]
+    if (b.z === a.z || a.t === b.t) continue
+    if ((a.t <= 0 && b.t >= 0) || (a.t >= 0 && b.t <= 0)) {
+      crossings.push(a.z + ((0 - a.t) * (b.z - a.z)) / (b.t - a.t))
+    }
+  }
+
+  let z
+  if (crossings.length) {
+    z = nearAlt != null ? crossings.reduce((best, c) => (Math.abs(c - nearAlt) < Math.abs(best - nearAlt) ? c : best)) : crossings[0]
+  } else if (pts[pts.length - 1].t > 0) {
+    z = pts[pts.length - 1].z + pts[pts.length - 1].t / LAPSE_RATE // tout le profil est positif : 0 °C au-dessus
+  } else {
+    z = pts[0].z + pts[0].t / LAPSE_RATE // tout le profil est négatif : 0 °C en dessous
+  }
+  // Arrondi à 100 m : l'interpolation entre niveaux de pression (espacés de 1 à 1,5 km) ne justifie pas plus.
+  // Recoupée avec le champ officiel d'ICON-D2, elle s'écarte en moyenne de 350 m (jusqu'à ~1 km).
+  return Math.round(z / 100) * 100
+}
 
 const CARDINALS = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSO', 'SO', 'OSO', 'O', 'ONO', 'NO', 'NNO']
 
@@ -96,21 +136,20 @@ export async function fetchRefugeWeather(lat, lng, elevation, signal) {
       'apparent_temperature_max',
       'apparent_temperature_min',
       'precipitation_sum',
-      'precipitation_probability_max',
       'wind_speed_10m_max',
       'wind_gusts_10m_max',
     ].join(','),
     hourly: [
       'temperature_2m',
-      'precipitation_probability',
       'weather_code',
-      'freezing_level_height',
       'wind_gusts_10m',
       'wind_speed_10m',
       'wind_direction_10m',
       'precipitation',
       'pressure_msl',
+      ...PRESSURE_LEVELS.flatMap((l) => [`temperature_${l}hPa`, `geopotential_height_${l}hPa`]),
     ].join(','),
+    models: WEATHER_MODEL,
     forecast_days: '3',
     past_hours: '3', // sert au calcul de la tendance de pression sur 3 h
     timezone: 'auto',
@@ -136,6 +175,15 @@ export async function fetchRefugeWeather(lat, lng, elevation, signal) {
     const currentCode = raw.current?.weather_code ?? 0
     const currentCodeInfo = getWeatherCodeInfo(currentCode)
 
+    // Isotherme 0 °C à l'heure h : profil des niveaux de pression + température au refuge (déjà corrigée de l'altitude)
+    const refugeAlt = elevation != null && !isNaN(elevation) && elevation > 0 ? elevation : null
+    const freezingAt = (h) => {
+      const hourly = raw.hourly || {}
+      const points = PRESSURE_LEVELS.map((l) => ({ z: hourly[`geopotential_height_${l}hPa`]?.[h], t: hourly[`temperature_${l}hPa`]?.[h] }))
+      if (refugeAlt != null && hourly.temperature_2m?.[h] != null) points.push({ z: refugeAlt, t: hourly.temperature_2m[h] })
+      return estimateFreezingLevel(points, refugeAlt)
+    }
+
     // Formater les prévisions quotidiennes (3 jours : Aujourd'hui, Demain, Après-demain)
     const nowMs = Date.now() - 30 * 60 * 1000
     const dailyDays = (raw.daily?.time || []).map((dateStr, i) => {
@@ -157,19 +205,17 @@ export async function fetchRefugeWeather(lat, lng, elevation, signal) {
         if (hTime.startsWith(dateStr)) {
           const hDate = new Date(hTime)
           const hCode = raw.hourly?.weather_code?.[h] ?? 0
-          const freezing = raw.hourly?.freezing_level_height?.[h]
           const entry = {
             timeStr: hDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
             isoTime: hTime,
             hour: hDate.getHours(),
             code: hCode,
             temp: Math.round(raw.hourly?.temperature_2m?.[h] ?? 0),
-            precipProb: Math.round(raw.hourly?.precipitation_probability?.[h] ?? 0),
             precip: Math.round((raw.hourly?.precipitation?.[h] ?? 0) * 10) / 10,
             gust: Math.round(raw.hourly?.wind_gusts_10m?.[h] ?? 0),
             windSpeed: Math.round(raw.hourly?.wind_speed_10m?.[h] ?? 0),
             windDir: Math.round(raw.hourly?.wind_direction_10m?.[h] ?? 0),
-            freezing: freezing != null ? Math.round(freezing) : null,
+            freezing: freezingAt(h),
             codeInfo: getWeatherCodeInfo(hCode),
           }
           fullDay.push(entry)
@@ -191,8 +237,8 @@ export async function fetchRefugeWeather(lat, lng, elevation, signal) {
         tempMin: Math.round(raw.daily?.temperature_2m_min?.[i] ?? 0),
         feelsMax: Math.round(raw.daily?.apparent_temperature_max?.[i] ?? 0),
         feelsMin: Math.round(raw.daily?.apparent_temperature_min?.[i] ?? 0),
-        precipProb: Math.round(raw.daily?.precipitation_probability_max?.[i] ?? 0),
         precipSum: Math.round((raw.daily?.precipitation_sum?.[i] ?? 0) * 10) / 10,
+        wetHours: fullDay.filter((e) => e.precip >= 0.1).length, // heures avec au moins 0,1 mm
         windGustMax: Math.round(raw.daily?.wind_gusts_10m_max?.[i] ?? 0),
         freezingMax: freezingVals.length ? Math.max(...freezingVals) : null,
         freezingMin: freezingVals.length ? Math.min(...freezingVals) : null,
@@ -217,15 +263,12 @@ export async function fetchRefugeWeather(lat, lng, elevation, signal) {
         return {
           timeStr: date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
           temp: Math.round(raw.hourly?.temperature_2m?.[idx] ?? 0),
-          precipProb: Math.round(raw.hourly?.precipitation_probability?.[idx] ?? 0),
           gust: Math.round(raw.hourly?.wind_gusts_10m?.[idx] ?? 0),
           codeInfo: getWeatherCodeInfo(code),
         }
       })
 
-    const freezingLevel = raw.hourly?.freezing_level_height?.[currentHourIndex] != null
-      ? Math.round(raw.hourly.freezing_level_height[currentHourIndex])
-      : null
+    const freezingLevel = freezingAt(currentHourIndex)
 
     // Tendance de pression sur 3 h (grâce à past_hours=3)
     const pNow = raw.current?.pressure_msl ?? null
