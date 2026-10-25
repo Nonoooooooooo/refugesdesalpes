@@ -2,10 +2,11 @@ import { useState, useEffect, useRef } from 'react'
 import { Sun, CloudSun, Cloud, CloudFog, CloudRain, CloudSnow, CloudLightning, Radar, RefreshCw } from 'lucide-react'
 import { fetchRefugeWeather, windCardinal } from './pointWeatherService'
 
-// Palette "instrument" : noir pur, lavande (accent), cyan (eau / gel), ambre (rafales)
-const ACCENT = '#8a89c0'
+// Palette "instrument" : noir pur, orange (accent), cyan (eau / gel), ambre (rafales)
+const ACCENT = '#ffaa00'
 const CYAN = '#74a5d5'
 const AMBER = '#ffb020'
+const GUST = '#e6e6e6' // rafales : gris clair, pour ne pas se confondre avec l'accent orange
 const RED = '#ff5a4d'
 const GRID = '#262626'
 const MUTED = '#8a8a8a'
@@ -191,8 +192,8 @@ function TraceChart({ hours, channel, refugeAlt, hover, onHover }) {
         {/* VENT : moyen + rafales */}
         {channel === 'wind' && (
           <>
-            {hi >= 60 && <line x1={padL} y1={yAt(60)} x2={W - padR} y2={yAt(60)} stroke={AMBER} strokeOpacity="0.35" strokeDasharray="3 3" />}
-            <path d={linePath(hours.map((h) => h.gust))} fill="none" stroke={AMBER} strokeWidth="1.5" strokeLinejoin="round" />
+            {hi >= 60 && <line x1={padL} y1={yAt(60)} x2={W - padR} y2={yAt(60)} stroke={GUST} strokeOpacity="0.3" strokeDasharray="3 3" />}
+            <path d={linePath(hours.map((h) => h.gust))} fill="none" stroke={GUST} strokeWidth="1.5" strokeLinejoin="round" />
             <path d={linePath(mainVals)} fill="none" stroke={ACCENT} strokeWidth="2" strokeLinejoin="round" />
           </>
         )}
@@ -243,7 +244,7 @@ function TraceChart({ hours, channel, refugeAlt, hover, onHover }) {
               <span className="h-[3px] w-3" style={{ background: ACCENT }} /> Vent moyen
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="h-[3px] w-3" style={{ background: AMBER }} /> Rafales · km/h
+              <span className="h-[3px] w-3" style={{ background: GUST }} /> Rafales · km/h
             </span>
           </>
         )}
@@ -381,7 +382,7 @@ export default function RefugeWeatherSection({ lat, lng, alt, nom, onOpenRadar }
           <button
             onClick={onOpenRadar}
             title="Afficher le radar de précipitations AROME sur la carte"
-            className="flex shrink-0 items-center gap-1.5 rounded-sm border px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-wider transition-colors active:bg-[#16162a]"
+            className="flex shrink-0 items-center gap-1.5 rounded-sm border px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-wider transition-colors active:bg-[#2a1c00]"
             style={{ borderColor: `${ACCENT}66`, color: ACCENT }}
           >
             <Radar size={13} /> Radar

@@ -207,12 +207,12 @@ export default function Sidebar({ point, onClose, onOpenRadar }) {
               onClick={() => setShowWeather((v) => !v)}
               className={`rounded-xl px-3 py-1.5 text-xs font-medium transition-all active:scale-95 flex items-center gap-1.5 ${
                 showWeather
-                  ? 'border border-[#8a89c0]/50 bg-[#8a89c0]/20 text-[#c9c8ee] shadow-sm font-semibold'
+                  ? 'border border-[#ffaa00]/50 bg-[#ffaa00]/20 text-[#ffd180] shadow-sm font-semibold'
                   : 'bg-white/5 hover:bg-white/10 border border-white/10 text-white/75 hover:text-white'
               }`}
               title="Consulter les prévisions météo d'altitude au refuge (3 jours)"
             >
-              <CloudSun size={13} className={showWeather ? 'text-[#a9a8d6]' : 'text-white/70'} />
+              <CloudSun size={13} className={showWeather ? 'text-[#ffbf40]' : 'text-white/70'} />
               <span>Météo</span>
             </button>
 
