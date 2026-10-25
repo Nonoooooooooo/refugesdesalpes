@@ -1,5 +1,5 @@
 // Service Worker pour Refuges des Alpes (PWA + Cartes hors-ligne)
-const STATIC_CACHE = 'refuges-static-v3'
+const STATIC_CACHE = 'refuges-static-v4'
 const TILES_CACHE = 'refuges-map-tiles-v1'
 const DATA_CACHE = 'refuges-data-v1'
 
@@ -188,6 +188,12 @@ self.addEventListener('fetch', (event) => {
     )
     return
   }
+
+  // Les API externes (recherche de communes, météo…) varient selon leurs paramètres :
+  // elles ne doivent jamais passer par le cache statique, qui ignore ces paramètres
+  // (les polices et images externes sans paramètres restent en cache pour le hors-ligne)
+  const parsed = new URL(url)
+  if (parsed.origin !== self.location.origin && parsed.search) return
 
   // 4. FICHIERS STATIQUES DE L'APPLICATION (JS, CSS, Polices, Images, Icons)
   // Stratégie : Cache First avec revalidation réseau en arrière-plan
