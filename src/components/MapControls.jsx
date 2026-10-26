@@ -193,7 +193,7 @@ export default function MapControls({ hasSelected = false }) {
       {/* ─── HUD FLOTTANT GPS MONTAGNE (Altitude + Précision en temps réel) ─── */}
       {userLocation && (
         <div
-          className={`pointer-events-auto absolute bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] sm:bottom-20 z-[1000] transition-all duration-300 animate-in fade-in slide-in-from-bottom-2 ${
+          className={`pointer-events-auto absolute bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px)+var(--trace-band-h,0px))] sm:bottom-20 z-[1000] transition-all duration-300 animate-in fade-in slide-in-from-bottom-2 ${
             hasSelected ? 'left-3 sm:left-[444px]' : 'left-3 sm:left-4'
           }`}
           onMouseDown={(e) => e.stopPropagation()}
@@ -247,7 +247,7 @@ export default function MapControls({ hasSelected = false }) {
       {/* ─── MESSAGE D'AVERTISSEMENT OU D'AIDE GPS ─── */}
       {errorMsg && (
         <div
-          className={`pointer-events-auto absolute bottom-[calc(7.75rem+env(safe-area-inset-bottom,0px))] sm:bottom-28 z-[1000] max-w-xs transition-all duration-300 animate-in fade-in duration-200 ${
+          className={`pointer-events-auto absolute bottom-[calc(7.75rem+env(safe-area-inset-bottom,0px)+var(--trace-band-h,0px))] sm:bottom-28 z-[1000] max-w-xs transition-all duration-300 animate-in fade-in duration-200 ${
             hasSelected ? 'left-3 sm:left-[444px]' : 'left-3 sm:left-4'
           }`}
           onMouseDown={(e) => e.stopPropagation()}
@@ -265,7 +265,7 @@ export default function MapControls({ hasSelected = false }) {
 
       {/* ─── CONTRÔLES DROITE : Zoom & Bouton GPS Haute Précision ─── */}
       <div
-        className="absolute bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))] sm:bottom-8 right-3 sm:right-4 z-[1000] flex flex-col gap-2"
+        className="absolute bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px)+var(--trace-band-h,0px))] sm:bottom-8 right-3 sm:right-4 z-[1000] flex flex-col gap-2 transition-[bottom] duration-200"
         onMouseDown={(e) => e.stopPropagation()}
         onDoubleClick={(e) => e.stopPropagation()}
       >

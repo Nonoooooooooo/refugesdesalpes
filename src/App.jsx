@@ -387,7 +387,7 @@ export default function App() {
   }, [])
 
   return (
-    <div className="relative h-screen w-screen overflow-hidden">
+    <div className="app-viewport relative w-screen overflow-hidden">
       <MapContainer
         center={[45.9237, 6.8694]}
         zoom={11}

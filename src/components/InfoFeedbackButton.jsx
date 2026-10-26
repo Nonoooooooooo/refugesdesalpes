@@ -125,7 +125,7 @@ export default function InfoFeedbackButton({ hasSelected }) {
 
   return (
     <div
-      className={`fixed bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:bottom-5 z-[1050] transition-all duration-300 ${
+      className={`fixed bottom-[calc(1rem+env(safe-area-inset-bottom,0px)+var(--trace-band-h,0px))] sm:bottom-5 z-[1050] transition-all duration-300 ${
         hasSelected ? 'left-3 sm:left-[444px]' : 'left-3 sm:left-4'
       }`}
       onMouseEnter={handleMouseEnter}

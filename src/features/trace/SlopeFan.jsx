@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import { SLOPE_CLASSES } from './profile'
 
 // Éventail des angles de pente : le sommet est en bas à droite, l'horizontale part vers la gauche
@@ -51,19 +52,17 @@ function Needle({ deg, dashed }) {
   )
 }
 
-/**
- * Angles de pente propices aux avalanches de plaque (25–60°, surtout 30–45°), aux couleurs du tracé.
- * Aiguille pleine : pente sous le curseur du profil. Aiguille pointillée : pente maximale du tracé.
- */
-export default function SlopeFan({ slope, maxSlope }) {
+/** Dessin de l'éventail seul */
+function FanSvg({ slope, maxSlope, className }) {
   const [arcStartX, arcStartY] = polar(25, R + 14)
   const [arcEndX, arcEndY] = polar(60, R + 14)
+  // Identifiant unique : l'éventail peut être présent deux fois (bandeau mobile et panneau PC)
+  const arcId = useId()
 
   return (
-    <div className="flex items-center gap-2 border-t border-[#262626] px-2.5 py-1.5 sm:gap-3 sm:px-3.5 sm:py-2">
-      <svg viewBox="24 0 128 124" className="h-[66px] w-auto shrink-0 sm:h-[116px]" aria-hidden>
+    <svg viewBox="24 0 128 124" className={className} aria-hidden>
         <defs>
-          <path id="slope-fan-arc" d={`M${arcStartX},${arcStartY} A${R + 14},${R + 14} 0 0 1 ${arcEndX},${arcEndY}`} />
+          <path id={arcId} d={`M${arcStartX},${arcStartY} A${R + 14},${R + 14} 0 0 1 ${arcEndX},${arcEndY}`} />
         </defs>
 
         {/* Horizontale de référence */}
@@ -89,7 +88,7 @@ export default function SlopeFan({ slope, maxSlope }) {
         {/* Arc « avalanches de plaque possibles » de 25 à 60° */}
         <path d={`M${arcStartX},${arcStartY} A${R + 14},${R + 14} 0 0 1 ${arcEndX},${arcEndY}`} fill="none" stroke="#fff" strokeOpacity="0.45" strokeWidth="1.5" />
         <text fill="#fff" fillOpacity="0.6" fontSize="7" fontWeight="600" dy="-3">
-          <textPath href="#slope-fan-arc" startOffset="50%" textAnchor="middle">
+          <textPath href={`#${arcId}`} startOffset="50%" textAnchor="middle">
             Plaques possibles
           </textPath>
         </text>
@@ -97,17 +96,31 @@ export default function SlopeFan({ slope, maxSlope }) {
         {maxSlope != null && <Needle deg={maxSlope} dashed />}
         {slope != null && <Needle deg={slope} />}
         <circle cx={OX} cy={OY} r="2.5" fill="#fff" />
-      </svg>
+    </svg>
+  )
+}
+
+/**
+ * Angles de pente propices aux avalanches de plaque (25–60°, surtout 30–45°), aux couleurs du tracé.
+ * Aiguille pleine : pente sous le curseur du profil. Aiguille pointillée : pente maximale du tracé.
+ * `compact` : éventail seul, pour le bandeau mobile.
+ */
+export default function SlopeFan({ slope, maxSlope, compact = false, className = '' }) {
+  if (compact) return <FanSvg slope={slope} maxSlope={maxSlope} className={className} />
+
+  return (
+    <div className="flex items-center gap-3 border-t border-[#262626] px-3.5 py-2">
+      <FanSvg slope={slope} maxSlope={maxSlope} className="h-[116px] w-auto shrink-0" />
 
       <div className="min-w-0 flex-1 text-[9.5px] leading-tight">
-        <div className="mb-1 text-[8px] font-semibold uppercase tracking-[0.12em] text-[#8a8a8a] sm:mb-1.5 sm:text-[9px] sm:tracking-[0.16em]">
+        <div className="mb-1.5 text-[9px] font-semibold uppercase tracking-[0.16em] text-[#8a8a8a]">
           Avalanches de plaque possibles
         </div>
-        <ul className="sm:space-y-0.5">
+        <ul className="space-y-0.5">
           {LEGEND.map((l) => (
             <li key={l.label} className="flex flex-wrap items-center gap-x-1.5 whitespace-nowrap">
               <span className="h-2 w-2 shrink-0" style={{ background: l.color, opacity: l.opacity ?? 1 }} />
-              <span className="font-din text-[10px] font-semibold text-white sm:text-[11px]">{l.label}</span>
+              <span className="font-din text-[11px] font-semibold text-white">{l.label}</span>
               {l.note && (
                 <span
                   className={`text-[9px] uppercase tracking-wider ${l.strong ? 'font-semibold' : 'text-[#6b6b6b]'}`}
@@ -120,7 +133,7 @@ export default function SlopeFan({ slope, maxSlope }) {
           ))}
         </ul>
         {(slope != null || maxSlope != null) && (
-          <div className="mt-1.5 hidden text-[9px] uppercase tracking-wider text-[#6b6b6b] sm:block">
+          <div className="mt-1.5 text-[9px] uppercase tracking-wider text-[#6b6b6b]">
             {slope != null ? 'Aiguille : pente au curseur' : 'Pointillés : pente max du tracé'}
           </div>
         )}

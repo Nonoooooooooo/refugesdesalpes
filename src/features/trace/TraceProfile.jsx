@@ -192,11 +192,15 @@ export default function TraceProfile({ status, profile, fresh, error, retry, hov
         />
       </div>
 
-      {/* ─── Courbe d'altitude ─── */}
+      {/* ─── Courbe d'altitude, avec l'éventail des pentes à sa gauche sur mobile ─── */}
+      <div className="flex border-t border-[#262626]">
+        <div className="flex shrink-0 items-center border-r border-[#262626] px-1.5 sm:hidden">
+          <SlopeFan compact slope={hovered?.slope ?? null} maxSlope={stats.steepest?.slope ?? null} className="h-[78px] w-auto" />
+        </div>
       {geometry && (
-        <div className="border-t border-[#262626] bg-[#050505] px-2 pt-1.5 pb-1 sm:pt-2 sm:pb-1.5">
+        <div className="min-w-0 flex-1 bg-[#050505] px-2 pt-2 pb-1.5">
           <div
-            className="relative h-[70px] cursor-crosshair select-none sm:h-[92px]"
+            className="relative h-[74px] cursor-crosshair select-none sm:h-[92px]"
             style={{ touchAction: 'none' }}
             onPointerDown={handlePointer}
             onPointerMove={handlePointer}
@@ -244,8 +248,11 @@ export default function TraceProfile({ status, profile, fresh, error, retry, hov
           </div>
         </div>
       )}
+      </div>
 
-      <SlopeFan slope={hovered?.slope ?? null} maxSlope={stats.steepest?.slope ?? null} />
+      <div className="hidden sm:block">
+        <SlopeFan slope={hovered?.slope ?? null} maxSlope={stats.steepest?.slope ?? null} />
+      </div>
 
       <div className="space-y-1 border-t border-[#262626] px-3 py-1.5 sm:px-3.5 sm:py-2">
         {status === 'loading' && (

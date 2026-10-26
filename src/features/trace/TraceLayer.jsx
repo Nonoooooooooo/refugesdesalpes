@@ -282,6 +282,28 @@ export default function TraceLayer({ active, points, onChange, onClose }) {
     }
   }, [active, map])
 
+  // Sur mobile, publie la hauteur du bandeau (--trace-band-h) pour que les boutons du bas remontent au-dessus
+  useEffect(() => {
+    const band = uiRef.current
+    if (!active || !band) return
+    const root = document.documentElement
+    const mobile = window.matchMedia('(max-width: 639px)')
+    const update = () => {
+      // La marge de sécurité de l'iPhone est déjà ajoutée par chaque bouton : on ne la compte pas deux fois
+      const safeArea = parseFloat(getComputedStyle(band.firstElementChild).paddingBottom) || 0
+      root.style.setProperty('--trace-band-h', mobile.matches ? `${band.offsetHeight - safeArea}px` : '0px')
+    }
+    const observer = new ResizeObserver(update)
+    observer.observe(band)
+    mobile.addEventListener('change', update)
+    update()
+    return () => {
+      observer.disconnect()
+      mobile.removeEventListener('change', update)
+      root.style.removeProperty('--trace-band-h')
+    }
+  }, [active])
+
   // Type du dernier pointeur (souris, doigt, stylet), y compris hors du mode tracé
   useEffect(() => {
     const el = map.getContainer()
@@ -404,11 +426,12 @@ export default function TraceLayer({ active, points, onChange, onClose }) {
         <div
           ref={uiRef}
           data-trace-ui
-          className={`pointer-events-auto absolute left-1/2 bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))] sm:bottom-6 z-[1000] -translate-x-1/2 animate-in fade-in slide-in-from-bottom-2 duration-200 ${
-            points.length > 1 && showProfile ? 'w-[min(34rem,calc(100vw-7rem))]' : 'w-[min(26rem,calc(100vw-7rem))]'
+          // Mobile : bandeau collé en bas sur toute la largeur. PC : panneau centré.
+          className={`pointer-events-auto absolute inset-x-0 bottom-0 z-[1000] animate-in fade-in slide-in-from-bottom-2 duration-200 sm:inset-x-auto sm:bottom-6 sm:left-1/2 sm:-translate-x-1/2 ${
+            points.length > 1 && showProfile ? 'sm:w-[min(34rem,calc(100vw-7rem))]' : 'sm:w-[min(26rem,calc(100vw-7rem))]'
           }`}
         >
-          <div className="overflow-hidden rounded-md border border-[#2b2b2b] bg-black text-white shadow-[0_30px_80px_-20px_rgba(0,0,0,1)] [color-scheme:dark]">
+          <div className="overflow-hidden border-t border-[#2b2b2b] bg-black pb-[env(safe-area-inset-bottom,0px)] text-white shadow-[0_-12px_40px_-12px_rgba(0,0,0,0.9)] [color-scheme:dark] sm:rounded-md sm:border sm:pb-0 sm:shadow-[0_30px_80px_-20px_rgba(0,0,0,1)]">
             {/* ─── En-tête ─── */}
             <header className="flex items-start justify-between gap-3 px-3 pt-2.5 pb-2 sm:px-3.5 sm:pt-3 sm:pb-2.5">
               <div className="min-w-0">
