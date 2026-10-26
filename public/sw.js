@@ -1,5 +1,5 @@
 // Service Worker pour Refuges des Alpes (PWA + Cartes hors-ligne)
-const STATIC_CACHE = 'refuges-static-v4'
+const STATIC_CACHE = 'refuges-static-v5'
 const TILES_CACHE = 'refuges-map-tiles-v1'
 const DATA_CACHE = 'refuges-data-v1'
 
@@ -141,8 +141,12 @@ self.addEventListener('fetch', (event) => {
 
           const networkRes = await fetch(req)
           if (networkRes && networkRes.ok) {
-            const staticCache = await caches.open(STATIC_CACHE)
-            staticCache.put('/index.html', networkRes.clone()).catch(() => {})
+            // Seule la page d'application remplace le shell en cache : les pages statiques
+            // (/massifs, /massif/…, /refuge/…) ne doivent pas l'écraser
+            if (new URL(req.url).pathname === '/') {
+              const staticCache = await caches.open(STATIC_CACHE)
+              staticCache.put('/index.html', networkRes.clone()).catch(() => {})
+            }
             return networkRes
           }
         } catch {

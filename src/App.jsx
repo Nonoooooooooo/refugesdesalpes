@@ -17,6 +17,7 @@ import OverpassLayer from './features/overpass/OverpassLayer.jsx'
 import WebcamLayer from './features/webcams/WebcamLayer.jsx'
 import InfoFeedbackButton from './components/InfoFeedbackButton.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
+import MassifLinks from './components/MassifLinks.jsx'
 import { trackEvent } from './lib/analytics'
 import TraceLayer from './features/trace/TraceLayer.jsx'
 import AromeLayer from './features/meteo/AromeLayer.jsx'
@@ -386,6 +387,30 @@ export default function App() {
     }
   }, [])
 
+  // Liens profonds depuis les pages statiques : /?refuge=<id> ouvre la fiche, /?lat=&lng=&z= centre la carte
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search)
+    const id = q.get('refuge')
+    const lat = parseFloat(q.get('lat'))
+    const lng = parseFloat(q.get('lng'))
+    let cancelled = false
+    if (id) {
+      fetch('/refuges_index.json')
+        .then((r) => r.json())
+        .then((list) => {
+          const p = list.find((x) => String(x.id) === id)
+          if (p && !cancelled) handleSelectRefuge(p)
+        })
+        .catch(() => {})
+    } else if (Number.isFinite(lat) && Number.isFinite(lng)) {
+      const z = parseInt(q.get('z'), 10)
+      setFlyTarget({ lat, lng, zoom: Number.isFinite(z) ? Math.min(Math.max(z, 6), 16) : 10, t: Date.now() })
+    }
+    return () => {
+      cancelled = true
+    }
+  }, [handleSelectRefuge])
+
   return (
     <main className="app-viewport relative w-screen overflow-hidden">
       {!selected && (
@@ -393,6 +418,7 @@ export default function App() {
           Refuges des Alpes : carte interactive des refuges et cabanes de montagne, radar météo, transports et sentiers
         </h1>
       )}
+      <MassifLinks />
       <MapContainer
         center={[45.9237, 6.8694]}
         zoom={11}

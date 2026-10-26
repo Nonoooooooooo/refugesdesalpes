@@ -26,7 +26,18 @@
       ]
     }
   ],
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "www.refugesdesalpes.fr" }],
+      "destination": "https://refugesdesalpes.fr/$1",
+      "permanent": true
+    }
+  ],
   "rewrites": [
+    { "source": "/massifs", "destination": "/massifs.html" },
+    { "source": "/massif/:slug", "destination": "/massif/:slug.html" },
+    { "source": "/refuge/:slug", "destination": "/refuge/:slug.html" },
     { "source": "/rimg/:path*", "destination": "https://www.refuges.info/:path*" },
     { "source": "/api/meteofrance/:path*", "destination": "https://public-api.meteofrance.fr/public/DPBRA/v1/:path*" }
   ]
