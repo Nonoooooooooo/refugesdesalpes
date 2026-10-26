@@ -5,11 +5,8 @@ User-agent: *
 Allow: /
 Disallow: /api/
 
-# ─── Blocage des crawlers IA voraces ───
+# ─── Blocage des crawlers d'entraînement IA (ChatGPT-User et les robots de recherche IA restent autorisés) ───
 User-agent: GPTBot
-Disallow: /
-
-User-agent: ChatGPT-User
 Disallow: /
 
 User-agent: CCBot
