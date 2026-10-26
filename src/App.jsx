@@ -18,6 +18,7 @@ import WebcamLayer from './features/webcams/WebcamLayer.jsx'
 import InfoFeedbackButton from './components/InfoFeedbackButton.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
 import { trackEvent } from './lib/analytics'
+import TraceLayer from './features/trace/TraceLayer.jsx'
 import AromeLayer from './features/meteo/AromeLayer.jsx'
 import AromeTimelinePlayer from './features/meteo/AromeTimelinePlayer.jsx'
 import { fetchAromeCapabilities } from './features/meteo/aromeService'
@@ -230,6 +231,8 @@ export default function App() {
   const [showParkings, setShowParkings] = useState(false)
   const [showWebcams, setShowWebcams] = useState(false)
   const [showMeteo, setShowMeteo] = useState(false)
+  const [showTrace, setShowTrace] = useState(false)
+  const [tracePoints, setTracePoints] = useState([])
   const [aromeLayer, setAromeLayer] = useState('TOTAL_PRECIPITATION_RATE__GROUND_OR_WATER_SURFACE')
   const [aromeTimes, setAromeTimes] = useState([])
   const [aromeTime, setAromeTime] = useState('')
@@ -485,6 +488,12 @@ export default function App() {
         />
         <FlyToSelected target={flyTarget} />
         <MapControls hasSelected={Boolean(selected)} />
+        <TraceLayer
+          active={showTrace}
+          points={tracePoints}
+          onChange={setTracePoints}
+          onClose={() => setShowTrace(false)}
+        />
         <MarkerClusterGroup
           chunkedLoading
           chunkInterval={200}
@@ -533,6 +542,14 @@ export default function App() {
           setShowMeteo((v) => {
             const next = !v
             if (next) trackEvent('toggle_layer', { layer: 'arome_meteo', state: 'on' })
+            return next
+          })
+        }}
+        showTrace={showTrace}
+        onToggleTrace={() => {
+          setShowTrace((v) => {
+            const next = !v
+            if (next) trackEvent('toggle_layer', { layer: 'trace', state: 'on' })
             return next
           })
         }}
@@ -610,9 +627,11 @@ export default function App() {
         />
       )}
 
-      {/* Statut discret */}
+      {/* Statut discret (masqué en mode tracé, dont le panneau occupe la même place) */}
       <div
         className={`pointer-events-none absolute left-1/2 z-[1000] -translate-x-1/2 transition-all duration-300 ${
+          showTrace ? 'hidden' : ''
+        } ${
           showMeteo
             ? 'bottom-[calc(11.5rem+env(safe-area-inset-bottom,0px))] sm:bottom-6'
             : 'bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))] sm:bottom-6'

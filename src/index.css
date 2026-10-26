@@ -444,6 +444,74 @@ html, body, #root {
   animation: pulse-radar 2.2s cubic-bezier(0.24, 0, 0.38, 1) infinite;
 }
 
+/* ─── TRACÉ D'ITINÉRAIRE ─── */
+.leaflet-container.trace-drawing {
+  cursor: crosshair;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.trace-marker {
+  background: none !important;
+  border: none !important;
+}
+/* Zone de 28px pour le doigt, pastille visible de 12px */
+.trace-point {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.trace-point::after {
+  content: '';
+  width: 12px;
+  height: 12px;
+  border-radius: 9999px;
+  background: #fff;
+  border: 2.5px solid #ffaa00;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+  transition: transform 0.15s;
+}
+.trace-point.start::after { background: #22c55e; border-color: #fff; }
+.trace-point.end::after { background: #ffaa00; border-color: #fff; }
+.trace-point.selected::after {
+  transform: scale(1.5);
+  box-shadow: 0 0 0 4px rgba(255, 170, 0, 0.45), 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+.trace-point.moving::after { animation: tracePointPulse 1s ease-in-out infinite; }
+@keyframes tracePointPulse {
+  0%, 100% { transform: scale(1.5); }
+  50% { transform: scale(1.9); }
+}
+/* Bulle altitude / pente au survol du tracé, style « instrument » */
+.leaflet-tooltip.trace-tooltip {
+  background: #000;
+  border: 1px solid #2b2b2b;
+  border-radius: 2px;
+  padding: 3px 7px;
+  box-shadow: 0 10px 28px -6px rgba(0, 0, 0, 0.9);
+  pointer-events: none;
+}
+.leaflet-tooltip-top.trace-tooltip::before { border-top-color: #2b2b2b; }
+
+/* Anneau qui se remplit pendant l'appui long */
+.trace-press-ring {
+  position: absolute;
+  z-index: 700;
+  width: 56px;
+  height: 56px;
+  margin: -28px 0 0 -28px;
+  border-radius: 9999px;
+  border: 3px solid #ffaa00;
+  pointer-events: none;
+  animation: tracePress 450ms linear forwards;
+}
+@keyframes tracePress {
+  from { transform: scale(0.3); opacity: 0.3; }
+  to { transform: scale(1); opacity: 1; }
+}
+
 /* ─── OPTIMISATIONS MOBILES ET IPHONE (ERGONOMIE ET TACTILE) ─── */
 * {
   -webkit-tap-highlight-color: transparent;

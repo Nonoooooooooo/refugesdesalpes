@@ -15,6 +15,7 @@ import {
   RotateCcw,
   Heart,
   HardDrive,
+  Spline,
 } from 'lucide-react'
 import { FILTERABLE } from '../lib/types.jsx'
 import { useFavorites } from '../context/FavoritesContext.jsx'
@@ -22,7 +23,7 @@ import { useFavorites } from '../context/FavoritesContext.jsx'
 /**
  * Barre de contrôle divisée en 2 rangées ergonomiques (adaptée mobile & desktop) :
  * LIGNE 1 : Fond de carte (Satellite / OpenTopo / IGN) & Outils personnels (Favoris / Hors-ligne)
- * LIGNE 2 : Calques interactifs (Sentiers / Transports / Webcams / Météo) & Dérouleur Filtres
+ * LIGNE 2 : Calques interactifs (Sentiers / Transports / Webcams / Météo / Tracé) & Dérouleur Filtres
  * LIGNE 3 : Tiroir des filtres d'hébergements & parkings
  */
 export default function MapControlBar({
@@ -38,6 +39,8 @@ export default function MapControlBar({
   onToggleWebcams,
   showMeteo,
   onToggleMeteo,
+  showTrace,
+  onToggleTrace,
   activeTypes,
   onToggleType,
   onOpenFavorites,
@@ -238,6 +241,20 @@ export default function MapControlBar({
         >
           <CloudRain size={14} className={showMeteo ? 'text-cyan-300 animate-pulse' : ''} />
           <span className="hidden sm:inline">Météo</span>
+        </button>
+
+        {/* Bouton Tracé d'itinéraire */}
+        <button
+          onClick={onToggleTrace}
+          title="Tracer un itinéraire sur la carte"
+          className={`glass-btn flex items-center gap-1 sm:gap-1.5 rounded-xl px-2 py-1 sm:px-2.5 sm:py-1.5 text-xs font-medium transition-all ${
+            showTrace
+              ? 'border border-amber-400/50 bg-amber-500/35 text-amber-200 shadow-[0_0_12px_rgba(255,170,0,0.35)] ring-1 ring-amber-400/30 font-semibold'
+              : 'bg-white/5 text-white/65 hover:text-white hover:bg-white/10'
+          }`}
+        >
+          <Spline size={14} className={showTrace ? 'text-amber-300' : ''} />
+          <span className="hidden sm:inline">Tracé</span>
         </button>
 
         <div className="mx-0.5 h-4 sm:h-5 w-px bg-white/15" />
