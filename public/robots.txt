@@ -1,15 +1,6 @@
 # robots.txt pour Refuges des Alpes (https://refugesdesalpes.fr)
 
-# ─── Moteurs de recherche principaux ───
-User-agent: Googlebot
-Allow: /
-Disallow: /api/
-
-User-agent: Bingbot
-Allow: /
-Disallow: /api/
-
-# ─── Tous les autres robots ───
+# ─── Moteurs de recherche et autres robots ───
 User-agent: *
 Allow: /
 Disallow: /api/

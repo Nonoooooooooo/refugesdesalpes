@@ -387,7 +387,12 @@ export default function App() {
   }, [])
 
   return (
-    <div className="app-viewport relative w-screen overflow-hidden">
+    <main className="app-viewport relative w-screen overflow-hidden">
+      {!selected && (
+        <h1 className="sr-only">
+          Refuges des Alpes : carte interactive des refuges et cabanes de montagne, radar météo, transports et sentiers
+        </h1>
+      )}
       <MapContainer
         center={[45.9237, 6.8694]}
         zoom={11}
@@ -684,6 +689,6 @@ export default function App() {
           )}
         </ErrorBoundary>
       )}
-    </div>
+    </main>
   )
 }
