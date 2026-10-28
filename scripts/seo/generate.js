@@ -1,5 +1,6 @@
 // Génère, après `vite build`, les pages statiques indexables :
 //   /massifs               annuaire des massifs
+//   /faq                   questions fréquentes (JSON-LD FAQPage)
 //   /massif/<slug>         une page par massif alpin (refuges, gîtes, cabanes)
 //   /refuge/<id>-<slug>    une page par refuge gardé et gîte d'étape
 //   /sitemap.xml           sitemap complet (remplace celui de public/)
@@ -193,7 +194,20 @@ dl.facts dt{color:var(--mut)}dl.facts dd{margin:0}
 ul.cols{columns:2;column-gap:2rem;padding-left:1.1rem}ul.cols li{break-inside:avoid;margin-bottom:.25rem}
 .src{font-size:.85rem;color:var(--mut);border-top:1px solid var(--line);margin-top:2rem;padding-top:1rem}
 footer{margin-top:3rem;padding:1.5rem 0;border-top:1px solid var(--line);color:var(--mut);font-size:.88rem}
-@media(max-width:600px){h1{font-size:1.5rem}ul.cols{columns:1}header.site nav{margin-left:0}}
+.faq{margin:1.5rem 0}
+.faq details{background:var(--card);border:1px solid var(--line);border-radius:12px;margin:0 0 .75rem;transition:border-color .2s}
+.faq details[open]{border-color:#065f46}
+.faq summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1rem 1.2rem;border-radius:12px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"";flex:none;width:.55rem;height:.55rem;margin-top:-.3rem;border-right:2px solid var(--acc);border-bottom:2px solid var(--acc);transform:rotate(45deg);transition:transform .2s,margin .2s}
+.faq details[open] summary::after{transform:rotate(-135deg);margin-top:.3rem}
+.faq summary:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.faq summary h2{margin:0;font-size:1.05rem;line-height:1.4;color:#fff;transition:color .2s}
+.faq summary:hover h2{color:#6ee7b7}
+.faq .a{padding:0 1.2rem 1.1rem;color:#cbd5e1}.faq .a p{margin:0}.faq .a strong{color:#fff}
+.box{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:1.1rem 1.2rem;margin-top:2rem}.box h2{margin-top:0}.box p{margin:0 0 .5rem}
+@media(prefers-reduced-motion:reduce){.faq details,.faq summary::after,.faq summary h2{transition:none}}
+@media(max-width:600px){h1{font-size:1.5rem}ul.cols{columns:1}header.site nav{margin-left:0}.faq summary{padding:.9rem 1rem}.faq .a{padding:0 1rem 1rem}}
 `
 
 function layout({ path, title, description, h1, crumbs, body, schema }) {
@@ -244,14 +258,14 @@ ${jsonLd({ '@context': 'https://schema.org', '@graph': [...schema, breadcrumb] }
 <body>
 <header class="site"><div class="wrap">
 <a class="brand" href="/"><img src="/favicon-48x48.png" alt="" width="28" height="28">Refuges des Alpes</a>
-<nav aria-label="Navigation principale"><a href="/">Carte interactive</a><a href="/massifs">Massifs</a></nav>
+<nav aria-label="Navigation principale"><a href="/">Carte interactive</a><a href="/massifs">Massifs</a><a href="/faq">FAQ</a></nav>
 </div></header>
 <main class="wrap">
 <nav class="crumbs" aria-label="Fil d’Ariane">${crumbHtml}</nav>
 <h1>${esc(h1)}</h1>
 ${body}
 </main>
-<footer><div class="wrap">Refuges des Alpes · carte interactive gratuite des refuges, cabanes et gîtes des Alpes. Données Refuges.info (CC BY-SA 2.0), IGN, Météo-France, OpenStreetMap.</div></footer>
+<footer><div class="wrap">Refuges des Alpes · carte interactive gratuite des refuges, cabanes et gîtes des Alpes. Données Refuges.info (CC BY-SA 2.0), IGN, Météo-France, OpenStreetMap. · <a href="/faq">Questions fréquentes</a></div></footer>
 </body>
 </html>
 `
@@ -541,6 +555,102 @@ function hubPage() {
   })
 }
 
+// ───────────── FAQ ─────────────
+// Réponses en HTML ; le JSON-LD FAQPage en reprend le texte brut, identique au texte visible.
+const FAQ = [
+  {
+    q: 'Quel est l’objectif du site Refuges des Alpes ?',
+    a: 'Le site a pour objectif de vous permettre de parcourir facilement une <a href="/">carte interactive</a> pour découvrir les refuges, cabanes et gîtes de montagne en vue de préparer votre prochain voyage ou randonnée.',
+  },
+  {
+    q: 'Comment trouver un refuge dans les Alpes ?',
+    a: 'Utilisez la <a href="/">carte interactive</a> de Refuges des Alpes : zoomez sur le massif qui vous intéresse (Mont-Blanc, Vanoise, Écrins, Belledonne, Queyras…), les marqueurs des refuges gardés et cabanes non gardées apparaissent automatiquement avec leur altitude, nombre de places et état d’ouverture.',
+  },
+  {
+    q: 'Quelle est la différence entre un refuge gardé et une cabane non gardée ?',
+    a: 'Un refuge gardé est tenu par un gardien en saison (généralement mi-juin à mi-septembre) et propose repas, couchage et demi-pension. Une cabane non gardée (ou abri) est ouverte toute l’année mais sans services : il faut apporter son matériel de couchage et sa nourriture.',
+  },
+  {
+    q: 'Peut-on réserver directement sur le site ?',
+    a: 'Non, le site ne gère pas les réservations en direct. Cependant, un lien vous redirige vers <a href="https://www.refuges.info" rel="noopener" target="_blank"><strong>refuges.info</strong></a> (et les plateformes partenaires), où vous trouverez l’ensemble des contacts et des liens nécessaires pour effectuer votre réservation auprès des gardiens.',
+  },
+  {
+    q: 'Peut-on accéder aux refuges des Alpes sans voiture ?',
+    a: 'Oui ! Activez la couche Transports sur la carte pour voir toutes les lignes de train (TGV, TER), bus régionaux et navettes estivales qui desservent les vallées alpines. Le réseau couvre les gares de Chambéry, Grenoble, Briançon, Saint-Gervais, Bourg-Saint-Maurice et Modane, avec correspondances en bus et navettes vers les départs de sentier.',
+  },
+  {
+    q: 'Comment consulter le bulletin d’estimation du risque d’avalanche (BERA) ?',
+    a: 'Les Bulletins d’Estimation du Risque d’Avalanche (BERA) de Météo-France sont intégrés directement dans la carte interactive. Cliquez sur un massif pour voir l’indice de risque de 1 à 5, les orientations à risque et l’altitude critique.',
+  },
+  {
+    q: 'Quels massifs des Alpes sont couverts par la carte ?',
+    a: 'Tous les <a href="/massifs">massifs des Alpes françaises</a> sont couverts : Mont-Blanc, Vanoise, Écrins, Belledonne, Chartreuse, Vercors, Queyras, Mercantour, Chablais, Aravis, Bauges, Beaufortain, Lauzière, Cerces, Thabor, Oisans, Dévoluy, Briançonnais et plus encore.',
+  },
+  {
+    q: 'Les données affichées sur le site sont-elles fiables ?',
+    a: 'Nous ne créons pas les données de toutes pièces : nous récupérons les informations via des API spécialisées et reconnues dans leur domaine (par exemple, les données météo proviennent de Météo-France). Il peut toutefois arriver que certaines informations soient temporairement erronées en raison d’un décalage de synchronisation avec les API partenaires.',
+  },
+  {
+    q: 'Qui se cache derrière Refuges des Alpes ?',
+    a: 'Nous sommes deux étudiants passionnés de montagne. Nous avons initialement créé ce site pour répondre à nos propres besoins lors de nos sorties en altitude. Voir qu’il peut aujourd’hui rendre service à toute la communauté des randonneurs est une grande satisfaction pour nous !',
+  },
+  {
+    q: 'Comment puis-je vous suggérer des améliorations ou signaler un bug ?',
+    a: 'C’est très simple ! Sur la <a href="/">carte interactive</a>, vous trouverez un <strong>bouton d’information vert (icône « i »)</strong> situé en bas à gauche. Il vous permet de nous laisser un message direct. Nous lisons tous les retours avec attention pour améliorer continuellement l’outil.',
+  },
+]
+
+// espace insécable avant ? ! : ; et à l'intérieur des guillemets français
+const frTypo = (s) => s.replace(/ ([?!:;])/g, ' $1').replace(/« /g, '« ').replace(/ »/g, ' »')
+const stripTags = (s) => s.replace(/<[^>]+>/g, '')
+
+function faqPage() {
+  const desc =
+    'Trouver un refuge dans les Alpes, réserver, y aller sans voiture, consulter le BERA : les réponses aux questions fréquentes sur Refuges des Alpes.'
+  const entries = FAQ.map(({ q, a }) => ({ q: frTypo(q), a: frTypo(a) }))
+  const body = `
+<p class="lead">Tout ce qu’il faut savoir sur la carte des refuges, cabanes et gîtes de montagne des Alpes.</p>
+<div class="faq">
+${entries
+  .map(
+    ({ q, a }, i) =>
+      `<details${i === 0 ? ' open' : ''}><summary><h2>${esc(q)}</h2></summary><div class="a"><p>${a}</p></div></details>`,
+  )
+  .join('\n')}
+</div>
+<div class="box">
+<h2>Une autre question ?</h2>
+<p>Écrivez-nous depuis la carte avec le bouton vert « i » en bas à gauche : nous répondons à chaque message.</p>
+<a class="cta" href="/">Ouvrir la carte interactive</a>
+</div>`
+  return layout({
+    path: '/faq',
+    title: 'FAQ : questions fréquentes | Refuges des Alpes',
+    description: desc,
+    h1: 'Questions fréquentes',
+    crumbs: [
+      { name: 'Accueil', href: '/' },
+      { name: 'Questions fréquentes', href: '/faq' },
+    ],
+    body: frTypo(body),
+    schema: [
+      {
+        '@type': 'FAQPage',
+        '@id': `${SITE}/faq#faq`,
+        url: `${SITE}/faq`,
+        name: 'Questions fréquentes sur Refuges des Alpes',
+        description: desc,
+        inLanguage: 'fr-FR',
+        mainEntity: entries.map(({ q, a }) => ({
+          '@type': 'Question',
+          name: q,
+          acceptedAnswer: { '@type': 'Answer', text: stripTags(a) },
+        })),
+      },
+    ],
+  })
+}
+
 // ───────────── écriture ─────────────
 let nRefuge = 0
 let nMassif = 0
@@ -548,6 +658,9 @@ const sitemap = [{ loc: '/', lastmod: BUILD_DATE }]
 
 write('massifs.html', hubPage())
 sitemap.push({ loc: '/massifs', lastmod: BUILD_DATE })
+
+write('faq.html', faqPage())
+sitemap.push({ loc: '/faq', lastmod: BUILD_DATE })
 
 for (const m of alpine) {
   if (!m.members.length) continue

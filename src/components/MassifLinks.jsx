@@ -30,6 +30,7 @@ export default function MassifLinks() {
   return (
     <nav className="sr-only" aria-label="Massifs des Alpes">
       <a href="/massifs">Tous les massifs des Alpes et leurs refuges</a>
+      <a href="/faq">Questions fréquentes</a>
       <ul>
         {MASSIFS.map(([slug, name]) => (
           <li key={slug}>

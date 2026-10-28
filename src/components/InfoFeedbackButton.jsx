@@ -12,6 +12,7 @@ import {
   Sparkles,
   ChevronRight,
   ArrowLeft,
+  CircleQuestionMark,
 } from 'lucide-react'
 import { trackEvent } from '../lib/analytics'
 
@@ -283,6 +284,18 @@ export default function InfoFeedbackButton({ hasSelected }) {
                   </span>
                   <ChevronRight size={16} />
                 </button>
+
+                {/* Lien vers la page statique /faq (générée au build) */}
+                <a
+                  href="/faq"
+                  className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-2.5 text-xs sm:text-[13px] font-medium text-white/80 hover:bg-white/10 hover:text-white transition-all"
+                >
+                  <span className="flex items-center gap-2">
+                    <CircleQuestionMark size={15} className="text-emerald-400" />
+                    <span>Questions fréquentes</span>
+                  </span>
+                  <ChevronRight size={15} />
+                </a>
               </div>
             )}
 
