@@ -87,6 +87,9 @@ self.addEventListener('activate', (event) => {
 })
 
 function isTileUrl(url) {
+  // Le calcul d'itinéraire IGN partage le domaine des tuiles, mais ses réponses ne doivent ni être gardées ni
+  // remplacées par un pixel transparent hors-ligne
+  if (url.includes('data.geopf.fr/navigation/')) return false
   return (
     url.includes('data.geopf.fr') ||
     url.includes('tile.opentopomap.org') ||

@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
-import { fetchHikingSegment, NoRouteError } from './brouterService'
+import { fetchWalkingSegment, NoRouteError } from './itineraireService'
 
 const DEBOUNCE_MS = 500
 const IDLE = { status: 'idle', source: null, line: null, failures: [] }
 
 /**
- * Colle le tracé aux sentiers : chaque paire de points consécutifs est routée par BRouter.
+ * Colle le tracé aux sentiers : chaque paire de points consécutifs est routée par l'API d'itinéraire de l'IGN.
  * Déplacer un point ne recalcule que ses deux tronçons voisins (les autres sont en cache).
  * Un tronçon sans sentier devient une ligne droite et est signalé dans `failures`.
  *
@@ -28,7 +28,7 @@ export function useHikingPath(points, enabled) {
         for (let i = 1; i < points.length; i++) {
           let segment
           try {
-            segment = await fetchHikingSegment(points[i - 1], points[i], ctrl.signal)
+            segment = await fetchWalkingSegment(points[i - 1], points[i], ctrl.signal)
           } catch (e) {
             if (ctrl.signal.aborted) throw e
             const message = e instanceof NoRouteError ? e.message : navigator.onLine ? e.message : 'Hors-ligne'

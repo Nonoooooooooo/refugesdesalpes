@@ -529,7 +529,7 @@ export default function TraceLayer({ active, points, onChange, onClose }) {
             {/* ─── Actions ─── */}
             {snapToTrails && points.length > 1 && (
               <p className="border-t border-[#262626] px-3.5 py-1.5 text-[9px] uppercase tracking-wider text-[#6b6b6b]">
-                Sentiers : BRouter · © OpenStreetMap contributors
+                Chemins : IGN · BD TOPO
               </p>
             )}
 
