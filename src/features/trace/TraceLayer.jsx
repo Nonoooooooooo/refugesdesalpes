@@ -3,6 +3,7 @@ import { useMap, useMapEvents, Marker, Polyline, CircleMarker, Tooltip } from 'r
 import L from 'leaflet'
 import { Undo2, Eraser, Move, Trash, X, ChevronDown, ChevronUp } from 'lucide-react'
 import { useTraceProfile } from './useTraceProfile'
+import { useHikingPath } from './useHikingPath'
 import { slopeClass } from './profile'
 import TraceProfile, { SampleReadout } from './TraceProfile.jsx'
 
@@ -10,6 +11,7 @@ const LONG_PRESS_MS = 450
 const MOVE_TOLERANCE_PX = 10
 const HAS_FINE_POINTER = typeof window !== 'undefined' && window.matchMedia('(pointer: fine)').matches
 const ACCENT = '#ffaa00'
+const NO_POINTS = []
 // Tolérance autour du trait pour afficher la bulle : plus large au doigt qu'à la souris
 const LINE_HOVER_PX = 12
 const LINE_TAP_PX = 22
@@ -107,7 +109,12 @@ export default function TraceLayer({ active, points, onChange, onClose }) {
     }
   }
 
-  const profileState = useTraceProfile(points)
+  // Les points posés sont des étapes : en mode « sentiers », le tracé affiché et analysé suit les chemins entre elles
+  const [snapToTrails, setSnapToTrails] = useState(true)
+  const hiking = useHikingPath(points, snapToTrails)
+  const routing = snapToTrails && points.length > 1 && hiking.line == null
+  const line = hiking.line ?? points
+  const profileState = useTraceProfile(hiking.line ?? NO_POINTS)
   const [showProfile, setShowProfile] = useState(true)
   // Échantillon survolé, partagé entre le trait sur la carte et la courbe du profil
   const [hoverIdx, setHoverIdx] = useState(null)
@@ -133,11 +140,11 @@ export default function TraceLayer({ active, points, onChange, onClose }) {
 
   const distance = useMemo(() => {
     let d = 0
-    for (let i = 1; i < points.length; i++) {
-      d += L.latLng(points[i - 1]).distanceTo(points[i])
+    for (let i = 1; i < line.length; i++) {
+      d += L.latLng(line[i - 1]).distanceTo(line[i])
     }
     return d
-  }, [points])
+  }, [line])
 
   const deselect = () => {
     setSelectedIdx(null)
@@ -363,7 +370,7 @@ export default function TraceLayer({ active, points, onChange, onClose }) {
       {points.length > 1 && (
         <>
           <Polyline
-            positions={points}
+            positions={line}
             interactive={false}
             pathOptions={{ color: '#000', weight: 7, opacity: 0.45, lineCap: 'round', lineJoin: 'round' }}
           />
@@ -378,9 +385,17 @@ export default function TraceLayer({ active, points, onChange, onClose }) {
             ))
           ) : (
             <Polyline
-              positions={points}
+              positions={line}
               interactive={false}
-              pathOptions={{ color: ACCENT, weight: 4, opacity: 0.95, lineCap: 'round', lineJoin: 'round' }}
+              pathOptions={{
+                color: ACCENT,
+                weight: 4,
+                opacity: routing ? 0.6 : 0.95,
+                // Pointillé tant que le chemin sur sentier n'est pas calculé
+                dashArray: routing ? '2 8' : undefined,
+                lineCap: 'round',
+                lineJoin: 'round',
+              }}
             />
           )}
         </>
@@ -445,6 +460,16 @@ export default function TraceLayer({ active, points, onChange, onClose }) {
                 </p>
               </div>
               <div className="flex shrink-0 items-center gap-1.5">
+                <button
+                  onClick={() => setSnapToTrails((v) => !v)}
+                  aria-pressed={snapToTrails}
+                  title={snapToTrails ? 'Le tracé suit les sentiers : cliquer pour tracer en ligne droite' : 'Faire suivre les sentiers au tracé'}
+                  className={`${squareBtn} gap-1.5 px-2 text-[10px] font-semibold uppercase tracking-wider`}
+                  style={snapToTrails ? { borderColor: ACCENT, color: ACCENT } : undefined}
+                >
+                  {routing && <span className="h-1.5 w-1.5 animate-pulse" style={{ background: ACCENT }} />}
+                  Sur sentier
+                </button>
                 {points.length > 1 && (
                   <button
                     onClick={() => setShowProfile((v) => !v)}
@@ -477,11 +502,37 @@ export default function TraceLayer({ active, points, onChange, onClose }) {
               {hint}
             </p>
 
+            {snapToTrails && points.length > 1 && (routing || hiking.failures.length > 0) && (
+              <div className="flex items-start gap-2 border-t border-[#262626] px-3.5 py-2 text-[11px] leading-snug">
+                <p className="min-w-0 flex-1 text-[#8a8a8a]">
+                  {routing ? (
+                    'Recherche du sentier…'
+                  ) : (
+                    <>
+                      <span style={{ color: ACCENT }}>Ligne droite </span>
+                      {hiking.failures.map((f) => `points ${f.from}–${f.to} (${f.message.toLowerCase()})`).join(' · ')}
+                    </>
+                  )}
+                </p>
+                {!routing && (
+                  <button onClick={hiking.retry} className="shrink-0 uppercase tracking-wider text-white underline">
+                    Réessayer
+                  </button>
+                )}
+              </div>
+            )}
+
             {points.length > 1 && showProfile && (
               <TraceProfile {...profileState} hoverIdx={hoverIdx} onHover={setHoverIdx} />
             )}
 
             {/* ─── Actions ─── */}
+            {snapToTrails && points.length > 1 && (
+              <p className="border-t border-[#262626] px-3.5 py-1.5 text-[9px] uppercase tracking-wider text-[#6b6b6b]">
+                Sentiers : BRouter · © OpenStreetMap contributors
+              </p>
+            )}
+
             <div className="flex flex-wrap items-center gap-1.5 border-t border-[#262626] px-3 py-2 sm:px-3.5 sm:py-2.5">
               {selectedIdx != null ? (
                 <>
