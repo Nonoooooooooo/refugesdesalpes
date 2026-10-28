@@ -37,6 +37,7 @@
   "rewrites": [
     { "source": "/massifs", "destination": "/massifs.html" },
     { "source": "/faq", "destination": "/faq.html" },
+    { "source": "/a-propos", "destination": "/a-propos.html" },
     { "source": "/massif/:slug", "destination": "/massif/:slug.html" },
     { "source": "/refuge/:slug", "destination": "/refuge/:slug.html" },
     { "source": "/rimg/:path*", "destination": "https://www.refuges.info/:path*" },

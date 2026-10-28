@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { lazy, Suspense, useEffect, useState, useCallback } from 'react'
 import {
   X,
   Loader2,
@@ -22,12 +22,14 @@ import { typeInfo, isPointClosed } from '../lib/types.jsx'
 import { cleanText } from '../lib/text'
 import { useFavorites } from '../context/FavoritesContext.jsx'
 import Gallery from './Gallery.jsx'
-import Terrain3DModal from '../features/terrain3d/Terrain3DModal.jsx'
 import AvalancheModal from '../features/avalanche/AvalancheModal.jsx'
 import AvalanchePdfModal from '../features/avalanche/AvalanchePdfModal.jsx'
 import { findMassifByCoords } from '../features/avalanche/massifLookup'
 import RefugeWeatherSection from '../features/meteo/RefugeWeatherSection.jsx'
 import SunModal from '../features/sun/SunModal.jsx'
+
+// Chargée à la demande : la vue 3D embarque MapLibre (~1 Mo), inutile au premier affichage de la carte
+const Terrain3DModal = lazy(() => import('../features/terrain3d/Terrain3DModal.jsx'))
 
 export default function Sidebar({ point, onClose, onOpenRadar }) {
   const [state, setState] = useState({ loading: true, error: null, data: null })
@@ -314,17 +316,19 @@ export default function Sidebar({ point, onClose, onOpenRadar }) {
       </aside>
 
       {show3D && (
-        <Terrain3DModal
-          point={{
-            ...point,
-            nom: d?.nom ?? point.nom,
-            alt: d?.alt ?? point.alt,
-            type: d?.type ?? point.type,
-            lat: point.lat,
-            lng: point.lng,
-          }}
-          onClose={() => setShow3D(false)}
-        />
+        <Suspense fallback={null}>
+          <Terrain3DModal
+            point={{
+              ...point,
+              nom: d?.nom ?? point.nom,
+              alt: d?.alt ?? point.alt,
+              type: d?.type ?? point.type,
+              lat: point.lat,
+              lng: point.lng,
+            }}
+            onClose={() => setShow3D(false)}
+          />
+        </Suspense>
       )}
 
       {showPdf && massifInfo && (

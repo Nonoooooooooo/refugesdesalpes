@@ -13,6 +13,7 @@ import {
   ChevronRight,
   ArrowLeft,
   CircleQuestionMark,
+  Mountain,
 } from 'lucide-react'
 import { trackEvent } from '../lib/analytics'
 
@@ -293,6 +294,18 @@ export default function InfoFeedbackButton({ hasSelected }) {
                   <span className="flex items-center gap-2">
                     <CircleQuestionMark size={15} className="text-emerald-400" />
                     <span>Questions fréquentes</span>
+                  </span>
+                  <ChevronRight size={15} />
+                </a>
+
+                {/* Lien vers l'annuaire statique /massifs (générée au build) */}
+                <a
+                  href="/massifs"
+                  className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-2.5 text-xs sm:text-[13px] font-medium text-white/80 hover:bg-white/10 hover:text-white transition-all"
+                >
+                  <span className="flex items-center gap-2">
+                    <Mountain size={15} className="text-emerald-400" />
+                    <span>Refuges par massif</span>
                   </span>
                   <ChevronRight size={15} />
                 </a>

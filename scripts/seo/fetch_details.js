@@ -2,8 +2,10 @@
 // et gîtes d'étape depuis Refuges.info (données CC BY-SA 2.0) et les stocke dans
 // scripts/seo/details.json. Le build n'appelle jamais le réseau : il lit ce fichier.
 //
-// Usage : node scripts/seo/fetch_details.js [--all]   (--all : inclut aussi les cabanes)
-// Le script est reprenable : les fiches déjà présentes dans details.json sont ignorées.
+// Usage : node scripts/seo/fetch_details.js [--all] [--refresh]
+//   --all     : inclut aussi les cabanes
+//   --refresh : récupère à nouveau toutes les fiches (sinon seules les fiches absentes de details.json le sont,
+//               ce qui rend le script reprenable)
 
 import { readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
@@ -18,6 +20,7 @@ const DELAY_MS = 200
 
 const norm = (s = '') => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
 const all = process.argv.includes('--all')
+const refresh = process.argv.includes('--refresh')
 
 const index = JSON.parse(readFileSync(INDEX, 'utf8'))
 const wanted = index.filter((p) => {
@@ -26,7 +29,7 @@ const wanted = index.filter((p) => {
 })
 
 const details = existsSync(OUT) ? JSON.parse(readFileSync(OUT, 'utf8')) : {}
-const todo = wanted.filter((p) => !details[p.id])
+const todo = refresh ? wanted : wanted.filter((p) => !details[p.id])
 console.log(`${wanted.length} fiches visées, ${todo.length} à récupérer`)
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))

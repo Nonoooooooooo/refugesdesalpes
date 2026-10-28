@@ -1,12 +1,15 @@
 // Génère, après `vite build`, les pages statiques indexables :
 //   /massifs               annuaire des massifs
 //   /faq                   questions fréquentes (JSON-LD FAQPage)
-//   /massif/<slug>         une page par massif alpin (refuges, gîtes, cabanes)
+//   /a-propos              qui sommes-nous, sources des données et licences
+//   /massif/<slug>         une page par massif alpin (refuges, gîtes, cabanes, transports)
 //   /refuge/<id>-<slug>    une page par refuge gardé et gîte d'étape
+//   /404.html              page d'erreur (servie par Vercel pour toute URL inconnue)
 //   /sitemap.xml           sitemap complet (remplace celui de public/)
 //
-// Entrées : public/refuges_index.json, public/data/massifs_bra.geojson, scripts/seo/details.json
-// (fiches Refuges.info, CC BY-SA 2.0, récupérées par fetch_details.js). Aucun appel réseau ici.
+// Entrées : public/refuges_index.json, public/data/massifs_bra.geojson, public/transports_v2.json,
+// scripts/seo/details.json (fiches Refuges.info, CC BY-SA 2.0, récupérées par fetch_details.js).
+// Aucun appel réseau ici.
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
@@ -19,7 +22,12 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const DIST = join(ROOT, 'dist')
 const SITE = 'https://refugesdesalpes.fr'
 const BUILD_DATE = new Date().toISOString().slice(0, 10)
+// Date de la dernière modification des gabarits ci-dessous : à avancer quand le texte des pages générées
+// change. Le sitemap s'en sert (avec les dates de mise à jour Refuges.info) plutôt que de la date de build,
+// pour que <lastmod> ne bouge pas à chaque déploiement sans changement de contenu.
+const TEMPLATE_DATE = '2026-10-28'
 const NEAR_TOLERANCE_KM = 25
+const TRANSPORT_MAX_KM = 25
 
 if (!existsSync(DIST)) {
   console.error('dist/ introuvable : lancez `vite build` avant ce script.')
@@ -31,6 +39,8 @@ const points = readJson(join(ROOT, 'public', 'refuges_index.json'))
 const massifsGeo = readJson(join(ROOT, 'public', 'data', 'massifs_bra.geojson'))
 const detailsPath = join(ROOT, 'scripts', 'seo', 'details.json')
 const details = existsSync(detailsPath) ? readJson(detailsPath) : {}
+const transportsPath = join(ROOT, 'public', 'transports_v2.json')
+const transports = existsSync(transportsPath) ? readJson(transportsPath) : { features: [] }
 
 // ───────────── utilitaires ─────────────
 const norm = (s = '') => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
@@ -77,6 +87,21 @@ function excerpt(text, max) {
   const sentence = Math.max(slice.lastIndexOf('. '), slice.lastIndexOf('.\n'))
   const cutAt = sentence > max * 0.5 ? sentence + 1 : slice.lastIndexOf(' ')
   return { text: slice.slice(0, cutAt).trim() + (sentence > max * 0.5 ? '' : '…'), cut: true }
+}
+
+// Noms de personnes (gardiens, propriétaires) : « Prénom NOM », hors sigles courants (Tarif FFCAM, Réseau GSM…)
+const PERSON = /\b[A-ZÉÈ][a-zéèêëïîôûç]+(?:[- ][A-ZÉÈ][a-zéèêëïîôûç]+)?\s+([A-ZÉÈÀÂÊÎÔÛÇ][A-ZÉÈÀÂÊÎÔÛÇ'-]{2,})\b/g
+const ACRONYM = /^(FFCAM|CAF|GSM|GPS|UTM|ONF|FFRP|FFME|SNCF|TER|TGV|PNR|PNV|PNE|GRP?|TMB|EDF|SMS|VTT|IGN|UCPA|CAI|SAC|BERA|PGHM|CRS|SDIS|SAMU|SOS|WC|RN|RD|CD)$/
+const PHONE = /(?:\+33\s?|0)[1-9](?:[\s.-]?\d{2}){4}/
+const ROLE = /gardien|propri[eé]taire|g[ée]rant|responsable|tenu par|gard[ée] par/i
+// Ce qui peut précéder un nom en tête de ligne : d'autres prénoms (« Sonia et Norbert VINCENT »)
+const FIRST_NAMES = /^(?:[A-ZÉÈ][a-zéèêëïîôûç]+\s*(?:et|&|,)?\s*)*$/
+
+/** Ligne qui nomme une personne : avec son rôle, son téléphone, ou en tête de ligne. */
+function namesPerson(line) {
+  const persons = [...line.matchAll(PERSON)].filter((m) => !ACRONYM.test(m[1]))
+  if (!persons.length) return false
+  return ROLE.test(line) || PHONE.test(line) || FIRST_NAMES.test(line.slice(0, persons[0].index).trim())
 }
 
 const paragraphs = (text) =>
@@ -140,7 +165,6 @@ function kindOf(type) {
   return null // points d'eau, passages délicats, grottes… : pas de page
 }
 const KIND_LABEL = { garde: 'Refuge gardé', gite: "Gîte d'étape", cabane: 'Cabane non gardée' }
-const KIND_PLURAL = { garde: 'Refuges gardés', gite: "Gîtes d'étape", cabane: 'Cabanes non gardées' }
 
 const items = []
 for (const p of points) {
@@ -170,6 +194,93 @@ const mapLink = (i) => `/?refuge=${i.id}`
 const byAlt = (a, b) => (b.alt ?? 0) - (a.alt ?? 0)
 const altM = (n) => (n ? `${fmt(n)} m` : 'altitude inconnue')
 const byName = (a, b) => a.nom.localeCompare(b.nom, 'fr')
+const fmtKm = (km) => (km < 10 ? km.toFixed(1).replace('.', ',') : String(Math.round(km)))
+
+// ───────────── transports en commun ─────────────
+// Arrêts des lignes de public/transports_v2.json (sources transport.data.gouv.fr), regroupés par nom et
+// position (~100 m). Les horaires et périodes de circulation changent : les pages ne les figent pas et
+// renvoient vers la couche Transports de la carte.
+// Le mode « train » des données regroupe trains et cars régionaux express (TER, ZOU !) : on ne parle donc
+// pas de gare, seulement de train ou car régional
+const MODE_LABEL = { train: 'train ou car régional', navette: 'navette', cable_car: 'remontée mécanique', bus: 'bus' }
+const MODE_ORDER = { train: 0, navette: 1, cable_car: 2, bus: 3 }
+const SCHOOL_LINE = /primaire|coll[eè]ge|lyc[eé]e|scolaire|\bRPI\b/i
+const SMALL_WORDS = new Set(['de', 'du', 'des', 'la', 'le', 'les', 'et', 'en', 'sur', 'sous', 'aux', 'au', 'à'])
+
+/** Remet en casse normale les noms d'arrêts écrits en capitales (« LES HOUCHES - LE TREMBLAY »). */
+function prettyName(s) {
+  const name = String(s).replace(/\s+/g, ' ').trim()
+  if (name !== name.toUpperCase() || !/[A-Z]/.test(name)) return name
+  return name
+    .toLowerCase()
+    .replace(/[\p{L}']+/gu, (w, i) => {
+      const before = name.slice(0, i).trimEnd()
+      const startOfPart = i === 0 || before.endsWith('-') || before.endsWith('/')
+      if (!startOfPart && SMALL_WORDS.has(w)) return w
+      if (/^[dl]'/.test(w)) return w.slice(0, 2) + w.charAt(2).toUpperCase() + w.slice(3)
+      return w.charAt(0).toUpperCase() + w.slice(1)
+    })
+}
+
+/** Ligne utile à un randonneur : ni ramassage scolaire, ni service limité à un départ par jour. */
+function usefulLine(p) {
+  if (SCHOOL_LINE.test(`${p.name} ${p.route ?? ''}`)) return false
+  const counts = [...String(p.frequency ?? '').matchAll(/(\d+) départs?/g)].map((m) => Number(m[1]))
+  return !counts.length || Math.max(...counts) > 1
+}
+
+const stops = []
+{
+  const byKey = new Map()
+  for (const f of transports.features ?? []) {
+    const p = f.properties ?? {}
+    if (!usefulLine(p)) continue
+    const line = { name: prettyName(p.name), mode: p.mode, network: p.network }
+    for (const s of p.stopPoints ?? []) {
+      if (!Number.isFinite(s.lat) || !Number.isFinite(s.lng) || !s.name) continue
+      const key = `${norm(s.name)}|${s.lat.toFixed(3)}|${s.lng.toFixed(3)}`
+      let stop = byKey.get(key)
+      if (!stop) {
+        stop = { name: prettyName(s.name), lat: s.lat, lng: s.lng, lines: new Map() }
+        byKey.set(key, stop)
+        stops.push(stop)
+      }
+      stop.lines.set(line.name, line)
+    }
+  }
+}
+
+const sortLines = (lines) =>
+  [...lines].sort((a, b) => (MODE_ORDER[a.mode] ?? 9) - (MODE_ORDER[b.mode] ?? 9) || a.name.localeCompare(b.name, 'fr'))
+
+/**
+ * Arrêts distincts les plus proches d'un point (un même nom à moins d'1 km compte pour un seul arrêt).
+ * Au-delà du premier, un arrêt n'est retenu que s'il apporte une ligne de plus.
+ */
+function nearestStops(pt, n = 3, maxKm = TRANSPORT_MAX_KM) {
+  const dLat = maxKm / 111
+  const dLng = maxKm / (111 * Math.cos((pt.lat * Math.PI) / 180))
+  const cands = stops
+    .filter((s) => Math.abs(s.lat - pt.lat) <= dLat && Math.abs(s.lng - pt.lng) <= dLng)
+    .map((s) => ({ s, km: distKm(pt, s) }))
+    .filter((c) => c.km <= maxKm)
+    .sort((a, b) => a.km - b.km)
+  const picked = []
+  for (const c of cands) {
+    const twin = picked.find((p) => norm(p.name) === norm(c.s.name) && distKm(p, c.s) < 1)
+    if (twin) {
+      for (const [k, l] of c.s.lines) twin.lines.set(k, l)
+      continue
+    }
+    if (picked.length === n) continue
+    const known = new Set(picked.flatMap((p) => [...p.lines.keys()]))
+    if (picked.length && [...c.s.lines.keys()].every((k) => known.has(k))) continue
+    picked.push({ name: c.s.name, lat: c.s.lat, lng: c.s.lng, km: c.km, lines: new Map(c.s.lines) })
+  }
+  return picked
+}
+
+const lineLabel = (l) => `${esc(l.name)} (${MODE_LABEL[l.mode] ?? l.mode}${l.network ? `, ${esc(l.network)}` : ''})`
 
 // ───────────── gabarit ─────────────
 const CSS = `
@@ -210,7 +321,7 @@ footer{margin-top:3rem;padding:1.5rem 0;border-top:1px solid var(--line);color:v
 @media(max-width:600px){h1{font-size:1.5rem}ul.cols{columns:1}header.site nav{margin-left:0}.faq summary{padding:.9rem 1rem}.faq .a{padding:0 1rem 1rem}}
 `
 
-function layout({ path, title, description, h1, crumbs, body, schema }) {
+function layout({ path, title, description, h1, crumbs, body, schema, noindex = false }) {
   const url = `${SITE}${path}`
   const crumbHtml = crumbs
     .map((c, i) => (i === crumbs.length - 1 ? `<span>${esc(c.name)}</span>` : `<a href="${c.href}">${esc(c.name)}</a>`))
@@ -231,8 +342,12 @@ function layout({ path, title, description, h1, crumbs, body, schema }) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
-<meta name="robots" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1">
-<link rel="canonical" href="${url}">
+${
+  noindex
+    ? '<meta name="robots" content="noindex">'
+    : `<meta name="robots" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+<link rel="canonical" href="${url}">`
+}
 <meta property="og:type" content="website">
 <meta property="og:locale" content="fr_FR">
 <meta property="og:site_name" content="Refuges des Alpes">
@@ -265,7 +380,7 @@ ${jsonLd({ '@context': 'https://schema.org', '@graph': [...schema, breadcrumb] }
 <h1>${esc(h1)}</h1>
 ${body}
 </main>
-<footer><div class="wrap">Refuges des Alpes · carte interactive gratuite des refuges, cabanes et gîtes des Alpes. Données Refuges.info (CC BY-SA 2.0), IGN, Météo-France, OpenStreetMap. · <a href="/faq">Questions fréquentes</a></div></footer>
+<footer><div class="wrap">Refuges des Alpes · carte interactive gratuite des refuges, cabanes et gîtes des Alpes. Données Refuges.info (CC BY-SA 2.0), IGN, Météo-France, OpenStreetMap. · <a href="/faq">Questions fréquentes</a> · <a href="/a-propos">À propos et sources</a></div></footer>
 </body>
 </html>
 `
@@ -324,18 +439,24 @@ function refugePage(item) {
     `${item.nom} (${fmt(item.alt)} m), ${massifName}`,
     `${item.nom} (${fmt(item.alt)} m)`,
   ])
+  const transit = nearestStops(item)
   const description = fitDesc(
-    `${label} à ${fmt(item.alt)} m ${where}${places ? `, ${places} places` : ''}. Accès, équipements, ensoleillement et refuges proches. Carte interactive avec météo en direct.`,
+    `${label} à ${fmt(item.alt)} m ${where}${places ? `, ${places} places` : ''}. Accès, transports en commun, équipements et ensoleillement. Carte interactive avec météo en direct.`,
   )
 
   // Les champs Refuges.info se recoupent souvent (la description reprend remarque et accès) :
   // on n'affiche une section que si son début n'apparaît pas déjà plus haut.
   const flat = (s) => norm(s).replace(/\s+/g, ' ')
   const seen = []
-  const section = (raw, max, { dropLines } = {}) => {
+  // Pas de noms de personnes (gardiens, propriétaires) : seules les informations du lieu sont reprises
+  const section = (raw, max) => {
     if (!raw) return null
-    let text = cleanText(raw)
-    if (dropLines) text = text.split('\n').filter((l) => !dropLines.test(l)).join('\n').trim()
+    const text = cleanText(raw)
+      .split('\n')
+      .filter((l) => !namesPerson(l))
+      .join('\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim()
     if (text.length < 20) return null
     const key = flat(text).slice(0, 80)
     if (seen.some((s) => s.includes(key))) return null
@@ -345,8 +466,7 @@ function refugePage(item) {
   const desc = section(d?.description, 900)
   const acces = section(d?.acces, 900)
   const remarque = section(d?.remarque, 500)
-  // pas de noms de personnes (gardiens) : seules les informations de contact du lieu sont reprises
-  const proprio = section(d?.proprio, 500, { dropLines: /gardiens?\s*:/i })
+  const proprio = section(d?.proprio, 500)
   const equip = (d?.equipements ?? []).filter(
     (e) => e.valeur && !/^non$/i.test(String(e.valeur).trim()) && !/capacit/i.test(e.nom),
   )
@@ -383,6 +503,22 @@ ${
     : ''
 }
 
+<h2>Y aller en transports en commun</h2>
+${
+  transit.length
+    ? `<p>Arrêts les plus proches du refuge, à vol d’oiseau (sans compter le dénivelé ni la longueur réelle du sentier) :</p>
+<ul>${transit
+        .map((s) => {
+          const lines = sortLines(s.lines.values())
+          const extra = lines.length - 4
+          const more = extra > 0 ? ` et ${extra} autre${extra > 1 ? 's' : ''} ligne${extra > 1 ? 's' : ''}` : ''
+          return `<li><strong>${esc(s.name)}</strong>, à ${fmtKm(s.km)} km : ${lines.slice(0, 4).map(lineLabel).join(', ')}${more}</li>`
+        })
+        .join('')}</ul>
+<p>Horaires, jours et périodes de circulation (certaines navettes ne roulent qu’en saison) : <a href="${mapLink(item)}&amp;transports=1">afficher les transports sur la carte</a>.</p>`
+    : `<p>Aucun arrêt de transport en commun n’est référencé à moins de ${TRANSPORT_MAX_KM} km à vol d’oiseau. La <a href="${mapLink(item)}&amp;transports=1">couche Transports de la carte</a> montre les lignes les plus proches.</p>`
+}
+
 <h2>Lever et coucher du soleil</h2>
 <p>Heures calculées pour les coordonnées du refuge, à horizon dégagé (heure de Paris). Dans une vallée encaissée, les crêtes voisines raccourcissent la journée de soleil : le calculateur d’ensoleillement de la carte tient compte du relief.</p>
 <table><thead><tr><th>Date</th><th>Lever</th><th>Coucher</th><th>Durée du jour</th></tr></thead><tbody>${sun}</tbody></table>
@@ -391,7 +527,7 @@ ${
 <ul>${near
     .map(({ o, d: km }) => {
       const name = o.hasPage ? `<a href="${o.url}">${esc(o.nom)}</a>` : esc(o.nom)
-      return `<li>${name} (${KIND_LABEL[o.kind].toLowerCase()}, ${altM(o.alt)}) : à ${km < 10 ? km.toFixed(1).replace('.', ',') : Math.round(km)} km à vol d’oiseau</li>`
+      return `<li>${name} (${KIND_LABEL[o.kind].toLowerCase()}, ${altM(o.alt)}) : à ${fmtKm(km)} km à vol d’oiseau</li>`
     })
     .join('')}</ul>
 
@@ -430,6 +566,60 @@ ${
 }
 
 // ───────────── pages massif ─────────────
+const plural = (n, one, many) => `${n} ${n > 1 ? many : one}`
+const joinFr = (parts) => (parts.length > 1 ? `${parts.slice(0, -1).join(', ')} et ${parts[parts.length - 1]}` : parts[0] ?? '')
+
+/** Section « Venir en transports en commun » : lignes ayant au moins un arrêt dans le polygone du massif. */
+function massifTransit(m) {
+  const [w, s, e, n] = m.bbox
+  const inside = stops.filter(
+    (st) =>
+      st.lng >= w && st.lng <= e && st.lat >= s && st.lat <= n && turf.booleanPointInPolygon(turf.point([st.lng, st.lat]), m.feature),
+  )
+  const lines = new Map()
+  for (const st of inside) for (const [k, l] of st.lines) lines.set(k, l)
+  const all = [...lines.values()]
+  const count = (mode) => all.filter((l) => l.mode === mode).length
+  const stations = [
+    ...new Set(inside.filter((st) => [...st.lines.values()].some((l) => l.mode === 'train')).map((st) => st.name)),
+  ].sort((a, b) => a.localeCompare(b, 'fr'))
+  const navettes = sortLines(all.filter((l) => l.mode === 'navette'))
+  const [lng, lat] = m.center
+
+  const parts = [
+    count('train') && plural(count('train'), 'ligne de train ou de car régional', 'lignes de train ou de car régional'),
+    count('bus') && plural(count('bus'), 'ligne de bus', 'lignes de bus'),
+    count('navette') && plural(count('navette'), 'navette', 'navettes'),
+    count('cable_car') && plural(count('cable_car'), 'remontée mécanique', 'remontées mécaniques'),
+  ].filter(Boolean)
+
+  let stationText
+  if (stations.length) {
+    stationText = `Arrêts des trains et cars régionaux dans le massif : ${stations.slice(0, 10).map(esc).join(', ')}${stations.length > 10 ? ', etc.' : '.'}`
+  } else {
+    const nearest = stops
+      .filter((st) => [...st.lines.values()].some((l) => l.mode === 'train'))
+      .map((st) => ({ st, km: distKm({ lat, lng }, st) }))
+      .sort((a, b) => a.km - b.km)[0]
+    stationText = nearest
+      ? `Aucun train ni car régional ne s’arrête dans le massif : l’arrêt le plus proche de son centre est ${esc(nearest.st.name)}, à ${fmtKm(nearest.km)} km à vol d’oiseau.`
+      : ''
+  }
+
+  return `<h2>Venir en transports en commun</h2>
+<p>${
+    all.length
+      ? `${plural(all.length, 'ligne de transport en commun a', 'lignes de transport en commun ont')} au moins un arrêt dans le massif ${esc(m.name)} : ${joinFr(parts)}.`
+      : `Aucune ligne de transport en commun référencée n’a d’arrêt dans le massif ${esc(m.name)}.`
+  } ${stationText}</p>
+${
+  navettes.length
+    ? `<p>Navettes : ${navettes.slice(0, 6).map((l) => esc(l.name)).join(', ')}${navettes.length > 6 ? ', etc.' : '.'} Beaucoup ne circulent qu’en saison.</p>`
+    : ''
+}
+<p><a href="/?lat=${lat.toFixed(4)}&amp;lng=${lng.toFixed(4)}&amp;z=10&amp;transports=1">Voir les lignes, arrêts et horaires sur la carte</a>. Données transport.data.gouv.fr, hors lignes scolaires.</p>`
+}
+
 function massifPage(m) {
   const intro = MASSIF_INTROS[m.slug]
   const members = m.members
@@ -468,6 +658,7 @@ ${
     ? `<h2>Cabanes non gardées</h2><p>Abris sans services : prévoyez couchage et nourriture. Cliquez sur la carte pour voir chaque cabane, son accès et la météo.</p><ul class="cols">${cabane.map((i) => `<li>${esc(i.nom)}${i.alt ? ` (${altM(i.alt)})` : ''}</li>`).join('')}</ul>`
     : ''
 }
+${massifTransit(m)}
 <h2>Préparer sa sortie</h2>
 <p>Sur la <a href="/">carte interactive</a>, activez le radar météo AROME pour suivre les précipitations, consultez le bulletin d’estimation du risque d’avalanche (BERA) du massif, les transports en commun pour partir sans voiture et le calculateur d’ensoleillement de chaque refuge.</p>
 <h2>Autres massifs des Alpes</h2>
@@ -651,28 +842,144 @@ ${entries
   })
 }
 
+// ───────────── à propos ─────────────
+// [nom, lien, ce que la source fournit, licence ou mention] : reflète les couches et API utilisées par l'application
+const SOURCES = [
+  [
+    'Refuges.info',
+    'https://www.refuges.info',
+    'positions, descriptions, accès, équipements et photos des refuges, cabanes et gîtes',
+    'licence CC BY-SA 2.0 ; les textes repris ou adaptés sur nos pages sont diffusés sous la même licence',
+  ],
+  ['IGN – Géoplateforme', 'https://geoservices.ign.fr/', 'fonds de carte, altitudes et calcul d’itinéraire sur les chemins', ''],
+  [
+    'Météo-France',
+    'https://meteofrance.com',
+    'prévisions des modèles AROME et ARPEGE, radar de précipitations et bulletins d’estimation du risque d’avalanche (BERA)',
+    '',
+  ],
+  [
+    'transport.data.gouv.fr',
+    'https://transport.data.gouv.fr',
+    'lignes, arrêts et horaires des trains, cars, navettes et remontées mécaniques',
+    'licence propre à chaque jeu de données',
+  ],
+  ['OpenStreetMap', 'https://www.openstreetmap.org/copyright', 'parkings, points d’intérêt et fond OpenTopoMap', '© contributeurs OpenStreetMap, licence ODbL'],
+  ['Waymarked Trails', 'https://hiking.waymarkedtrails.org', 'sentiers de randonnée balisés', ''],
+  ['Esri', '', 'imagerie satellite', ''],
+  ['Mapterhorn', '', 'relief de la vue 3D', ''],
+  ['Windy', 'https://www.windy.com/webcams', 'webcams en direct', ''],
+  ['Wikimedia Commons et Google', '', 'photos complémentaires des refuges', ''],
+]
+
+function aboutPage() {
+  const desc =
+    'Refuges des Alpes, carte interactive gratuite des refuges, cabanes et gîtes des Alpes : qui sommes-nous, sources des données (Refuges.info, IGN, Météo-France) et licences.'
+  const body = `
+<p class="lead">Une carte interactive gratuite pour préparer ses sorties en refuge dans les Alpes.</p>
+<h2>Qui sommes-nous ?</h2>
+<p>Refuges des Alpes est développé par deux étudiants passionnés de montagne, qui l’ont d’abord créé pour préparer leurs propres sorties en altitude. La carte est gratuite.</p>
+<h2>Ce que propose le site</h2>
+<ul>
+<li>La <a href="/">carte</a> des refuges gardés, cabanes non gardées et gîtes d’étape, avec une <a href="/massifs">page par massif</a> et une fiche par refuge.</li>
+<li>La météo des modèles Météo-France, le radar de précipitations et le bulletin d’avalanche (BERA) de chaque massif.</li>
+<li>Les lignes de train, de car, les navettes et les remontées mécaniques pour partir sans voiture.</li>
+<li>L’ensoleillement de chaque refuge, la vue en relief 3D et le tracé d’itinéraire avec profil altimétrique.</li>
+<li>Les cartes hors-ligne, pour garder la carte en montagne sans réseau.</li>
+</ul>
+<h2>Sources des données</h2>
+<p>Nous ne produisons pas ces données : nous les assemblons à partir de sources reconnues, que nous remercions.</p>
+<ul>${SOURCES.map(([name, url, what, licence]) => {
+    const label = url ? `<a href="${url}" rel="noopener" target="_blank">${esc(name)}</a>` : esc(name)
+    return `<li><strong>${label}</strong> : ${esc(what)}${licence ? ` (${esc(licence)})` : ''}.</li>`
+  }).join('')}</ul>
+<h2>Prudence en montagne</h2>
+<p>Les informations du site peuvent être incomplètes ou dépassées : ouverture des refuges, horaires des transports, état des sentiers. Avant de partir, confirmez auprès des gardiens et des transporteurs, consultez la météo et le bulletin d’avalanche, et adaptez l’itinéraire à votre niveau.</p>
+<div class="box">
+<h2>Nous écrire</h2>
+<p>Une erreur, une idée ? Utilisez le bouton vert « i » en bas à gauche de la carte, ou consultez les <a href="/faq">questions fréquentes</a>.</p>
+<a class="cta" href="/">Ouvrir la carte interactive</a>
+</div>`
+  return layout({
+    path: '/a-propos',
+    title: 'À propos et sources des données | Refuges des Alpes',
+    description: desc,
+    h1: 'À propos de Refuges des Alpes',
+    crumbs: [
+      { name: 'Accueil', href: '/' },
+      { name: 'À propos', href: '/a-propos' },
+    ],
+    body: frTypo(body),
+    schema: [
+      {
+        '@type': 'AboutPage',
+        '@id': `${SITE}/a-propos#page`,
+        url: `${SITE}/a-propos`,
+        name: 'À propos de Refuges des Alpes',
+        description: desc,
+        inLanguage: 'fr-FR',
+        about: { '@id': `${SITE}/#organization` },
+      },
+    ],
+  })
+}
+
+// ───────────── 404 ─────────────
+function notFoundPage() {
+  const list = alpine.filter((m) => m.members.length)
+  const body = `
+<p class="lead">Cette page n’existe pas ou a été déplacée.</p>
+<a class="cta" href="/">Ouvrir la carte interactive</a>
+<h2>Refuges par massif</h2>
+<ul class="cols">${list.map((m) => `<li><a href="/massif/${m.slug}">${esc(m.name)}</a></li>`).join('')}</ul>
+<p><a href="/massifs">Tous les massifs</a> · <a href="/faq">Questions fréquentes</a></p>`
+  return layout({
+    path: '/404',
+    title: 'Page introuvable | Refuges des Alpes',
+    description: 'Cette page n’existe pas. Retrouvez la carte des refuges, cabanes et gîtes des Alpes.',
+    h1: 'Page introuvable',
+    crumbs: [
+      { name: 'Accueil', href: '/' },
+      { name: 'Page introuvable', href: '/404' },
+    ],
+    body: frTypo(body),
+    schema: [],
+    noindex: true,
+  })
+}
+
 // ───────────── écriture ─────────────
 let nRefuge = 0
 let nMassif = 0
+/** Date de dernière modification : la plus récente entre le gabarit et les données sources, jamais après le build. */
+const lastmod = (...dates) => {
+  const latest = [TEMPLATE_DATE, ...dates.filter(Boolean).map((d) => String(d).slice(0, 10))].sort().pop()
+  return latest > BUILD_DATE ? BUILD_DATE : latest
+}
+const modifOf = (list) => list.map((i) => i.details?.modif)
 const sitemap = [{ loc: '/', lastmod: BUILD_DATE }]
 
 write('massifs.html', hubPage())
-sitemap.push({ loc: '/massifs', lastmod: BUILD_DATE })
+sitemap.push({ loc: '/massifs', lastmod: lastmod(...modifOf(items)) })
 
 write('faq.html', faqPage())
-sitemap.push({ loc: '/faq', lastmod: BUILD_DATE })
+sitemap.push({ loc: '/faq', lastmod: lastmod() })
+
+write('a-propos.html', aboutPage())
+sitemap.push({ loc: '/a-propos', lastmod: lastmod() })
+
+write('404.html', notFoundPage())
 
 for (const m of alpine) {
   if (!m.members.length) continue
   write(`massif/${m.slug}.html`, massifPage(m))
-  sitemap.push({ loc: `/massif/${m.slug}`, lastmod: BUILD_DATE })
+  sitemap.push({ loc: `/massif/${m.slug}`, lastmod: lastmod(...modifOf(m.members)) })
   nMassif++
 }
 
 for (const item of pageItems) {
   write(`refuge/${item.slug}.html`, refugePage(item))
-  const mod = item.details?.modif?.slice(0, 10)
-  sitemap.push({ loc: item.url, lastmod: mod && mod <= BUILD_DATE ? mod : BUILD_DATE })
+  sitemap.push({ loc: item.url, lastmod: lastmod(item.details?.modif) })
   nRefuge++
 }
 

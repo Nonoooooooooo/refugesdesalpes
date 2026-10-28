@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "vite build && node scripts/seo/generate.js",
     "seo:fetch": "node scripts/seo/fetch_details.js",
+    "seo:indexnow": "node scripts/seo/indexnow.js",
     "lint": "oxlint",
     "preview": "vite preview",
     "update-bra": "node scripts/update_bra.js",

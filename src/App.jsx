@@ -228,7 +228,10 @@ export default function App() {
   const [reloadKey, setReloadKey] = useState(0)
   const [baseLayer, setBaseLayer] = useState('ign')
   const [showTrails, setShowTrails] = useState(false)
-  const [showTransports, setShowTransports] = useState(false)
+  // &transports=1 dans l'URL (liens des pages statiques) affiche d'emblée la couche Transports
+  const [showTransports, setShowTransports] = useState(
+    () => new URLSearchParams(window.location.search).get('transports') === '1',
+  )
   const [showParkings, setShowParkings] = useState(false)
   const [showWebcams, setShowWebcams] = useState(false)
   const [showMeteo, setShowMeteo] = useState(false)
