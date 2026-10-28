@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { useMap, useMapEvents, Marker, Polyline, CircleMarker, Tooltip } from 'react-leaflet'
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
+import { useMap, useMapEvents, Marker, Polyline, CircleMarker, Tooltip, Pane } from 'react-leaflet'
 import L from 'leaflet'
 import { Undo2, Eraser, Move, Trash, X, ChevronDown, ChevronUp, Footprints } from 'lucide-react'
 import { useTraceProfile } from './useTraceProfile'
@@ -15,6 +15,9 @@ const NO_POINTS = []
 // Tolérance autour du trait pour afficher la bulle : plus large au doigt qu'à la souris
 const LINE_HOVER_PX = 12
 const LINE_TAP_PX = 22
+// Au-delà, une liaison hors sentier rend le tracé douteux : le sentier IGN mène peut-être ailleurs
+const GAP_UNCERTAIN_M = 500
+const DANGER = '#ff5a4d'
 
 function pointIcon(index, total, selected, moving) {
   const role = index === 0 ? ' start' : index === total - 1 ? ' end' : ''
@@ -151,6 +154,12 @@ export default function TraceLayer({ active, points, onChange, onClose }) {
   // Temps de marche, seulement quand le profil (donc le dénivelé) correspond au tracé affiché
   const stats = profileState.fresh ? profileState.profile.stats : null
   const walkTime = stats && stats.minZ != null ? hikingTimeHours(stats) : null
+
+  // Longues liaisons hors sentier, regroupées par point posé (un point peut en avoir une de chaque côté)
+  const gapsByPoint = new Map()
+  if (!routing) for (const g of hiking.gaps) gapsByPoint.set(g.point, Math.max(gapsByPoint.get(g.point) ?? 0, g.meters))
+  const gapList = [...gapsByPoint].sort((x, y) => x[0] - y[0])
+  const gapUncertain = gapList.some(([, m]) => m >= GAP_UNCERTAIN_M)
 
   const distance = useMemo(() => {
     let d = 0
@@ -412,6 +421,29 @@ export default function TraceLayer({ active, points, onChange, onClose }) {
               }}
             />
           )}
+          {/* Liaisons hors sentier en pointillé, dans un calque à part pour rester au-dessus des couleurs de pente */}
+          <Pane name="trace-gaps" style={{ zIndex: 410 }}>
+            {!routing &&
+              hiking.gaps.map((g, i) => (
+                <Fragment key={`gap-${i}`}>
+                  <Polyline
+                    positions={g.positions}
+                    interactive={false}
+                    pathOptions={{ color: '#000', weight: 5, opacity: 1, lineCap: 'round' }}
+                  />
+                  <Polyline
+                    positions={g.positions}
+                    interactive={false}
+                    pathOptions={{
+                      color: g.meters >= GAP_UNCERTAIN_M ? DANGER : ACCENT,
+                      weight: 4,
+                      dashArray: '1 8',
+                      lineCap: 'round',
+                    }}
+                  />
+                </Fragment>
+              ))}
+          </Pane>
         </>
       )}
 
@@ -549,6 +581,17 @@ export default function TraceLayer({ active, points, onChange, onClose }) {
                   </button>
                 )}
               </div>
+            )}
+
+            {snapToTrails && gapList.length > 0 && (
+              <p className="border-t border-[#262626] px-3.5 py-2 text-[11px] leading-snug text-[#8a8a8a]">
+                <span style={{ color: gapUncertain ? DANGER : ACCENT }}>
+                  {gapUncertain ? 'Tracé incertain' : 'Hors sentier'}
+                </span>
+                {' · '}
+                {gapList.map(([p, m]) => `${formatDistance(m)} sans sentier connu près du point ${p + 1}`).join(' · ')}
+                {gapUncertain && ', à vérifier sur la carte'}
+              </p>
             )}
 
             {points.length > 1 && showProfile && (
