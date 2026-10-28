@@ -3,6 +3,8 @@
 // Comme pour l'altimétrie, les requêtes passent par une file unique espacée, les tronçons déjà calculés sont
 // gardés en mémoire, et un 429 est réessayé après le blocage de 5 s.
 
+import { estimateHikingHours } from './profile'
+
 const ENDPOINT = 'https://data.geopf.fr/navigation/itineraire'
 // bdtopo-osrm, citée par la documentation, n'existe pas sur le service : seuls bdtopo-pgr et bdtopo-valhalla répondent
 const RESOURCE = 'bdtopo-pgr'
@@ -12,9 +14,15 @@ const BLOCK_DURATION_S = 5
 const MAX_RETRIES = 2
 const SERVER_ERROR_RETRY_MS = 1500
 const CACHE_MAX = 200
-// Dans la BD TOPO, l'importance 6 regroupe sentiers, chemins et pistes : les préférer écarte le tracé des routes
-// pour un détour minime (testé : +100 m et 1,7 km de sentier en plus entre Les Houches et Bellachat)
+// Dans la BD TOPO, seuls les sentiers ont l'importance 6 : chemins et pistes empierrées ont l'importance 5, comme les
+// petites routes. Les préférer suit les sentiers balisés, mais fait parfois éviter le chemin ou la piste qui est
+// le passage normal, au prix d'un long détour
 const PREFER_TRAILS = JSON.stringify({ constraintType: 'prefer', key: 'importance', operator: '=', value: 6 })
+// Au-delà de ce temps de marche en plus, le détour par les sentiers ne vaut pas le coup : on garde le plus court
+// (seuil réglé sur 46 montées comparées à Komoot : corrige 4 détours sans en créer)
+const MAX_TRAIL_DETOUR = 1.15
+// En dessous de cet écart de longueur, les deux chemins sont le même
+const SAME_PATH_M = 1
 
 // "lng,lat|lng,lat" arrondis à 1e-5° (~1 m) → [{ lat, lng }, …]
 const cache = new Map()
@@ -97,16 +105,8 @@ export function getCachedSegment(a, b) {
   return cache.get(key(a, b)) ?? null
 }
 
-/**
- * Chemin piéton entre deux points, sous forme de points { lat, lng } serrés.
- * Le profil piéton de l'IGN ne connaît pas la randonnée : il suit les sentiers, chemins et routes de la BD TOPO
- * au plus court, en préférant les sentiers. Lève NoRouteError si aucun chemin n'est trouvé entre les deux points.
- */
-export async function fetchWalkingSegment(a, b, signal) {
-  const k = key(a, b)
-  const hit = cache.get(k)
-  if (hit) return hit
-
+/** Plus court chemin piéton, avec ou sans contrainte : { path, distance } */
+async function fetchPath(a, b, constraints, signal) {
   const params = new URLSearchParams({
     resource: RESOURCE,
     profile: 'pedestrian',
@@ -116,8 +116,8 @@ export async function fetchWalkingSegment(a, b, signal) {
     geometryFormat: 'geojson',
     getSteps: 'false',
     getBbox: 'false',
-    constraints: PREFER_TRAILS,
   })
+  if (constraints) params.set('constraints', constraints)
   const res = await request(`${ENDPOINT}?${params}`, signal)
 
   if (res.status === 404 || res.status === 400) {
@@ -129,8 +129,50 @@ export async function fetchWalkingSegment(a, b, signal) {
   const data = await res.json()
   const coords = data.geometry?.coordinates
   if (!coords?.length) throw new NoRouteError('Aucun chemin trouvé entre ces points')
+  return { path: coords.map(([lng, lat]) => ({ lat, lng })), distance: Number(data.distance) }
+}
 
-  const path = coords.map(([lng, lat]) => ({ lat, lng }))
+/** Le chemin par les sentiers, sauf s'il rallonge trop le temps de marche par rapport au plus court */
+async function pickPath(trails, shortest, signal) {
+  if (Math.abs(trails.distance - shortest.distance) < SAME_PATH_M) return trails.path
+  try {
+    const [trailsHours, shortestHours] = await estimateHikingHours([trails.path, shortest.path], signal)
+    if (trailsHours != null && shortestHours != null && trailsHours > shortestHours * MAX_TRAIL_DETOUR) {
+      return shortest.path
+    }
+  } catch (e) {
+    if (signal?.aborted) throw e
+    // Altitudes indisponibles : sans moyen de comparer, on reste sur les sentiers
+  }
+  return trails.path
+}
+
+/**
+ * Chemin piéton entre deux points, sous forme de points { lat, lng } serrés.
+ * Le profil piéton de l'IGN ne connaît pas la randonnée : il suit les sentiers, chemins et routes de la BD TOPO
+ * au plus court. On demande deux chemins, l'un en préférant les sentiers, l'autre sans préférence, et on garde
+ * celui par les sentiers tant qu'il ne rallonge pas trop la marche.
+ * Lève NoRouteError si aucun chemin n'est trouvé entre les deux points.
+ */
+export async function fetchWalkingSegment(a, b, signal) {
+  const k = key(a, b)
+  const hit = cache.get(k)
+  if (hit) return hit
+
+  const [trails, shortest] = await Promise.allSettled([
+    fetchPath(a, b, PREFER_TRAILS, signal),
+    fetchPath(a, b, null, signal),
+  ])
+  signal?.throwIfAborted()
+  let path
+  if (trails.status === 'fulfilled' && shortest.status === 'fulfilled') {
+    path = await pickPath(trails.value, shortest.value, signal)
+  } else if (trails.status === 'fulfilled' || shortest.status === 'fulfilled') {
+    path = (trails.status === 'fulfilled' ? trails.value : shortest.value).path
+  } else {
+    throw trails.reason
+  }
+
   if (cache.size >= CACHE_MAX) cache.delete(cache.keys().next().value)
   cache.set(k, path)
   return path

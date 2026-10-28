@@ -113,6 +113,30 @@ export async function computeTraceProfile(points, signal) {
   return { points, samples, step, stats: computeStats(samples, length) }
 }
 
+/**
+ * Temps de marche (heures) de plusieurs chemins, d'après les seules altitudes de leurs échantillons (sans la pente
+ * du terrain), demandées en une fois : assez léger pour départager des chemins candidats.
+ * null pour un chemin dont l'altitude est inconnue partout.
+ */
+export async function estimateHikingHours(paths, signal) {
+  const runs = paths.map((points) => {
+    let length = 0
+    for (let i = 1; i < points.length; i++) length += distanceM(points[i - 1], points[i])
+    const step = SAMPLE_STEP_M * Math.max(1, Math.ceil(length / (MAX_SAMPLES * SAMPLE_STEP_M)))
+    return { length, samples: densify(points, step) }
+  })
+  const elevations = await fetchElevations(runs.flatMap((r) => r.samples.map((s) => [s.lng, s.lat])), signal)
+  let offset = 0
+  return runs.map(({ length, samples }) => {
+    samples.forEach((s, i) => {
+      s.z = elevations[offset + i]
+    })
+    offset += samples.length
+    const stats = computeStats(samples, length)
+    return stats.minZ == null ? null : hikingTimeHours(stats)
+  })
+}
+
 function computeStats(samples, length) {
   let gain = 0
   let loss = 0
