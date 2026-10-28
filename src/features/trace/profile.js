@@ -21,6 +21,17 @@ export const SLOPE_CLASSES = [
 
 const ASPECTS = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO']
 
+/**
+ * Temps de marche (heures) selon la norme DIN 33466 des panneaux de randonnée : 4 km/h à plat,
+ * 300 m/h en montée et 500 m/h en descente ; la plus longue des deux durées compte entière, l'autre pour moitié.
+ * Sans pause, pour un marcheur moyen sur sentier.
+ */
+export function hikingTimeHours({ length, gain, loss }) {
+  const flat = length / 4000
+  const vertical = gain / 300 + loss / 500
+  return Math.max(flat, vertical) + Math.min(flat, vertical) / 2
+}
+
 export function slopeClass(slope) {
   if (slope == null) return null
   return SLOPE_CLASSES.find((c) => slope >= c.min)

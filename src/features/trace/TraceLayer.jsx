@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useMap, useMapEvents, Marker, Polyline, CircleMarker, Tooltip } from 'react-leaflet'
 import L from 'leaflet'
-import { Undo2, Eraser, Move, Trash, X, ChevronDown, ChevronUp } from 'lucide-react'
+import { Undo2, Eraser, Move, Trash, X, ChevronDown, ChevronUp, Footprints } from 'lucide-react'
 import { useTraceProfile } from './useTraceProfile'
 import { useHikingPath } from './useHikingPath'
-import { slopeClass } from './profile'
+import { slopeClass, hikingTimeHours } from './profile'
 import TraceProfile, { SampleReadout } from './TraceProfile.jsx'
 
 const LONG_PRESS_MS = 450
@@ -61,6 +61,15 @@ function formatDistance(m) {
   return `${(m / 1000).toLocaleString('fr-FR', { maximumFractionDigits: 2 })} km`
 }
 
+// Arrondi au quart d'heure, comme sur les panneaux
+function formatDuration(hours) {
+  const quarters = Math.max(1, Math.round(hours * 4))
+  const h = Math.floor(quarters / 4)
+  const min = (quarters % 4) * 15
+  if (!h) return `${min} min`
+  return min ? `${h} h ${String(min).padStart(2, '0')}` : `${h} h`
+}
+
 function TracePoint({ point, index, total, selected, moving, interactive, onSelect, onDragEnd, pointerTypeRef }) {
   const icon = useMemo(() => pointIcon(index, total, selected, moving), [index, total, selected, moving])
   const eventHandlers = useMemo(
@@ -112,9 +121,10 @@ export default function TraceLayer({ active, points, onChange, onClose }) {
   // Les points posés sont des étapes : en mode « sentiers », le tracé affiché et analysé suit les chemins entre elles
   const [snapToTrails, setSnapToTrails] = useState(true)
   const hiking = useHikingPath(points, snapToTrails)
-  const routing = snapToTrails && points.length > 1 && hiking.line == null
-  const line = hiking.line ?? points
-  const profileState = useTraceProfile(hiking.line ?? NO_POINTS)
+  const routing = hiking.status === 'loading'
+  const line = hiking.line
+  // Le profil n'analyse que le tracé définitif, pour ne pas interroger l'IGN sur des lignes droites provisoires
+  const profileState = useTraceProfile(hiking.complete ? line : NO_POINTS)
   const [showProfile, setShowProfile] = useState(true)
   // Échantillon survolé, partagé entre le trait sur la carte et la courbe du profil
   const [hoverIdx, setHoverIdx] = useState(null)
@@ -137,6 +147,10 @@ export default function TraceLayer({ active, points, onChange, onClose }) {
     }
     return runs
   }, [profileState.fresh, profileState.profile])
+
+  // Temps de marche, seulement quand le profil (donc le dénivelé) correspond au tracé affiché
+  const stats = profileState.fresh ? profileState.profile.stats : null
+  const walkTime = stats && stats.minZ != null ? hikingTimeHours(stats) : null
 
   const distance = useMemo(() => {
     let d = 0
@@ -456,19 +470,34 @@ export default function TraceLayer({ active, points, onChange, onClose }) {
                 </div>
                 <p className="font-din mt-1.5 truncate text-[12px] uppercase tracking-[0.12em] text-[#8a8a8a]">
                   {points.length > 1 && <>{formatDistance(distance)} · </>}
-                  {points.length} point{points.length > 1 ? 's' : ''}
+                  {/* Une fois le temps de marche connu, il remplace le nombre de points, faute de place */}
+                  {walkTime != null ? (
+                    <span className="text-white" title="Temps de marche estimé sans pause (norme DIN 33466)">
+                      ≈ {formatDuration(walkTime)}
+                    </span>
+                  ) : (
+                    <>
+                      {points.length} point{points.length > 1 ? 's' : ''}
+                    </>
+                  )}
                 </p>
               </div>
               <div className="flex shrink-0 items-center gap-1.5">
                 <button
                   onClick={() => setSnapToTrails((v) => !v)}
                   aria-pressed={snapToTrails}
+                  aria-label="Suivre les sentiers"
                   title={snapToTrails ? 'Le tracé suit les sentiers : cliquer pour tracer en ligne droite' : 'Faire suivre les sentiers au tracé'}
-                  className={`${squareBtn} gap-1.5 px-2 text-[10px] font-semibold uppercase tracking-wider`}
+                  className={`${squareBtn} min-w-8 gap-1.5 px-2 text-[10px] font-semibold uppercase tracking-wider`}
                   style={snapToTrails ? { borderColor: ACCENT, color: ACCENT } : undefined}
                 >
-                  {routing && <span className="h-1.5 w-1.5 animate-pulse" style={{ background: ACCENT }} />}
-                  Sur sentier
+                  {routing ? (
+                    <span className="h-1.5 w-1.5 animate-pulse" style={{ background: ACCENT }} />
+                  ) : (
+                    <Footprints size={14} className="sm:hidden" />
+                  )}
+                  {/* Sur mobile, l'icône seule laisse la place à la distance et au temps de marche */}
+                  <span className="hidden sm:inline">Sur sentier</span>
                 </button>
                 {points.length > 1 && (
                   <button

@@ -10,7 +10,11 @@ const TIMEOUT_MS = 25000
 const MIN_INTERVAL_MS = 250
 const BLOCK_DURATION_S = 5
 const MAX_RETRIES = 2
+const SERVER_ERROR_RETRY_MS = 1500
 const CACHE_MAX = 200
+// Dans la BD TOPO, l'importance 6 regroupe sentiers, chemins et pistes : les préférer écarte le tracé des routes
+// pour un détour minime (testé : +100 m et 1,7 km de sentier en plus entre Les Houches et Bellachat)
+const PREFER_TRAILS = JSON.stringify({ constraintType: 'prefer', key: 'importance', operator: '=', value: 6 })
 
 // "lng,lat|lng,lat" arrondis à 1e-5° (~1 m) → [{ lat, lng }, …]
 const cache = new Map()
@@ -80,13 +84,23 @@ async function request(url, signal, attempt = 0) {
     await sleep(BLOCK_DURATION_S * 1000, signal)
     return request(url, signal, attempt + 1)
   }
+  // Le service renvoie parfois une erreur 500 passagère : une seconde tentative suffit le plus souvent
+  if (res.status >= 500 && attempt < 1) {
+    await sleep(SERVER_ERROR_RETRY_MS, signal)
+    return request(url, signal, attempt + 1)
+  }
   return res
+}
+
+/** Chemin déjà calculé entre deux points, sans appel réseau (null s'il ne l'a pas encore été) */
+export function getCachedSegment(a, b) {
+  return cache.get(key(a, b)) ?? null
 }
 
 /**
  * Chemin piéton entre deux points, sous forme de points { lat, lng } serrés.
  * Le profil piéton de l'IGN ne connaît pas la randonnée : il suit les sentiers, chemins et routes de la BD TOPO
- * au plus court. Lève NoRouteError si aucun chemin n'est trouvé entre les deux points.
+ * au plus court, en préférant les sentiers. Lève NoRouteError si aucun chemin n'est trouvé entre les deux points.
  */
 export async function fetchWalkingSegment(a, b, signal) {
   const k = key(a, b)
@@ -102,6 +116,7 @@ export async function fetchWalkingSegment(a, b, signal) {
     geometryFormat: 'geojson',
     getSteps: 'false',
     getBbox: 'false',
+    constraints: PREFER_TRAILS,
   })
   const res = await request(`${ENDPOINT}?${params}`, signal)
 
