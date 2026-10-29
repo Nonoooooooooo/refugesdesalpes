@@ -5,6 +5,7 @@ import placesHandler from './api/places-photos.js'
 import overpassHandler from './api/overpass.js'
 import feedbackHandler from './api/feedback.js'
 import aromeHandler from './api/arome.js'
+import webcamsHandler from './api/webcams.js'
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
@@ -12,6 +13,7 @@ export default defineConfig(({ mode }) => {
   process.env.GOOGLE_PLACES_API_KEY = env.GOOGLE_PLACES_API_KEY || process.env.GOOGLE_PLACES_API_KEY
   process.env.DISCORD_WEBHOOK_URL = env.DISCORD_WEBHOOK_URL || process.env.DISCORD_WEBHOOK_URL
   process.env.METEOFRANCE_AROME_TOKEN = env.METEOFRANCE_AROME_TOKEN || env.VITE_METEOFRANCE_API_KEY || process.env.METEOFRANCE_AROME_TOKEN
+  process.env.WINDY_API_KEY = env.WINDY_API_KEY || env.VITE_WINDY_API_KEY || process.env.WINDY_API_KEY
 
   return {
     plugins: [
@@ -205,6 +207,37 @@ export default defineConfig(({ mode }) => {
             }
             try {
               await aromeHandler(fakeReq, fakeRes)
+            } catch (err) {
+              res.statusCode = 500
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({ error: err.message }))
+            }
+          })
+
+          server.middlewares.use('/api/webcams', async (req, res) => {
+            const parsedUrl = new URL(req.url, 'http://localhost')
+            const fakeReq = {
+              method: req.method,
+              headers: req.headers,
+              query: Object.fromEntries(parsedUrl.searchParams),
+            }
+            const fakeRes = {
+              statusCode: 200,
+              setHeader(k, v) {
+                res.setHeader(k, v)
+                return this
+              },
+              status(code) {
+                res.statusCode = code
+                return this
+              },
+              json(data) {
+                res.setHeader('Content-Type', 'application/json')
+                res.end(JSON.stringify(data))
+              },
+            }
+            try {
+              await webcamsHandler(fakeReq, fakeRes)
             } catch (err) {
               res.statusCode = 500
               res.setHeader('Content-Type', 'application/json')

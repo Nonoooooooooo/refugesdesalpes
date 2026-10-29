@@ -52,55 +52,28 @@ export default function WebcamLayer({ active: propActive }) {
   // Logique principale : requête BBOX ou vidage immédiat de l'état
   const checkAndFetch = useCallback(() => {
     const active = isLayerActive()
-    const envKey = import.meta.env.VITE_WINDY_API_KEY
-
-    // Sécurité : bloque si la variable est indéfinie ou égale à un placeholder
-    const isPlaceholder = !envKey || envKey === 'ta_cle_api_ici' || envKey === 'votre_cle_windy_ici' || envKey.trim() === ''
-    if (isPlaceholder) {
-      console.warn(
-        'Clé API Windy Webcams (VITE_WINDY_API_KEY) non configurée dans .env. Veuillez configurer votre clé dans le fichier .env.',
-      )
-      setWebcams([])
-      return
-    }
-
-    const apiKey = envKey.trim()
-    const isKeyValid = Boolean(apiKey && typeof apiKey === 'string' && apiKey.trim() !== '')
     const zoom = map.getZoom()
 
-    // Condition 4 : calque actif, clé valide et zoom >= 10
-    if (active && isKeyValid && zoom >= MIN_ZOOM) {
+    // Calque actif et zoom >= 10 (la clé Windy est ajoutée côté serveur par /api/webcams)
+    if (active && zoom >= MIN_ZOOM) {
       abortRef.current?.abort()
       const ctrl = new AbortController()
       abortRef.current = ctrl
 
       const b = map.getBounds()
-      const south = b.getSouth()
-      const west = b.getWest()
-      const north = b.getNorth()
-      const east = b.getEast()
+      const south = b.getSouth().toFixed(5)
+      const west = b.getWest().toFixed(5)
+      const north = b.getNorth().toFixed(5)
+      const east = b.getEast().toFixed(5)
 
       // L'API Windy v3 attend la bbox au format [nord, est, sud, ouest]
-      const urlPrimary = `https://api.windy.com/webcams/api/v3/webcams?bbox=${north},${east},${south},${west}&include=location,player&limit=50`
-      const urlFallback = `https://api.windy.com/webcams/api/v3/webcams?bbox=${south},${west},${north},${east}&include=location,player&limit=50`
+      const urlPrimary = `/api/webcams?bbox=${north},${east},${south},${west}`
+      const urlFallback = `/api/webcams?bbox=${south},${west},${north},${east}`
 
-      const headers = {
-        'x-windy-key': apiKey.trim(),
-        'x-windy-api-key': apiKey.trim(),
-      }
-
-      fetch(urlPrimary, {
-        method: 'GET',
-        headers,
-        signal: ctrl.signal,
-      })
+      fetch(urlPrimary, { signal: ctrl.signal })
         .then((res) => {
-          if (!res.ok) {
-            return fetch(urlFallback, {
-              method: 'GET',
-              headers,
-              signal: ctrl.signal,
-            })
+          if (!res.ok && res.status !== 429 && res.status !== 503) {
+            return fetch(urlFallback, { signal: ctrl.signal })
           }
           return res
         })

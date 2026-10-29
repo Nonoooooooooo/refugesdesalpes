@@ -2,37 +2,23 @@
 // Récupère les photos de Google Places (New) et les proxifie en toute sécurité
 // sans JAMAIS exposer la clé API Google au client (navigateur).
 
+import { clientIp, createRateLimiter, isAllowedOrigin } from './_security.js'
+
 export const maxDuration = 15
 
 // Cache en mémoire pour limiter les requêtes et les coûts Google Places API
 const searchCache = new Map()
 const CACHE_TTL_MS = 60 * 60 * 1000 // 1 heure
 
-/**
- * Vérifie si l'origine de la requête est légitime (même origine, localhost ou sous-domaine de prévisualisation)
- */
-function isAllowedOrigin(req) {
-  const origin = req.headers?.origin || req.headers?.referer
-  if (!origin) return true // Requêtes directes ou navigation standard
-  try {
-    const url = new URL(origin)
-    const host = url.hostname.toLowerCase()
-    if (
-      host === 'localhost' ||
-      host === '127.0.0.1' ||
-      host.endsWith('.vercel.app') ||
-      host.includes('refugesdesalpes')
-    ) {
-      return true
-    }
-    const reqHost = (req.headers?.host || '').split(':')[0].toLowerCase()
-    if (reqHost && host === reqHost) {
-      return true
-    }
-    return false
-  } catch {
-    return false
-  }
+// Chaque recherche non cachée est facturée par Google : 60 par IP et par tranche de 10 minutes suffisent largement
+const isSearchRateLimited = createRateLimiter({ windowMs: 10 * 60 * 1000, max: 60 })
+
+// Seules les tailles demandées par le site sont servies : des tailles arbitraires contourneraient le cache CDN
+// et multiplieraient les appels facturés pour une même photo
+const PHOTO_SIZES = [400, 1200, 2400]
+const snapPhotoSize = (raw) => {
+  const n = parseInt(raw, 10) || 1200
+  return PHOTO_SIZES.find((s) => n <= s) ?? PHOTO_SIZES[PHOTO_SIZES.length - 1]
 }
 
 export default async function handler(req, res) {
@@ -56,15 +42,15 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Identifiant de photo Google Places invalide' })
     }
 
-    const maxHeight = Math.min(Math.max(parseInt(query.maxHeight, 10) || 1200, 100), 2400)
-    const maxWidth = Math.min(Math.max(parseInt(query.maxWidth, 10) || 1200, 100), 2400)
+    const maxHeight = snapPhotoSize(query.maxHeight)
+    const maxWidth = snapPhotoSize(query.maxWidth)
 
     try {
       const googleMediaUrl = `https://places.googleapis.com/v1/${mediaName}/media?maxHeightPx=${maxHeight}&maxWidthPx=${maxWidth}&key=${apiKey}`
       const imgRes = await fetch(googleMediaUrl)
 
       if (!imgRes.ok) {
-        return res.status(imgRes.status).json({ error: 'Image introuvable sur Google Places' })
+        return res.status(imgRes.status === 404 ? 404 : 502).json({ error: 'Image introuvable sur Google Places' })
       }
 
       const contentType = imgRes.headers.get('content-type') || 'image/jpeg'
@@ -81,7 +67,7 @@ export default async function handler(req, res) {
         return res.send(buffer)
       }
       return res.end(buffer)
-    } catch (err) {
+    } catch {
       return res.status(502).json({ error: 'Erreur proxy photo Google Places' })
     }
   }
@@ -113,6 +99,10 @@ export default async function handler(req, res) {
     return res.status(200).json({ photos: cached.photos })
   }
 
+  if (isSearchRateLimited(clientIp(req))) {
+    return res.status(429).json({ error: 'Trop de recherches de photos, réessayez dans quelques minutes.' })
+  }
+
   try {
     const searchRes = await fetch('https://places.googleapis.com/v1/places:searchText', {
       method: 'POST',
@@ -138,8 +128,9 @@ export default async function handler(req, res) {
     })
 
     if (!searchRes.ok) {
-      const err = await searchRes.text()
-      return res.status(searchRes.status).json({ error: err })
+      // Le détail de Google (projet, état de la clé) reste dans les journaux serveur
+      console.error('Google Places searchText:', searchRes.status, (await searchRes.text()).slice(0, 300))
+      return res.status(502).json({ error: 'Recherche Google Places indisponible' })
     }
 
     const searchData = await searchRes.json()
@@ -191,6 +182,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ photos })
   } catch (error) {
-    return res.status(500).json({ error: error.message })
+    console.error('Exception Google Places:', error)
+    return res.status(500).json({ error: 'Erreur réseau Google Places' })
   }
 }

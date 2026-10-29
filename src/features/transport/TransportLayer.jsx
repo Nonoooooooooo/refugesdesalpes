@@ -2,6 +2,10 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { TRANSPORT_DATA_URL } from './transportSource.js';
+import { escapeHtml } from '../../lib/text.js';
+
+// Couleur de ligne issue des données GTFS : seule une couleur hexadécimale entre dans un attribut style
+const safeColor = (c) => (/^#[0-9a-fA-F]{3,8}$/.test(c || '') ? c : '#3b82f6');
 
 // S'assurer que L est attaché à window avant d'importer le plugin de décalage parallèle
 if (typeof window !== 'undefined') {
@@ -236,24 +240,24 @@ const createStopTooltipContent = (sp, lineProps) => {
     : isTGV
     ? 'TGV INOUI'
     : lineProps.ref || (lineProps.mode === 'train' ? 'TER' : 'Ligne');
-  const timeInfo = sp.time ? `Passage : ${sp.time.split('|')[0].trim()}` : '';
+  const timeInfo = sp.time ? `Passage : ${String(sp.time).split('|')[0].trim()}` : '';
 
   return `
     <div style="font-family: inherit; min-width: 150px; max-width: 260px; padding: 2px;">
       <div style="font-weight: 700; font-size: 12px; color: #fff; line-height: 1.3; margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.15); padding-bottom: 3px;">
-        ${stopName}
+        ${escapeHtml(stopName)}
       </div>
       <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 3px; font-size: 11px;">
-        <span style="background: ${lineProps.color || '#3b82f6'}; color: #fff; font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 4px; text-transform: uppercase; white-space: nowrap;">
-          ${lineBadge}
+        <span style="background: ${safeColor(lineProps.color)}; color: #fff; font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 4px; text-transform: uppercase; white-space: nowrap;">
+          ${escapeHtml(lineBadge)}
         </span>
         <span style="color: rgba(255,255,255,0.85); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px;">
-          ${lineProps.name || ''}
+          ${escapeHtml(lineProps.name || '')}
         </span>
       </div>
       ${
         timeInfo
-          ? `<div style="color: #38bdf8; font-size: 10px; font-weight: 600; margin-top: 3px;">${timeInfo}</div>`
+          ? `<div style="color: #38bdf8; font-size: 10px; font-weight: 600; margin-top: 3px;">${escapeHtml(timeInfo)}</div>`
           : ''
       }
     </div>
@@ -376,14 +380,14 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
                 <span style="background: linear-gradient(135deg, #047857, #059669); color: #fff; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px;">
                   Frecciarossa
                 </span>
-                <span style="color: #cbd5e1; font-size: 11px; font-weight: 700;">${props.ref || 'Frecciarossa'}</span>
+                <span style="color: #cbd5e1; font-size: 11px; font-weight: 700;">${escapeHtml(props.ref || 'Frecciarossa')}</span>
                 <span style="margin-left: auto; color: rgba(255,255,255,0.45); font-size: 10px;">${stopCount} gares</span>
               </div>
-              <div style="font-weight: 700; font-size: 12.5px; color: #fff; line-height: 1.35;">${props.name}</div>
+              <div style="font-weight: 700; font-size: 12.5px; color: #fff; line-height: 1.35;">${escapeHtml(props.name)}</div>
               <div style="margin-top: 8px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 11px;">
                 <div style="color: #a7f3d0; font-weight: 600; display: flex; align-items: center; gap: 4px;">
                   <span style="color: #34d399; font-size: 9.5px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.3px;">Liaison :</span>
-                  <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${originName} &rarr; ${destName}</span>
+                  <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(originName)} &rarr; ${escapeHtml(destName)}</span>
                 </div>
               </div>
             </div>
@@ -420,14 +424,14 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
                 <span style="background: linear-gradient(135deg, #be123c, #e11d48); color: #fff; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px;">
                   inOui
                 </span>
-                <span style="color: #cbd5e1; font-size: 11px; font-weight: 700;">${props.ref || 'TGV INOUI'}</span>
+                <span style="color: #cbd5e1; font-size: 11px; font-weight: 700;">${escapeHtml(props.ref || 'TGV INOUI')}</span>
                 <span style="margin-left: auto; color: rgba(255,255,255,0.45); font-size: 10px;">${stopCount} gares</span>
               </div>
-              <div style="font-weight: 700; font-size: 12.5px; color: #fff; line-height: 1.35;">${props.name}</div>
+              <div style="font-weight: 700; font-size: 12.5px; color: #fff; line-height: 1.35;">${escapeHtml(props.name)}</div>
               <div style="margin-top: 8px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 11px;">
                 <div style="color: #fecdd3; font-weight: 600; display: flex; align-items: center; gap: 4px;">
                   <span style="color: #fb7185; font-size: 9.5px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.3px;">Liaison :</span>
-                  <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${originName} &rarr; ${destName}</span>
+                  <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(originName)} &rarr; ${escapeHtml(destName)}</span>
                 </div>
               </div>
             </div>
@@ -453,13 +457,13 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
       return `
         <div style="font-family: inherit; min-width: 160px; padding: 2px;">
           <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
-            <span style="background: ${props.color || '#3b82f6'}; color: #fff; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 6px; text-transform: uppercase;">
-              ${props.ref || modeBadge}
+            <span style="background: ${safeColor(props.color)}; color: #fff; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 6px; text-transform: uppercase;">
+              ${escapeHtml(props.ref || modeBadge)}
             </span>
             <span style="color: rgba(255,255,255,0.7); font-size: 11px;">${modeBadge}</span>
           </div>
-          <div style="font-weight: 600; font-size: 12px; color: #fff; line-height: 1.3;">${props.name}</div>
-          <div style="font-size: 10px; color: rgba(255,255,255,0.6); margin-top: 2px;">${props.operator || ''}</div>
+          <div style="font-weight: 600; font-size: 12px; color: #fff; line-height: 1.3;">${escapeHtml(props.name)}</div>
+          <div style="font-size: 10px; color: rgba(255,255,255,0.6); margin-top: 2px;">${escapeHtml(props.operator || '')}</div>
         </div>
       `;
     };
@@ -694,11 +698,11 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
           <div style="font-family: inherit; min-width: 140px; padding: 2px;">
             <div style="display: flex; align-items: center; gap: 5px; margin-bottom: 2px;">
               <span style="background: #3b82f6; color: #fff; font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 4px; text-transform: uppercase;">
-                ${props.ref || 'Gare'}
+                ${escapeHtml(props.ref || 'Gare')}
               </span>
               <span style="font-size: 10px; color: rgba(255,255,255,0.7);">Pôle d'échange</span>
             </div>
-            <div style="font-weight: 700; font-size: 12px; color: #fff;">${props.name}</div>
+            <div style="font-weight: 700; font-size: 12px; color: #fff;">${escapeHtml(props.name)}</div>
           </div>
         `,
           {
@@ -1132,7 +1136,7 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
               html: `
                 <div style="display: inline-flex; align-items: center; gap: 6px; background: #059669; color: #fff; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 9999px; box-shadow: 0 4px 14px rgba(0,0,0,0.6); border: 2px solid #fff; white-space: nowrap; transform: translate(-50%, -120%); pointer-events: none;">
                   <span style="font-size: 10px; font-weight: 900; letter-spacing: 0.5px; opacity: 0.95;">DÉPART & TERMINUS</span>
-                  <span style="max-width: 160px; overflow: hidden; text-overflow: ellipsis; font-weight: 600;">${originLabel}</span>
+                  <span style="max-width: 160px; overflow: hidden; text-overflow: ellipsis; font-weight: 600;">${escapeHtml(originLabel)}</span>
                 </div>
               `,
               iconSize: [0, 0],
@@ -1148,7 +1152,7 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
               html: `
                 <div style="display: inline-flex; align-items: center; gap: 5px; background: #059669; color: #fff; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 9999px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); border: 2px solid #fff; white-space: nowrap; transform: translate(-50%, -120%); pointer-events: none;">
                   <span style="font-size: 10px; font-weight: 900; letter-spacing: 0.5px; opacity: 0.95;">DÉPART</span>
-                  <span style="max-width: 140px; overflow: hidden; text-overflow: ellipsis; font-weight: 600;">${originLabel}</span>
+                  <span style="max-width: 140px; overflow: hidden; text-overflow: ellipsis; font-weight: 600;">${escapeHtml(originLabel)}</span>
                 </div>
               `,
               iconSize: [0, 0],
@@ -1163,7 +1167,7 @@ export default function TransportLayer({ active, onSelectTransport, selectedTran
               html: `
                 <div style="display: inline-flex; align-items: center; gap: 5px; background: #e11d48; color: #fff; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 9999px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); border: 2px solid #fff; white-space: nowrap; transform: translate(-50%, -120%); pointer-events: none;">
                   <span style="font-size: 10px; font-weight: 900; letter-spacing: 0.5px; opacity: 0.95;">TERMINUS</span>
-                  <span style="max-width: 140px; overflow: hidden; text-overflow: ellipsis; font-weight: 600;">${destLabel}</span>
+                  <span style="max-width: 140px; overflow: hidden; text-overflow: ellipsis; font-weight: 600;">${escapeHtml(destLabel)}</span>
                 </div>
               `,
               iconSize: [0, 0],

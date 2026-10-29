@@ -368,7 +368,7 @@ ${
 ${jsonLd({ '@context': 'https://schema.org', '@graph': [...schema, breadcrumb] })}
 <style>${CSS}</style>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-F5NXK7Q2RD"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-F5NXK7Q2RD');</script>
+<script src="/ga.js"></script>
 </head>
 <body>
 <header class="site"><div class="wrap">

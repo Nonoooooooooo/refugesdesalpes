@@ -19,7 +19,11 @@
       "headers": [
         { "key": "X-Content-Type-Options", "value": "nosniff" },
         { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
-        { "key": "X-XSS-Protection", "value": "1; mode=block" },
+        { "key": "X-XSS-Protection", "value": "0" },
+        {
+          "key": "Content-Security-Policy",
+          "value": "script-src 'self' https://*.googletagmanager.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'"
+        },
         { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
         { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=(self)" },
         { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains; preload" }
@@ -40,7 +44,7 @@
     { "source": "/a-propos", "destination": "/a-propos.html" },
     { "source": "/massif/:slug", "destination": "/massif/:slug.html" },
     { "source": "/refuge/:slug", "destination": "/refuge/:slug.html" },
-    { "source": "/rimg/:path*", "destination": "https://www.refuges.info/:path*" },
-    { "source": "/api/meteofrance/:path*", "destination": "https://public-api.meteofrance.fr/public/DPBRA/v1/:path*" }
+    { "source": "/rimg/photos_points/:path*", "destination": "https://www.refuges.info/photos_points/:path*" },
+    { "source": "/api/meteofrance/massif/:path*", "destination": "https://public-api.meteofrance.fr/public/DPBRA/v1/massif/:path*" }
   ]
 }

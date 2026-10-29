@@ -2,70 +2,19 @@
 // Réceptionne les messages de la chatbox du site et les retransmet en toute sécurité
 // vers le serveur Discord via Webhook sans jamais exposer l'URL du webhook au client.
 
+import { clientIp, createRateLimiter, isAllowedOrigin } from './_security.js'
+
 export const maxDuration = 10
 
-// Webhook Discord par défaut (sécurisé côté serveur uniquement)
-const DEFAULT_DISCORD_WEBHOOK =
-  'https://discord.com/api/webhooks/1559273909910511617/1_VZ7vtUMoCmO43tHWI5kWwX6IqCcT2NSRDKgJi0wZqTGKBDGob8YhvQJ5LFhB1UBP4S'
+// Anti-spam en mémoire : max 5 messages par tranche de 10 minutes par adresse IP
+const isRateLimited = createRateLimiter({ windowMs: 10 * 60 * 1000, max: 5 })
 
-// Anti-spam en mémoire : max 20 messages par tranche de 5 minutes par adresse IP
-const ipRateLimit = new Map()
-const RATE_LIMIT_WINDOW_MS = 5 * 60 * 1000
-const MAX_MESSAGES_PER_WINDOW = 20
-
-function isRateLimited(ip) {
-  if (!ip) return false
-  const now = Date.now()
-  const record = ipRateLimit.get(ip) || { count: 0, firstSeen: now }
-
-  if (now - record.firstSeen > RATE_LIMIT_WINDOW_MS) {
-    ipRateLimit.set(ip, { count: 1, firstSeen: now })
-    return false
-  }
-
-  if (record.count >= MAX_MESSAGES_PER_WINDOW) {
-    return true
-  }
-
-  record.count += 1
-  ipRateLimit.set(ip, record)
-  return false
-}
-
-function isAllowedOrigin(req) {
-  const origin = req.headers?.origin || req.headers?.referer
-  if (!origin) return true // Navigation directe ou PWA
-  try {
-    const url = new URL(origin)
-    const host = url.hostname.toLowerCase()
-    // Autoriser localhost, domaine vercel ou tout sous-domaine lié
-    if (
-      host === 'localhost' ||
-      host === '127.0.0.1' ||
-      host.endsWith('.vercel.app') ||
-      host.includes('refugesdesalpes')
-    ) {
-      return true
-    }
-    const reqHost = (req.headers?.['x-forwarded-host'] || req.headers?.host || '')
-      .split(':')[0]
-      .toLowerCase()
-    return true // Par sécurité pour éviter de bloquer des visiteurs légitimes sur mobile
-  } catch {
-    return true
-  }
-}
+// Retire les caractères de contrôle (hors retours à la ligne) qui pourraient brouiller l'affichage Discord
+// oxlint-disable-next-line no-control-regex
+const stripControlChars = (s) => s.replace(/[\u0000-\u0009\u000B-\u001F\u007F]/g, '')
 
 export default async function handler(req, res) {
-  // En-têtes CORS pour autoriser l'accès depuis n'importe quel domaine/sous-domaine de prévisualisation
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
-
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end()
-  }
-
+  // Pas d'en-tête CORS : seul le site lui-même (même origine) peut appeler ce point d'accès depuis un navigateur
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Méthode non autorisée (POST uniquement)' })
   }
@@ -74,12 +23,7 @@ export default async function handler(req, res) {
     return res.status(403).json({ error: 'Accès interdit : origine non autorisée' })
   }
 
-  const clientIp =
-    req.headers?.['x-forwarded-for']?.split(',')[0]?.trim() ||
-    req.socket?.remoteAddress ||
-    '127.0.0.1'
-
-  if (isRateLimited(clientIp)) {
+  if (isRateLimited(clientIp(req))) {
     return res.status(429).json({
       error: 'Trop de messages envoyés récemment. Merci de patienter quelques minutes.',
     })
@@ -107,7 +51,7 @@ export default async function handler(req, res) {
     return res.status(200).json({ success: true, message: 'Message transmis avec succès' })
   }
 
-  const cleanMessage = String(message || '').trim()
+  const cleanMessage = stripControlChars(String(message || '')).trim()
   if (!cleanMessage || cleanMessage.length < 2) {
     return res.status(400).json({ error: 'Veuillez renseigner votre message.' })
   }
@@ -116,21 +60,21 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Le message ne doit pas dépasser 2000 caractères.' })
   }
 
-  const cleanAuthor = String(author || 'Anonyme').slice(0, 60).trim()
-  const cleanCategory = String(category || 'Message Chatbox').slice(0, 50).trim()
-  const envUrl = process.env.DISCORD_WEBHOOK_URL
-  const webhookUrl =
-    envUrl && !envUrl.includes('1558602035497148469')
-      ? envUrl
-      : DEFAULT_DISCORD_WEBHOOK
-  if (!webhookUrl) {
-    console.error('Configuration manquante : DISCORD_WEBHOOK_URL non définie')
+  const cleanAuthor = stripControlChars(String(author || 'Anonyme')).slice(0, 60).trim()
+  const cleanCategory = stripControlChars(String(category || 'Message Chatbox')).slice(0, 50).trim()
+
+  // L'URL du webhook ne vit que dans les variables d'environnement (Vercel ou .env local), jamais dans le code
+  const webhookUrl = process.env.DISCORD_WEBHOOK_URL
+  if (!webhookUrl || !/^https:\/\/(discord|discordapp)\.com\/api\/webhooks\//.test(webhookUrl)) {
+    console.error('Configuration manquante : DISCORD_WEBHOOK_URL absente ou invalide')
     return res.status(503).json({ error: 'Service de messagerie temporairement indisponible' })
   }
 
   const payload = {
     username: 'Refuges des Alpes · Chatbox',
     avatar_url: 'https://cdn-icons-png.flaticon.com/512/2903/2903542.png',
+    // Aucune mention (@everyone, rôles, membres) ne peut être déclenchée par un visiteur
+    allowed_mentions: { parse: [] },
     embeds: [
       {
         title: `📬 Nouveau retour : ${cleanCategory}`,

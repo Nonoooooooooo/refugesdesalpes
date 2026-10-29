@@ -3,6 +3,8 @@
 // - Met en cache les capacités et images radar pour respecter le quota de 50 req/min
 // - Injecte le jeton API Météo-France de manière sécurisée côté serveur
 
+import { isAllowedOrigin } from './_security.js'
+
 export const maxDuration = 15
 
 const AROME_BASE_URL = 'https://public-api.meteofrance.fr/public/aromepi/1.0/wms/MF-NWP-HIGHRES-AROMEPI-001-FRANCE-WMS'
@@ -16,19 +18,9 @@ let capabilitiesCache = null
 let capabilitiesCacheTime = 0
 const CAPABILITIES_CACHE_TTL_MS = 12 * 60 * 1000 // 12 minutes
 
-// Jeton de secours officiel Météo-France AROME-PI pour la production Vercel
-const FALLBACK_TOKEN =
-  'eyJ4NXQiOiJZV0kxTTJZNE1qWTNOemsyTkRZeU5XTTRPV014TXpjek1UVmhNbU14T1RSa09ETXlOVEE0Tnc9PSIsImtpZCI6ImdhdGV3YXlfY2VydGlmaWNhdGVfYWxpYXMiLCJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJCYXJ0YW15QGNhcmJvbi5zdXBlciIsImFwcGxpY2F0aW9uIjp7Im93bmVyIjoiQmFydGFteSIsInRpZXJRdW90YVR5cGUiOm51bGwsInRpZXIiOiJVbmxpbWl0ZWQiLCJuYW1lIjoiRGVmYXVsdEFwcGxpY2F0aW9uIiwiaWQiOjUwMTY0LCJ1dWlkIjoiNGNiOTQ4NjMtNWY2My00MzVhLWE0ODYtMmQwNDYzYjUyNDdkIn0sImlzcyI6Imh0dHBzOlwvXC9wb3J0YWlsLWFwaS5tZXRlb2ZyYW5jZS5mcjo0NDNcL29hdXRoMlwvdG9rZW4iLCJ0aWVySW5mbyI6eyI1MFBlck1pbiI6eyJ0aWVyUXVvdGFUeXBlIjoicmVxdWVzdENvdW50IiwiZ3JhcGhRTE1heENvbXBsZXhpdHkiOjAsImdyYXBoUUxNYXhEZXB0aCI6MCwic3RvcE9uUXVvdGFSZWFjaCI6dHJ1ZSwic3Bpa2VBcnJlc3RMaW1pdCI6MCwic3Bpa2VBcnJlc3RVbml0Ijoic2VjIn19LCJrZXl0eXBlIjoiUFJPRFVDVElPTiIsInN1YnNjcmliZWRBUElzIjpbeyJzdWJzY3JpYmVyVGVuYW50RG9tYWluIjoiY2FyYm9uLnN1cGVyIiwibmFtZSI6IkFST01FLVBJIiwiY29udGV4dCI6IlwvcHVibGljXC9hcm9tZXBpXC8xLjAiLCJwdWJsaXNoZXIiOiJhZG1pbl9tZiIsInZlcnNpb24iOiIxLjAiLCJzdWJzY3JpcHRpb25UaWVyIjoiNTBQZXJNaW4ifV0sImV4cCI6MTg1NTM0NDMzNSwidG9rZW5fdHlwZSI6ImFwaUtleSIsImlhdCI6MTc5MjIyOTEzNSwianRpIjoiNTY4YzJiYmEtMTQzNC00MDEzLTkzZGEtMWIzN2E0MGJhZGM0In0=.uOIttuRCwvQq7nLO5_bQiA7nfh_aH9QtcOu_kN3Sx0q97r0tuKsihHJgwRQRqiJYvx1UA3FC-Wg3xEpwpVmxWiPdc4FTCWxVc_wexw9_HBJiN4UxyuF4Nc5O_dRcSnTU_xeJ4n5WopWfIW6gqQJbtwFBLW7r1qxszbNUbFBVcrkp3ZqgMAhEhtgAl-nz0XpZjN8E-lhLmbNqWMmrhMNR6FGDfx-loJoN2gqj15ej-CATmJcQiv25UbMWkqm9OEa0oiQQROIHoDiKpvqS-hD0czrROAri5xJFN76X-NNq4oDYixT0MgMhYY57Ss6qebl_m7ESCmsmF4cg-G9F5GXvbA=='
-
-function getToken(req) {
-  const token = (
-    process.env.METEOFRANCE_AROME_TOKEN ||
-    process.env.VITE_METEOFRANCE_API_KEY ||
-    req.headers?.['x-meteofrance-token'] ||
-    req.headers?.apikey ||
-    ''
-  ).trim()
-  return token || FALLBACK_TOKEN
+// Le jeton ne vit que dans les variables d'environnement (Vercel ou .env local), jamais dans le code
+function getToken() {
+  return (process.env.METEOFRANCE_AROME_TOKEN || process.env.VITE_METEOFRANCE_API_KEY || '').trim()
 }
 
 function parseCapabilities(xmlText) {
@@ -101,30 +93,6 @@ function parseCapabilities(xmlText) {
   }
 }
 
-function isAllowedOrigin(req) {
-  const origin = req.headers?.origin || req.headers?.referer
-  if (!origin) return true // Requêtes directes ou PWA
-  try {
-    const url = new URL(origin)
-    const host = url.hostname.toLowerCase()
-    if (
-      host === 'localhost' ||
-      host === '127.0.0.1' ||
-      host.endsWith('.vercel.app') ||
-      host.includes('refugesdesalpes')
-    ) {
-      return true
-    }
-    const reqHost = (req.headers?.host || '').split(':')[0].toLowerCase()
-    if (reqHost && host === reqHost) {
-      return true
-    }
-    return false
-  } catch {
-    return false
-  }
-}
-
 const ALLOWED_LAYERS = new Set([
   'TOTAL_PRECIPITATION_RATE__GROUND_OR_WATER_SURFACE',
   'TOTAL_SNOW_PRECIPITATION__GROUND_OR_WATER_SURFACE',
@@ -142,9 +110,10 @@ export default async function handler(req, res) {
     return res.status(403).json({ error: 'Accès interdit : origine non autorisée' })
   }
 
-  const token = getToken(req)
+  const token = getToken()
   if (!token) {
-    return res.status(401).json({ error: 'Jeton Météo-France manquant ou invalide.' })
+    console.error('Configuration manquante : METEOFRANCE_AROME_TOKEN non définie')
+    return res.status(503).json({ error: 'Radar Météo-France temporairement indisponible.' })
   }
 
   const query = req.query || {}
@@ -168,10 +137,8 @@ export default async function handler(req, res) {
 
       if (!mfRes.ok) {
         const text = await mfRes.text()
-        return res.status(mfRes.status).json({
-          error: `Météo-France GetCapabilities error: ${mfRes.statusText}`,
-          details: text.slice(0, 300),
-        })
+        console.error('Météo-France GetCapabilities:', mfRes.status, text.slice(0, 300))
+        return res.status(502).json({ error: `Météo-France GetCapabilities error: ${mfRes.status}` })
       }
 
       const xml = await mfRes.text()
@@ -184,7 +151,8 @@ export default async function handler(req, res) {
       res.setHeader('X-Content-Type-Options', 'nosniff')
       return res.status(200).json(parsed)
     } catch (err) {
-      return res.status(500).json({ error: err.message })
+      console.error('Exception GetCapabilities:', err)
+      return res.status(500).json({ error: 'Erreur réseau Météo-France' })
     }
   }
 
@@ -240,10 +208,8 @@ export default async function handler(req, res) {
 
     if (!mfRes.ok) {
       const errText = await mfRes.text()
-      return res.status(mfRes.status).json({
-        error: `Météo-France GetMap error: ${mfRes.statusText}`,
-        details: errText.slice(0, 300),
-      })
+      console.error('Météo-France GetMap:', mfRes.status, errText.slice(0, 300))
+      return res.status(502).json({ error: `Météo-France GetMap error: ${mfRes.status}` })
     }
 
     const buffer = Buffer.from(await mfRes.arrayBuffer())
@@ -261,8 +227,10 @@ export default async function handler(req, res) {
     res.setHeader('Content-Type', 'image/png')
     res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600')
     res.setHeader('X-Cache', 'MISS')
+    res.setHeader('X-Content-Type-Options', 'nosniff')
     return res.send(buffer)
   } catch (err) {
-    return res.status(500).json({ error: err.message })
+    console.error('Exception GetMap:', err)
+    return res.status(500).json({ error: 'Erreur réseau Météo-France' })
   }
 }

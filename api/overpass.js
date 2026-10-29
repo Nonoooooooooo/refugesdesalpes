@@ -2,6 +2,8 @@
 // Proxy sécurisé pour Overpass API afin de contourner l'erreur 406 Not Acceptable (User-Agent requis)
 // et gérer le basculement automatique entre plusieurs serveurs miroirs avec mise en cache CDN/mémoire.
 
+import { clientIp, createRateLimiter, isAllowedOrigin } from './_security.js'
+
 export const maxDuration = 15 // Durée maximale sur Vercel (Hobby: 15s)
 
 const OVERPASS_ENDPOINTS = [
@@ -14,32 +16,9 @@ const cache = new Map()
 const CACHE_TTL_MS = 10 * 60 * 1000 // 10 minutes
 const MAX_QUERY_LENGTH = 25000 // Max 25 Ko pour parer les abus et surcharges
 
-/**
- * Vérifie si l'origine de la requête est légitime
- */
-function isAllowedOrigin(req) {
-  const origin = req.headers?.origin || req.headers?.referer
-  if (!origin) return true // Navigation directe ou même origine
-  try {
-    const url = new URL(origin)
-    const host = url.hostname.toLowerCase()
-    if (
-      host === 'localhost' ||
-      host === '127.0.0.1' ||
-      host.endsWith('.vercel.app') ||
-      host.includes('refugesdesalpes')
-    ) {
-      return true
-    }
-    const reqHost = (req.headers?.host || '').split(':')[0].toLowerCase()
-    if (reqHost && host === reqHost) {
-      return true
-    }
-    return false
-  } catch {
-    return false
-  }
-}
+// Évite que le proxy serve de relais Overpass gratuit (et fasse bannir notre User-Agent) :
+// le client ne relance une requête qu'au déplacement de la carte, 60 en 5 minutes laisse une large marge
+const isRateLimited = createRateLimiter({ windowMs: 5 * 60 * 1000, max: 60 })
 
 export default async function handler(req, res) {
   // 1. Contrôle de méthode HTTP
@@ -71,7 +50,7 @@ export default async function handler(req, res) {
     ql = req.query.data || req.query.ql || ''
   }
 
-  if (!ql) {
+  if (!ql || typeof ql !== 'string') {
     return res.status(400).json({ error: 'Paramètre de requête Overpass manquant (ql ou data)' })
   }
 
@@ -92,6 +71,10 @@ export default async function handler(req, res) {
     return res.status(200).json(cached.data)
   }
 
+  if (isRateLimited(clientIp(req))) {
+    return res.status(429).json({ error: 'Trop de requêtes Overpass, réessayez dans quelques minutes.' })
+  }
+
   let lastError = null
   for (const endpoint of OVERPASS_ENDPOINTS) {
     try {
@@ -103,7 +86,7 @@ export default async function handler(req, res) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-          'User-Agent': 'RefugeApp/2.0 (contact@refuge.app; https://refuge.app)',
+          'User-Agent': 'RefugesDesAlpes/2.0 (+https://refugesdesalpes.fr)',
         },
         body: 'data=' + encodeURIComponent(ql),
         signal: controller.signal,
@@ -136,5 +119,6 @@ export default async function handler(req, res) {
     }
   }
 
-  res.status(502).json({ error: lastError?.message || 'Erreur de connexion aux serveurs Overpass' })
+  console.error('Overpass indisponible:', lastError?.message)
+  res.status(502).json({ error: 'Erreur de connexion aux serveurs Overpass' })
 }
