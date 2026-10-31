@@ -82,6 +82,8 @@ export async function fetchPoint(id, signal) {
         legend: c.texte_commentaire,
         auteur: c.auteur_commentaire,
         date: c.date_commentaire,
+        license: 'CC BY-SA 2.0',
+        pageUrl: p.lien,
       }
     })
 

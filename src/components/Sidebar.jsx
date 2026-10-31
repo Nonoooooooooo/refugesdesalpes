@@ -310,6 +310,18 @@ export default function Sidebar({ point, onClose, onOpenRadar }) {
                   Voir sur Refuges.info <ExternalLink size={14} />
                 </a>
               )}
+
+              <p className="text-center text-[11px] leading-snug text-white/45">
+                Fiche, photos et commentaires : © les contributeurs de Refuges.info,{' '}
+                <a
+                  href="https://creativecommons.org/licenses/by-sa/2.0/deed.fr"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="underline hover:text-white/70"
+                >
+                  licence CC BY-SA 2.0
+                </a>
+              </p>
             </>
           )}
         </div>

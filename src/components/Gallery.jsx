@@ -173,7 +173,7 @@ export default function Gallery({ photos }) {
                     {current.source}
                   </span>
                 )}
-                {current.auteur && <span>{current.auteur}</span>}
+                {current.auteur && <span>© {current.auteur}</span>}
                 {current.date && <span>· {current.date.slice(0, 10)}</span>}
                 {current.license && <span>({current.license})</span>}
                 {current.pageUrl && (

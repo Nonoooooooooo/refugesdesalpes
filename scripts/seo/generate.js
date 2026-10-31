@@ -25,7 +25,7 @@ const BUILD_DATE = new Date().toISOString().slice(0, 10)
 // Date de la dernière modification des gabarits ci-dessous : à avancer quand le texte des pages générées
 // change. Le sitemap s'en sert (avec les dates de mise à jour Refuges.info) plutôt que de la date de build,
 // pour que <lastmod> ne bouge pas à chaque déploiement sans changement de contenu.
-const TEMPLATE_DATE = '2026-10-28'
+const TEMPLATE_DATE = '2026-10-31'
 const NEAR_TOLERANCE_KM = 25
 const TRANSPORT_MAX_KM = 25
 
@@ -195,6 +195,9 @@ const byAlt = (a, b) => (b.alt ?? 0) - (a.alt ?? 0)
 const altM = (n) => (n ? `${fmt(n)} m` : 'altitude inconnue')
 const byName = (a, b) => a.nom.localeCompare(b.nom, 'fr')
 const fmtKm = (km) => (km < 10 ? km.toFixed(1).replace('.', ',') : String(Math.round(km)))
+// date de dernière modification Refuges.info (« 2026-04-26 07:28:49+02 ») → « 26 avril 2026 »
+const frDate = (s) =>
+  new Date(`${String(s).slice(0, 10)}T12:00:00Z`).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
 
 // ───────────── transports en commun ─────────────
 // Arrêts des lignes de public/transports_v2.json (sources transport.data.gouv.fr), regroupés par nom et
@@ -304,6 +307,7 @@ dl.facts{display:grid;grid-template-columns:max-content 1fr;gap:.3rem 1.2rem;bac
 dl.facts dt{color:var(--mut)}dl.facts dd{margin:0}
 ul.cols{columns:2;column-gap:2rem;padding-left:1.1rem}ul.cols li{break-inside:avoid;margin-bottom:.25rem}
 .src{font-size:.85rem;color:var(--mut);border-top:1px solid var(--line);margin-top:2rem;padding-top:1rem}
+.credit{font-size:.85rem;color:var(--mut);margin:.6rem 0 0}
 footer{margin-top:3rem;padding:1.5rem 0;border-top:1px solid var(--line);color:var(--mut);font-size:.88rem}
 .faq{margin:1.5rem 0}
 .faq details{background:var(--card);border:1px solid var(--line);border-radius:12px;margin:0 0 .75rem;transition:border-color .2s}
@@ -380,7 +384,7 @@ ${jsonLd({ '@context': 'https://schema.org', '@graph': [...schema, breadcrumb] }
 <h1>${esc(h1)}</h1>
 ${body}
 </main>
-<footer><div class="wrap">Refuges des Alpes · carte interactive gratuite des refuges, cabanes et gîtes des Alpes. Données Refuges.info (CC BY-SA 2.0), IGN, Météo-France, OpenStreetMap. · <a href="/faq">Questions fréquentes</a> · <a href="/a-propos">À propos et sources</a></div></footer>
+<footer><div class="wrap">Refuges des Alpes · carte interactive gratuite des refuges, cabanes et gîtes des Alpes. Données © les contributeurs de Refuges.info (CC BY-SA 2.0), IGN, Météo-France, OpenStreetMap. · <a href="/faq">Questions fréquentes</a> · <a href="/a-propos">À propos et sources</a></div></footer>
 </body>
 </html>
 `
@@ -471,6 +475,7 @@ function refugePage(item) {
     (e) => e.valeur && !/^non$/i.test(String(e.valeur).trim()) && !/capacit/i.test(e.nom),
   )
   const near = nearby(item)
+  const fiche = esc(d?.lien || `https://www.refuges.info/point/${item.id}/`)
 
   const facts = [
     ['Type', label],
@@ -492,6 +497,7 @@ function refugePage(item) {
 
 <h2>Fiche du refuge</h2>
 <dl class="facts">${facts.map(([k, v]) => `<dt>${k}</dt><dd>${v.startsWith('<a') || v.includes('<a ') ? v : esc(v)}</dd>`).join('')}</dl>
+<p class="credit">Informations reprises de <a href="${fiche}" rel="noopener" target="_blank">la fiche Refuges.info</a>${d?.modif ? ` (version du ${frDate(d.modif)})` : ''}, © les contributeurs de Refuges.info, licence <a href="https://creativecommons.org/licenses/by-sa/2.0/deed.fr" rel="noopener" target="_blank">CC BY-SA 2.0</a>. La fiche d’origine reste la référence la plus à jour.</p>
 
 ${desc ? `<h2>Description</h2>${paragraphs(desc.text)}` : ''}
 ${acces ? `<h2>Accès</h2>${paragraphs(acces.text)}` : ''}
@@ -533,7 +539,7 @@ ${
 
 <p><a href="/massif/${item.massif.slug}">Tous les refuges ${item.exact ? 'du' : 'proches du'} massif ${esc(massifName)}</a> · <a href="${mapLink(item)}">Ouvrir ce refuge sur la carte</a></p>
 
-<p class="src">Informations issues de <a href="${esc(d?.lien || `https://www.refuges.info/point/${item.id}/`)}" rel="noopener" target="_blank">la fiche Refuges.info</a>, contribution collaborative sous licence <a href="https://creativecommons.org/licenses/by-sa/2.0/deed.fr" rel="noopener" target="_blank">CC BY-SA 2.0</a>. Vérifiez toujours l’ouverture, les tarifs et les conditions auprès du gardien ou du propriétaire avant de partir.</p>`
+<p class="src">Informations issues de <a href="${fiche}" rel="noopener" target="_blank">la fiche Refuges.info</a>, © les contributeurs de Refuges.info, licence <a href="https://creativecommons.org/licenses/by-sa/2.0/deed.fr" rel="noopener" target="_blank">CC BY-SA 2.0</a>. Vérifiez toujours l’ouverture, les tarifs et les conditions auprès du gardien ou du propriétaire avant de partir.</p>`
 
   const schema = [
     {
@@ -663,7 +669,7 @@ ${massifTransit(m)}
 <p>Sur la <a href="/">carte interactive</a>, activez le radar météo AROME pour suivre les précipitations, consultez le bulletin d’estimation du risque d’avalanche (BERA) du massif, les transports en commun pour partir sans voiture et le calculateur d’ensoleillement de chaque refuge.</p>
 <h2>Autres massifs des Alpes</h2>
 <ul class="cols">${others.map((o) => `<li><a href="/massif/${o.slug}">${esc(o.name)}</a></li>`).join('')}</ul>
-<p class="src">Positions et caractéristiques issues de <a href="https://www.refuges.info" rel="noopener" target="_blank">Refuges.info</a> (CC BY-SA 2.0). Les massifs suivent le découpage Météo-France du bulletin d’avalanche. Vérifiez l’ouverture et les conditions auprès des gardiens avant de partir.</p>`
+<p class="src">Positions et caractéristiques issues de <a href="https://www.refuges.info" rel="noopener" target="_blank">Refuges.info</a> (© les contributeurs de Refuges.info, CC BY-SA 2.0). Les massifs suivent le découpage Météo-France du bulletin d’avalanche. Vérifiez l’ouverture et les conditions auprès des gardiens avant de partir.</p>`
 
   const schema = [
     {
@@ -720,7 +726,7 @@ function hubPage() {
 <p class="lead">Choisissez un massif pour retrouver ses refuges, gîtes d’étape et cabanes, avec altitudes, accès et ensoleillement.</p>
 <a class="cta" href="/">Ouvrir la carte interactive</a>
 <table><thead><tr><th>Massif</th><th>Refuges gardés</th><th>Gîtes d’étape</th><th>Cabanes</th></tr></thead><tbody>${rows}</tbody></table>
-<p class="src">Découpage des massifs : bulletin d’estimation du risque d’avalanche (BERA) de Météo-France. Données Refuges.info (CC BY-SA 2.0).</p>`
+<p class="src">Découpage des massifs : bulletin d’estimation du risque d’avalanche (BERA) de Météo-France. Données © les contributeurs de Refuges.info (CC BY-SA 2.0).</p>`
   return layout({
     path: '/massifs',
     title: 'Massifs des Alpes : refuges, gîtes et cabanes | Refuges des Alpes',
@@ -849,7 +855,7 @@ const SOURCES = [
     'Refuges.info',
     'https://www.refuges.info',
     'positions, descriptions, accès, équipements et photos des refuges, cabanes et gîtes',
-    'licence CC BY-SA 2.0 ; les textes repris ou adaptés sur nos pages sont diffusés sous la même licence',
+    '© les contributeurs de Refuges.info, licence CC BY-SA 2.0 ; les textes repris ou adaptés sur nos pages sont diffusés sous la même licence',
   ],
   ['IGN – Géoplateforme', 'https://geoservices.ign.fr/', 'fonds de carte, altitudes et calcul d’itinéraire sur les chemins', ''],
   [

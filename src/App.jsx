@@ -207,6 +207,19 @@ function BboxLoader({ onData, onStatus, reloadKey, onMapChange }) {
   return null
 }
 
+const REFUGES_ATTRIBUTION =
+  'Refuges &copy; <a href="https://www.refuges.info" target="_blank" rel="noreferrer">les contributeurs de Refuges.info</a> (<a href="https://creativecommons.org/licenses/by-sa/2.0/deed.fr" target="_blank" rel="noreferrer">CC BY-SA</a>)'
+
+/** Crédite Refuges.info dans l'attribution de la carte, quel que soit le fond affiché. */
+function RefugesAttribution() {
+  const map = useMap()
+  useEffect(() => {
+    map.attributionControl?.addAttribution(REFUGES_ATTRIBUTION)
+    return () => map.attributionControl?.removeAttribution(REFUGES_ATTRIBUTION)
+  }, [map])
+  return null
+}
+
 function FlyToSelected({ target }) {
   const map = useMap()
   useEffect(() => {
@@ -514,6 +527,7 @@ export default function App() {
           opacity={aromeOpacity}
           onLoadingChange={setAromeLoading}
         />
+        <RefugesAttribution />
         <BboxLoader
           onData={handleData}
           onStatus={handleStatus}
