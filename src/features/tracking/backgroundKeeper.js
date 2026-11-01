@@ -19,6 +19,16 @@ export function startBackgroundKeeper() {
   if (isKeeperRunning && audioElement) return
 
   try {
+    // 1. Déclarer la session comme "ambient" pour mixer avec la musique (Spotify, Apple Music, Podcasts)
+    // sans JAMAIS couper ou mettre en pause la musique de l'utilisateur !
+    if ('audioSession' in navigator) {
+      try {
+        navigator.audioSession.type = 'ambient'
+      } catch {
+        // Ignorer si non supporté
+      }
+    }
+
     if (!audioElement) {
       audioElement = document.createElement('audio')
       audioElement.setAttribute('loop', 'true')
@@ -37,7 +47,7 @@ export function startBackgroundKeeper() {
           setupMediaSession()
         })
         .catch((err) => {
-          console.debug('[BackgroundKeeper] Audio play restreint (nécessite clic utilisateur):', err)
+          console.debug('[BackgroundKeeper] Audio play restreint:', err)
         })
     }
   } catch (err) {
@@ -69,28 +79,15 @@ function setupMediaSession() {
   if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return
 
   try {
-    // Configurer le widget écran de verrouillage
-    if (typeof MediaMetadata !== 'undefined') {
+    // Ne pas écraser le lecteur de musique s'il y a déjà de la musique en cours (Spotify, etc.)
+    if (typeof MediaMetadata !== 'undefined' && !navigator.mediaSession.metadata?.title) {
       navigator.mediaSession.metadata = new MediaMetadata({
         title: 'Tracé GPS Randonnée',
-        artist: 'Refuges des Alpes (Enregistrement en cours)',
+        artist: 'Refuges des Alpes (Enregistrement actif)',
         album: 'GPS Montagne Hors-Ligne',
       })
     }
-
-    navigator.mediaSession.playbackState = 'playing'
-
-    // Gérer les contrôles système si l'utilisateur appuie dessus depuis l'écran de verrouillage
-    navigator.mediaSession.setActionHandler('play', () => {
-      audioElement?.play()
-      navigator.mediaSession.playbackState = 'playing'
-    })
-    navigator.mediaSession.setActionHandler('pause', () => {
-      // Garder l'audio pour ne pas couper le GPS accidentellement en poche
-      audioElement?.play()
-      navigator.mediaSession.playbackState = 'playing'
-    })
   } catch (e) {
-    console.debug('[BackgroundKeeper] MediaSession non supporté:', e)
+    console.debug('[BackgroundKeeper] MediaSession error:', e)
   }
 }
