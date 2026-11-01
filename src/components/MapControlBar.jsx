@@ -16,6 +16,7 @@ import {
   Heart,
   HardDrive,
   Spline,
+  Route,
 } from 'lucide-react'
 import { FILTERABLE } from '../lib/types.jsx'
 import { useFavorites } from '../context/FavoritesContext.jsx'
@@ -23,7 +24,7 @@ import { useFavorites } from '../context/FavoritesContext.jsx'
 /**
  * Barre de contrôle divisée en 2 rangées ergonomiques (adaptée mobile & desktop) :
  * LIGNE 1 : Fond de carte (Satellite / OpenTopo / IGN) & Outils personnels (Favoris / Hors-ligne)
- * LIGNE 2 : Calques interactifs (Sentiers / Transports / Webcams / Météo / Tracé) & Dérouleur Filtres
+ * LIGNE 2 : Calques interactifs (Sentiers / Transports / Webcams / Météo / Tracé / Trace GPS) & Dérouleur Filtres
  * LIGNE 3 : Tiroir des filtres d'hébergements & parkings
  */
 export default function MapControlBar({
@@ -49,6 +50,10 @@ export default function MapControlBar({
   onOpenOffline,
   isOnline = true,
   savedZonesCount = 0,
+  onOpenTracks,
+  isRecording = false,
+  isPaused = false,
+  tracksCount = 0,
 }) {
   const { favoritesCount } = useFavorites()
   const [showFilters, setShowFilters] = useState(false)
@@ -255,6 +260,57 @@ export default function MapControlBar({
         >
           <Spline size={14} className={showTrace ? 'text-amber-300' : ''} />
           <span className="hidden sm:inline">Tracé</span>
+        </button>
+
+        {/* Bouton Trace GPS & Enregistrement (Strava Live) */}
+        <button
+          onClick={onOpenTracks}
+          title={
+            isRecording
+              ? isPaused
+                ? 'Enregistrement en pause · Gérer ma trace'
+                : 'Enregistrement GPS en direct actif · Gérer ma trace'
+              : 'Enregistrer une trace GPS en direct (style Strava) & Voir mes tracés'
+          }
+          className={`glass-btn flex items-center gap-1 sm:gap-1.5 rounded-xl px-1.5 py-1 sm:px-2.5 sm:py-1.5 text-xs font-medium transition-all ${
+            isRecording
+              ? 'border border-red-500/70 bg-red-600/30 text-white ring-2 ring-red-500/40 shadow-[0_0_15px_rgba(239,68,68,0.4)] font-bold'
+              : tracksCount > 0
+                ? 'border border-orange-500/35 bg-orange-500/15 text-orange-200 hover:bg-orange-500/25'
+                : 'bg-white/5 text-white/65 hover:text-white hover:bg-white/10'
+          }`}
+        >
+          {isRecording ? (
+            <span className="relative flex h-2.5 w-2.5">
+              {!isPaused && (
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-80"></span>
+              )}
+              <span
+                className={`relative inline-flex rounded-full h-2.5 w-2.5 ${
+                  isPaused ? 'bg-amber-400' : 'bg-red-500'
+                }`}
+              ></span>
+            </span>
+          ) : (
+            <Route
+              size={14}
+              className={tracksCount > 0 ? 'text-orange-400' : 'text-white/60'}
+            />
+          )}
+          <span className="hidden sm:inline">
+            {isRecording ? (isPaused ? 'Pause' : 'REC Trace') : 'Tracer'}
+          </span>
+          {isRecording ? (
+            <span className="text-[10px] font-black text-red-200 uppercase tracking-wider sm:hidden">
+              REC
+            </span>
+          ) : (
+            tracksCount > 0 && (
+              <span className="rounded-full bg-orange-500/25 px-1 sm:px-1.5 py-0.2 text-[9px] sm:text-[10px] font-bold text-orange-200 border border-orange-400/20">
+                {tracksCount}
+              </span>
+            )
+          )}
         </button>
 
         <div className="mx-0.5 h-4 sm:h-5 w-px bg-white/15" />
