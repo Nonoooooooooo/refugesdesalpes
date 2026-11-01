@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import {
   saveTrack,
   saveActiveDraft,
@@ -6,6 +6,7 @@ import {
   clearActiveDraft,
   haversineDistance,
 } from './trackStorage'
+import { startBackgroundKeeper, stopBackgroundKeeper } from './backgroundKeeper'
 
 // Seuil d'hystérésis en mètres pour le cumul D+ / D- (évite le bruit altimétrique GPS à l'arrêt)
 const ELEVATION_HYSTERESIS_METERS = 3.0
@@ -77,23 +78,30 @@ export function useTrackRecorder() {
     }
   }, [])
 
-  // Chronomètre de durée active
+  // Chronomètre de durée active basé sur les horodatages réels (robuste au mode veille)
   useEffect(() => {
     if (isRecording && !isPaused) {
-      timerIntervalRef.current = setInterval(() => {
+      const updateTimer = () => {
+        if (!startTimeRef.current) return
+        const activeSec = Math.max(
+          0,
+          Math.floor((Date.now() - startTimeRef.current - pausedTimeAccumulatedRef.current) / 1000),
+        )
         setStats((prev) => {
-          const newDuration = prev.duration + 1
           const avgSpeed =
-            newDuration > 5 && prev.distance > 0
-              ? (prev.distance / 1000 / (newDuration / 3600)).toFixed(1)
+            activeSec > 5 && prev.distance > 0
+              ? Number((prev.distance / 1000 / (activeSec / 3600)).toFixed(1))
               : 0
           return {
             ...prev,
-            duration: newDuration,
-            avgSpeed: Number(avgSpeed),
+            duration: activeSec,
+            avgSpeed,
           }
         })
-      }, 1000)
+      }
+
+      timerIntervalRef.current = setInterval(updateTimer, 1000)
+      updateTimer()
     } else {
       if (timerIntervalRef.current) {
         clearInterval(timerIntervalRef.current)
@@ -108,6 +116,34 @@ export function useTrackRecorder() {
       }
     }
   }, [isRecording, isPaused])
+
+  // Gestion du retour au premier plan (sortie de veille / réactivation de l'écran)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && isRecording && !isPaused) {
+        requestWakeLock()
+        startBackgroundKeeper()
+        if (startTimeRef.current) {
+          const activeSec = Math.max(
+            0,
+            Math.floor(
+              (Date.now() - startTimeRef.current - pausedTimeAccumulatedRef.current) / 1000,
+            ),
+          )
+          setStats((prev) => ({
+            ...prev,
+            duration: activeSec,
+            avgSpeed:
+              activeSec > 5 && prev.distance > 0
+                ? Number((prev.distance / 1000 / (activeSec / 3600)).toFixed(1))
+                : prev.avgSpeed,
+          }))
+        }
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [isRecording, isPaused, requestWakeLock])
 
   // Détection d'un brouillon existant au montage
   useEffect(() => {
@@ -304,6 +340,7 @@ export function useTrackRecorder() {
     }
 
     requestWakeLock()
+    startBackgroundKeeper()
     startTimeRef.current = Date.now()
     lastValidAltRef.current = null
     pausedTimeAccumulatedRef.current = 0
@@ -347,6 +384,7 @@ export function useTrackRecorder() {
   const pauseRecording = useCallback(() => {
     setIsPaused(true)
     lastPauseStartRef.current = Date.now()
+    stopBackgroundKeeper()
     try {
       if (navigator.vibrate) navigator.vibrate(50)
     } catch {
@@ -357,6 +395,8 @@ export function useTrackRecorder() {
   // Reprendre l'enregistrement
   const resumeRecording = useCallback(() => {
     setIsPaused(false)
+    startBackgroundKeeper()
+    requestWakeLock()
     if (lastPauseStartRef.current) {
       pausedTimeAccumulatedRef.current += Date.now() - lastPauseStartRef.current
       lastPauseStartRef.current = null
@@ -366,7 +406,7 @@ export function useTrackRecorder() {
     } catch {
       // ignore
     }
-  }, [])
+  }, [requestWakeLock])
 
   // Arrêter et sauvegarder la trace
   const stopAndSaveRecording = useCallback(
@@ -376,6 +416,7 @@ export function useTrackRecorder() {
         watchIdRef.current = null
       }
       releaseWakeLock()
+      stopBackgroundKeeper()
 
       const currentPoints = pointsRef.current
       const currentStats = statsRef.current
@@ -455,6 +496,7 @@ export function useTrackRecorder() {
       watchIdRef.current = null
     }
     releaseWakeLock()
+    stopBackgroundKeeper()
     await clearActiveDraft()
 
     setIsRecording(false)
@@ -510,6 +552,7 @@ export function useTrackRecorder() {
         navigator.geolocation.clearWatch(watchIdRef.current)
       }
       releaseWakeLock()
+      stopBackgroundKeeper()
       if (timerIntervalRef.current) {
         clearInterval(timerIntervalRef.current)
       }
