@@ -23,6 +23,12 @@ import { useFavorites } from './context/FavoritesContext.jsx'
 import OfflineModal from './features/offline/OfflineModal.jsx'
 import { useOfflineStatus } from './features/offline/useOfflineStatus.js'
 import { getOfflineRefugesForBbox, getSavedZones, getSavedZonesMaxZoom } from './features/offline/offlineService.js'
+import { useTrackRecorder } from './features/tracking/useTrackRecorder'
+import TrackLayer from './features/tracking/TrackLayer'
+import TrackRecorderHUD from './features/tracking/TrackRecorderHUD'
+import TracksModal from './features/tracking/TracksModal'
+import ElevationProfileModal from './features/tracking/ElevationProfileModal'
+import { getAllTracks } from './features/tracking/trackStorage'
 
 const MIN_ZOOM_FETCH = 9
 const IMAGERY_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
@@ -223,6 +229,49 @@ export default function App() {
   const [savedZonesCount, setSavedZonesCount] = useState(() => getSavedZones().length)
   const maxSavedZoom = useMemo(() => getSavedZonesMaxZoom(savedZonesCount), [savedZonesCount])
 
+  // Gestion des traces GPS & Enregistrement Strava Live
+  const trackRecorder = useTrackRecorder()
+  const [savedTracks, setSavedTracks] = useState([])
+  const [selectedTrackToView, setSelectedTrackToView] = useState(null)
+  const [showTracksModal, setShowTracksModal] = useState(false)
+  const [profileTrackModal, setProfileTrackModal] = useState(null)
+
+  const reloadSavedTracks = useCallback(() => {
+    getAllTracks().then((tracks) => {
+      setSavedTracks(tracks || [])
+    })
+  }, [])
+
+  useEffect(() => {
+    reloadSavedTracks()
+  }, [reloadSavedTracks])
+
+  const handleSelectTrackToView = useCallback((track) => {
+    setSelectedTrackToView(track)
+    if (track && track.points && track.points.length > 0) {
+      const lats = track.points.map((p) => p.lat)
+      const lngs = track.points.map((p) => p.lng)
+      const minLat = Math.min(...lats)
+      const maxLat = Math.max(...lats)
+      const minLng = Math.min(...lngs)
+      const maxLng = Math.max(...lngs)
+      setFlyTarget({
+        lat: (minLat + maxLat) / 2,
+        lng: (minLng + maxLng) / 2,
+        zoom: 13,
+        t: Date.now(),
+      })
+    }
+  }, [])
+
+  const handleFollowTrackInFog = useCallback(
+    (track) => {
+      handleSelectTrackToView(track)
+      trackRecorder.startRecording()
+    },
+    [handleSelectTrackToView, trackRecorder],
+  )
+
   // Cumule les points déjà vus avec détection de changement (évite tout re-render inutile si aucun nouveau point)
   const handleData = useCallback((incoming) => {
     setPoints((prev) => {
@@ -373,7 +422,20 @@ export default function App() {
           onMapChange={setMapState}
         />
         <FlyToSelected target={flyTarget} />
-        <MapControls hasSelected={Boolean(selected)} />
+        <MapControls
+          hasSelected={Boolean(selected)}
+          isRecording={trackRecorder.isRecording}
+        />
+        <TrackLayer
+          activeTrackPoints={trackRecorder.points}
+          isRecording={trackRecorder.isRecording}
+          isBacktrackMode={trackRecorder.isBacktrackMode}
+          backtrackGuidance={trackRecorder.backtrackGuidance}
+          currentLocation={trackRecorder.currentLocation}
+          savedTracks={savedTracks}
+          selectedTrackToView={selectedTrackToView}
+          onOpenTrackProfile={(t) => setProfileTrackModal(t)}
+        />
         <MarkerClusterGroup
           chunkedLoading
           chunkInterval={40}
@@ -422,7 +484,98 @@ export default function App() {
         onOpenOffline={() => setShowOfflineModal(true)}
         isOnline={isOnline}
         savedZonesCount={savedZonesCount}
+        onOpenTracks={() => setShowTracksModal(true)}
+        isRecording={trackRecorder.isRecording}
+        isPaused={trackRecorder.isPaused}
+        tracksCount={savedTracks.length}
       />
+
+      {/* HUD d'enregistrement de trace GPS en direct (Style Strava Live) */}
+      <TrackRecorderHUD
+        isRecording={trackRecorder.isRecording}
+        isPaused={trackRecorder.isPaused}
+        stats={trackRecorder.stats}
+        points={trackRecorder.points}
+        isBacktrackMode={trackRecorder.isBacktrackMode}
+        backtrackGuidance={trackRecorder.backtrackGuidance}
+        onPause={trackRecorder.pauseRecording}
+        onResume={trackRecorder.resumeRecording}
+        onStopAndSave={async (name) => {
+          const newTrack = await trackRecorder.stopAndSaveRecording(name)
+          if (newTrack) {
+            reloadSavedTracks()
+            handleSelectTrackToView(newTrack)
+          }
+        }}
+        onDiscard={trackRecorder.discardRecording}
+        onToggleBacktrack={trackRecorder.toggleBacktrackMode}
+        onOpenElevationProfile={() => {
+          setProfileTrackModal({
+            name: 'Enregistrement en direct',
+            points: trackRecorder.points,
+            distance: trackRecorder.stats.distance,
+            elevationGain: trackRecorder.stats.elevationGain,
+            elevationLoss: trackRecorder.stats.elevationLoss,
+            minAltitude: trackRecorder.stats.minAltitude,
+            maxAltitude: trackRecorder.stats.maxAltitude,
+          })
+        }}
+        hasSelected={Boolean(selected)}
+      />
+
+      {/* Modal de gestion et d'export/import des Traces GPS */}
+      <TracksModal
+        isOpen={showTracksModal}
+        onClose={() => setShowTracksModal(false)}
+        tracks={savedTracks}
+        onTracksUpdated={reloadSavedTracks}
+        isRecording={trackRecorder.isRecording}
+        onStartRecording={() => {
+          trackRecorder.startRecording()
+        }}
+        selectedTrackToView={selectedTrackToView}
+        onSelectTrackToView={handleSelectTrackToView}
+        onOpenProfile={(track) => setProfileTrackModal(track)}
+        onFollowTrackInFog={handleFollowTrackInFog}
+      />
+
+      {/* Modal Profil altimétrique interactif */}
+      <ElevationProfileModal
+        isOpen={Boolean(profileTrackModal)}
+        onClose={() => setProfileTrackModal(null)}
+        track={profileTrackModal}
+      />
+
+      {/* Bandeau de récupération d'un enregistrement interrompu */}
+      {trackRecorder.hasRecoverableDraft && !trackRecorder.isRecording && (
+        <div className="pointer-events-auto fixed top-20 left-1/2 z-[1400] -translate-x-1/2 w-[calc(100%-2rem)] max-w-md animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="glass flex items-center justify-between gap-3 rounded-2xl border border-orange-500/50 bg-slate-950/95 p-3 text-xs shadow-2xl backdrop-blur-xl">
+            <div className="flex items-center gap-2">
+              <span className="text-orange-400 font-bold text-base">📍</span>
+              <div>
+                <div className="font-bold text-white">Trace GPS interrompue</div>
+                <div className="text-[11px] text-slate-300">
+                  Un enregistrement précédent a été retrouvé.
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={trackRecorder.resumeDraft}
+                className="rounded-xl bg-orange-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-orange-500 transition shadow"
+              >
+                Reprendre
+              </button>
+              <button
+                onClick={trackRecorder.discardDraft}
+                className="rounded-xl bg-white/10 px-2.5 py-1.5 text-xs font-medium text-slate-400 hover:text-white transition"
+              >
+                Effacer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Toast discret pour les favoris */}
       {toastMessage && (

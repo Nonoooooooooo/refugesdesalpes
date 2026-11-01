@@ -12,7 +12,7 @@ import {
   X,
 } from 'lucide-react'
 
-export default function MapControls({ hasSelected = false }) {
+export default function MapControls({ hasSelected = false, isRecording = false }) {
   const map = useMap()
   const [trackingState, setTrackingState] = useState('idle') // 'idle' | 'searching' | 'active'
   const [userLocation, setUserLocation] = useState(null)
@@ -191,7 +191,7 @@ export default function MapControls({ hasSelected = false }) {
       )}
 
       {/* ─── HUD FLOTTANT GPS MONTAGNE (Altitude + Précision en temps réel) ─── */}
-      {userLocation && (
+      {userLocation && !isRecording && (
         <div
           className={`pointer-events-auto absolute bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] sm:bottom-20 z-[1000] transition-all duration-300 animate-in fade-in slide-in-from-bottom-2 ${
             hasSelected ? 'left-3 sm:left-[444px]' : 'left-3 sm:left-4'
